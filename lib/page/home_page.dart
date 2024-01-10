@@ -1,20 +1,20 @@
 import 'package:class_todo_list/class_config.dart';
 import 'package:class_todo_list/logic/annouce_notifier.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
-import 'package:class_todo_list/logic/file_notifier.dart';
+// import 'package:class_todo_list/logic/file_notifier.dart';
 import 'package:class_todo_list/logic/form_notifier.dart';
 import 'package:class_todo_list/logic/submit_notifier.dart';
 import 'package:class_todo_list/logic/task_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/page/users_page.dart';
 import 'package:class_todo_list/provider.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:photo_view/photo_view.dart';
+// import 'package:photo_view/photo_view.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -28,17 +28,17 @@ class HomePage extends ConsumerWidget {
       appBar: AppBar(
         systemOverlayStyle: const SystemUiOverlayStyle(),
         title: const Text('共享聯絡簿'),
-        actions: [
-          if (ref.watch(bottomTabProvider) == 3)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: IconButton(
-                onPressed: () => ref.read(fileProvider.notifier).getFilesList(),
-                icon: const Icon(Icons.refresh),
-                tooltip: '重新載入',
-              ),
-            )
-        ],
+        // actions: [
+        //   if (ref.watch(bottomTabProvider) == 3)
+        //     Padding(
+        //       padding: const EdgeInsets.symmetric(horizontal: 10),
+        //       child: IconButton(
+        //         onPressed: () => ref.read(fileProvider.notifier).getFilesList(),
+        //         icon: const Icon(Icons.refresh),
+        //         tooltip: '重新載入',
+        //       ),
+        //     )
+        // ],
         bottom: ref.watch(bottomTabProvider) != 0
             ? null
             : PreferredSize(
@@ -76,7 +76,7 @@ class HomePage extends ConsumerWidget {
         const HomeTaskBody(),
         const HomeSubmittedBody(),
         const HomeAnnounceBody(),
-        const HomeFileView(),
+        // const HomeFileView(),
       ][ref.watch(bottomTabProvider)],
       floatingActionButton: ![0, 3].contains(ref.watch(bottomTabProvider)) ||
               ref.watch(authProvider).user!.isAnonymous
@@ -97,28 +97,28 @@ class HomePage extends ConsumerWidget {
                     },
                     child: const Icon(Icons.add_task),
                   );
-                case 3:
-                  return FloatingActionButton(
-                    tooltip: '上傳檔案',
-                    onPressed: () async {
-                      try {
-                        var picked = await FilePicker.platform
-                            .pickFiles(type: FileType.media);
-                        if (picked != null) {
-                          if (picked.files.first.size / (1024 * 1024) <= 4) {
-                            ref.read(fileProvider.notifier).uploadFile(
-                                picked.files.first.bytes!,
-                                picked.files.first.name);
-                          } else {
-                            Fluttertoast.showToast(msg: '檔案過大');
-                          }
-                        }
-                      } catch (e) {
-                        Fluttertoast.showToast(msg: e.toString());
-                      }
-                    },
-                    child: const Icon(Icons.file_upload_outlined),
-                  );
+                // case 3:
+                //   return FloatingActionButton(
+                //     tooltip: '上傳檔案',
+                //     onPressed: () async {
+                //       try {
+                //         var picked = await FilePicker.platform
+                //             .pickFiles(type: FileType.media);
+                //         if (picked != null) {
+                //           if (picked.files.first.size / (1024 * 1024) <= 4) {
+                //             ref.read(fileProvider.notifier).uploadFile(
+                //                 picked.files.first.bytes!,
+                //                 picked.files.first.name);
+                //           } else {
+                //             Fluttertoast.showToast(msg: '檔案過大');
+                //           }
+                //         }
+                //       } catch (e) {
+                //         Fluttertoast.showToast(msg: e.toString());
+                //       }
+                //     },
+                //     child: const Icon(Icons.file_upload_outlined),
+                //   );
                 default:
                   return const SizedBox();
               }
@@ -147,8 +147,8 @@ class HomePage extends ConsumerWidget {
                 );
               }),
               label: '最新公告'),
-          const BottomNavigationBarItem(
-              icon: Icon(Icons.file_open), label: '共享檔案'),
+          // const BottomNavigationBarItem(
+          //     icon: Icon(Icons.file_open), label: '共享檔案'),
         ],
         onTap: (value) {
           ref.read(bottomTabProvider.notifier).state = value;
@@ -756,6 +756,7 @@ class TaskTableView extends ConsumerWidget {
   const TaskTableView(this.tasks, {super.key});
   final List<Task> tasks;
 
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -1352,111 +1353,111 @@ class BottomSheet extends ConsumerWidget {
   }
 }
 
-class HomeFileView extends ConsumerWidget {
-  const HomeFileView({super.key});
+// class HomeFileView extends ConsumerWidget {
+//   const HomeFileView({super.key});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    FileState state = ref.watch(fileProvider);
-    return LoadingView(
-      loading: state.loading,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: RefreshIndicator(
-          onRefresh: () => ref.read(fileProvider.notifier).getFilesList(),
-          child: GridView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: state.files.length,
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 250,
-            ),
-            itemBuilder: (context, idx) => Padding(
-              padding: const EdgeInsets.all(5),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: FutureBuilder(
-                      future: state.files[idx].getDownloadURL(),
-                      builder: (context, snap) {
-                        return InkWell(
-                          onTap: () async {
-                            if (['.png', '.jpg', '.jpeg', '.webp'].any(
-                                (element) =>
-                                    state.files[idx].name.contains(element))) {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (context) => PhotoViewer(
-                                        state.files[idx].name.substring(24),
-                                        snap.data ?? '')),
-                              );
-                            } else {
-                              openUrl(snap.data ?? '');
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            child: Column(
-                              children: [
-                                Expanded(child: Builder(builder: (context) {
-                                  if (['.png', '.jpg', '.jpeg', '.webp'].any(
-                                      (element) => state.files[idx].name
-                                          .contains(element))) {
-                                    return Builder(builder: (context) {
-                                      if (snap.hasData) {
-                                        return Image.network(
-                                          snap.data ?? '',
-                                          fit: BoxFit.cover,
-                                        );
-                                      } else {
-                                        return const Icon(
-                                          Icons.photo,
-                                          size: 100,
-                                        );
-                                      }
-                                    });
-                                  } else {
-                                    return const Icon(
-                                      Icons.file_open,
-                                      size: 100,
-                                    );
-                                  }
-                                })),
-                                Text(
-                                  state.files[idx].name.substring(24),
-                                  maxLines: 2,
-                                  style: const TextStyle(fontSize: 18),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     FileState state = ref.watch(fileProvider);
+//     return LoadingView(
+//       loading: state.loading,
+//       child: Padding(
+//         padding: const EdgeInsets.symmetric(horizontal: 10),
+//         child: RefreshIndicator(
+//           onRefresh: () => ref.read(fileProvider.notifier).getFilesList(),
+//           child: GridView.builder(
+//             physics: const AlwaysScrollableScrollPhysics(),
+//             itemCount: state.files.length,
+//             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+//               maxCrossAxisExtent: 250,
+//             ),
+//             itemBuilder: (context, idx) => Padding(
+//               padding: const EdgeInsets.all(5),
+//               child: Card(
+//                 child: Padding(
+//                   padding: const EdgeInsets.symmetric(vertical: 5),
+//                   child: FutureBuilder(
+//                       future: state.files[idx].getDownloadURL(),
+//                       builder: (context, snap) {
+//                         return InkWell(
+//                           onTap: () async {
+//                             if (['.png', '.jpg', '.jpeg', '.webp'].any(
+//                                 (element) =>
+//                                     state.files[idx].name.contains(element))) {
+//                               Navigator.of(context).push(
+//                                 MaterialPageRoute(
+//                                     builder: (context) => PhotoViewer(
+//                                         state.files[idx].name.substring(24),
+//                                         snap.data ?? '')),
+//                               );
+//                             } else {
+//                               openUrl(snap.data ?? '');
+//                             }
+//                           },
+//                           child: Padding(
+//                             padding: const EdgeInsets.symmetric(
+//                                 horizontal: 10, vertical: 5),
+//                             child: Column(
+//                               children: [
+//                                 Expanded(child: Builder(builder: (context) {
+//                                   if (['.png', '.jpg', '.jpeg', '.webp'].any(
+//                                       (element) => state.files[idx].name
+//                                           .contains(element))) {
+//                                     return Builder(builder: (context) {
+//                                       if (snap.hasData) {
+//                                         return Image.network(
+//                                           snap.data ?? '',
+//                                           fit: BoxFit.cover,
+//                                         );
+//                                       } else {
+//                                         return const Icon(
+//                                           Icons.photo,
+//                                           size: 100,
+//                                         );
+//                                       }
+//                                     });
+//                                   } else {
+//                                     return const Icon(
+//                                       Icons.file_open,
+//                                       size: 100,
+//                                     );
+//                                   }
+//                                 })),
+//                                 Text(
+//                                   state.files[idx].name.substring(24),
+//                                   maxLines: 2,
+//                                   style: const TextStyle(fontSize: 18),
+//                                 ),
+//                               ],
+//                             ),
+//                           ),
+//                         );
+//                       }),
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
-class PhotoViewer extends ConsumerWidget {
-  const PhotoViewer(this.name, this.url, {super.key});
+// class PhotoViewer extends ConsumerWidget {
+//   const PhotoViewer(this.name, this.url, {super.key});
 
-  final String name;
-  final String url;
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          name,
-          style: const TextStyle(fontSize: 15),
-        ),
-      ),
-      body: PhotoView(imageProvider: NetworkImage(url)),
-    );
-  }
-}
+//   final String name;
+//   final String url;
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(
+//           name,
+//           style: const TextStyle(fontSize: 15),
+//         ),
+//       ),
+//       body: PhotoView(imageProvider: NetworkImage(url)),
+//     );
+//   }
+// }

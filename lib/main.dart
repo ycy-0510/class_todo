@@ -43,22 +43,22 @@ class MainApp extends ConsumerWidget {
         colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.green, brightness: Brightness.light),
         useMaterial3: true,
-      ),
+      ).copyWith(splashFactory: NoSplash.splashFactory),
       darkTheme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.green, brightness: Brightness.dark),
         useMaterial3: true,
-      ),
+      ).copyWith(splashFactory: NoSplash.splashFactory),
       highContrastTheme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.green, brightness: Brightness.light),
         useMaterial3: true,
-      ),
+      ).copyWith(splashFactory: NoSplash.splashFactory),
       highContrastDarkTheme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.green, brightness: Brightness.dark),
         useMaterial3: true,
-      ),
+      ).copyWith(splashFactory: NoSplash.splashFactory),
       themeMode: ThemeMode.system,
       title: '共享聯絡簿',
       localizationsDelegates: const [

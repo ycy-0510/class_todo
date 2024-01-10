@@ -3,7 +3,7 @@ import 'package:class_todo_list/logic/announce_read_notifier.dart';
 import 'package:class_todo_list/logic/auth_notifier.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/date_notifier.dart';
-import 'package:class_todo_list/logic/file_notifier.dart';
+// import 'package:class_todo_list/logic/file_notifier.dart';
 import 'package:class_todo_list/logic/form_notifier.dart';
 import 'package:class_todo_list/logic/nowtime_notifier.dart';
 import 'package:class_todo_list/logic/submit_notifier.dart';
@@ -78,5 +78,5 @@ final announceReadProvider =
 
 final bottomTabProvider = StateProvider<int>((ref) => 0);
 
-final fileProvider = StateNotifierProvider.autoDispose<FileNotifier, FileState>(
-    (ref) => FileNotifier(ref));
+// final fileProvider = StateNotifierProvider.autoDispose<FileNotifier, FileState>(
+//     (ref) => FileNotifier(ref));
