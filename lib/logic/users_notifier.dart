@@ -12,9 +12,11 @@ class UsersNotifier extends StateNotifier<Map<String, String>> {
   }
 
   void getUserData() async {
+    final userClassCode = _ref.read(authProvider).classCode;
     state = {};
     if (!_ref.read(authProvider).user!.isAnonymous) {
-      final dataRef = db.collection("user");
+      final dataRef =
+          db.collection("user").where('class', isEqualTo: userClassCode);
       try {
         final usersData = await dataRef.get();
         Map<String, String> usersMap = {};

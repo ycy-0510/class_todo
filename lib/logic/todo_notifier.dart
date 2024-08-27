@@ -15,14 +15,14 @@ class TodoNotifier extends StateNotifier<List<String>> {
 
   Future<void> getData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String key = _ref.read(dateProvider).sunday.toIso8601String();
+    String key = _ref.read(dateProvider).thisWeek.toIso8601String();
     List<String> todos = prefs.getStringList(key) ?? [];
     state = todos;
   }
 
   Future<void> changeData(String id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String key = _ref.read(dateProvider).sunday.toIso8601String();
+    String key = _ref.read(dateProvider).thisWeek.toIso8601String();
     List<String> todos = List.generate(state.length, (index) => state[index]);
     if (todos.contains(id)) {
       todos.remove(id);

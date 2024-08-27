@@ -18,9 +18,10 @@ class SubmittedNotifier extends StateNotifier<SubmittedState> {
   }
 
   void getData() {
+    final userClassCode = _ref.read(authProvider).classCode;
     state = SubmittedState([], loading: true);
     final dataRef = db
-        .collection("task")
+        .collection('class/$userClassCode/task')
         .where("date",
             isGreaterThanOrEqualTo:
                 _ref.read(dateProvider).now.subtract(const Duration(days: 7)))
@@ -87,14 +88,15 @@ class Submitted {
     );
   }
 
-  void update(String doneName) {
+  void update(String doneName, WidgetRef ref) {
+    final userClassCode = ref.read(authProvider).classCode;
     if (done.contains(doneName)) {
       done.remove(doneName);
     } else {
       done.add(doneName);
     }
     FirebaseFirestore db = FirebaseFirestore.instance;
-    db.collection('task').doc(submittedId).update({
+    db.collection('class/$userClassCode/task').doc(submittedId).update({
       'submitted': done,
     });
   }

@@ -4,11 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DateNotifier extends StateNotifier<DateState> {
   DateNotifier()
-      : super(DateState(now: DateTime.now(), sunday: DateTime.now())) {
+      : super(DateState(
+          now: DateTime.now(),
+          week: 0,
+          thisWeek: DateTime.now(),
+        )) {
     int year = state.now.year;
     int month = state.now.month;
     int day = state.now.day - (state.now.weekday) % 7;
-    state = state.copy(sunday: DateTime(year, month, day));
+    state = state.copy(
+      thisWeek: DateTime(year, month, day),
+    );
     Timer.periodic(const Duration(minutes: 2), (timer) {
       DateTime now = DateTime.now();
       if (!(now.year == state.now.year &&
@@ -19,28 +25,22 @@ class DateNotifier extends StateNotifier<DateState> {
     });
   }
 
-  void nextWeek() {
-    state = state.copy(sunday: state.sunday.add(const Duration(days: 7)));
-  }
-
-  void lastWeek() {
-    state = state.copy(sunday: state.sunday.subtract(const Duration(days: 7)));
-  }
-
-  void today() {
-    int year = state.now.year;
-    int month = state.now.month;
-    int day = state.now.day - (state.now.weekday) % 7;
-    state = state.copy(sunday: DateTime(year, month, day));
+  void go(int week) {
+    state = state.copy(
+      week: week - 1000,
+    );
   }
 }
 
 class DateState {
-  DateState({required this.now, required this.sunday});
+  DateState({required this.now, required this.week, required this.thisWeek});
   final DateTime now;
-  final DateTime sunday;
-  DateState copy({DateTime? now, DateTime? sunday}) => DateState(
+  final int week;
+  final DateTime thisWeek;
+
+  DateState copy({DateTime? now, int? week, DateTime? thisWeek}) => DateState(
         now: now ?? this.now,
-        sunday: sunday ?? this.sunday,
+        week: week ?? this.week,
+        thisWeek: thisWeek ?? this.thisWeek,
       );
 }

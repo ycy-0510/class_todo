@@ -27,6 +27,7 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
       );
 
   Future<void> create() async {
+    final userClassCode = _ref.read(authProvider).classCode;
     FirebaseFirestore db = FirebaseFirestore.instance;
 
     final data = {
@@ -38,7 +39,7 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
       "submitted": [],
     };
     try {
-      await db.collection("task").add(data);
+      await db.collection("class/$userClassCode/task").add(data);
     } catch (e) {
       _showError(e.toString());
     }
@@ -46,6 +47,7 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
   }
 
   Future<void> update() async {
+    final userClassCode = _ref.read(authProvider).classCode;
     FirebaseFirestore db = FirebaseFirestore.instance;
 
     final data = {
@@ -55,7 +57,10 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
       if (state.type != 4) 'submitted': [],
     };
     try {
-      await db.collection("task").doc(state.taskId).update(data);
+      await db
+          .collection("class/$userClassCode/task")
+          .doc(state.taskId)
+          .update(data);
     } catch (e) {
       _showError(e.toString());
     }
@@ -63,10 +68,14 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
   }
 
   Future<void> remove() async {
+    final userClassCode = _ref.read(authProvider).classCode;
     FirebaseFirestore db = FirebaseFirestore.instance;
 
     try {
-      await db.collection("task").doc(state.taskId).delete();
+      await db
+          .collection("class/$userClassCode/task")
+          .doc(state.taskId)
+          .delete();
     } catch (e) {
       _showError(e.toString());
     }

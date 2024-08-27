@@ -12,14 +12,24 @@ class UsersNumberNotifier extends StateNotifier<Map<String, String>> {
   }
 
   void getUserData() async {
+    final userClassCode = _ref.read(authProvider).classCode;
     state = {};
     if (!_ref.read(authProvider).user!.isAnonymous) {
-      final dataRef = db.collection("userNumber").orderBy('name');
+      final dataRef =
+          db.collection("class/$userClassCode/config").doc('student');
       try {
         final usersData = await dataRef.get();
         Map<String, String> usersMap = {};
-        for (var user in usersData.docs) {
-          usersMap[user.id] = user.data()['name'];
+        if (usersData.exists && usersData.data()?['students'] is Map) {
+          final originMap =
+              usersData.data()?['students'] as Map<String, dynamic>;
+          final keys = originMap.keys.toList()
+            ..sort((a, b) => int.parse(a) - int.parse(b));
+          for (var key in keys) {
+            usersMap.addAll({key: originMap[key].toString()});
+          }
+        } else {
+          _showError('Students not found');
         }
         state = usersMap;
       } catch (e) {

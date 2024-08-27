@@ -2,6 +2,8 @@ import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final controller = PageController(initialPage: 0);
+
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
@@ -13,77 +15,54 @@ class LoginPage extends ConsumerWidget {
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             width: 400,
+            height: 450,
             child: Card(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  if (loading) const LinearProgressIndicator(),
+                  const Expanded(child: SizedBox()),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                     child: Text(
-                      '登入以繼續使用「共享聯絡簿」',
+                      '歡迎使用「共享聯絡簿」',
                       style: TextStyle(fontSize: 20),
                     ),
                   ),
-                  if (loading) const LinearProgressIndicator(),
                   const Icon(
                     Icons.login,
                     size: 100,
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    child: Column(
-                      children: [
-                        Container(
-                            margin: const EdgeInsets.symmetric(vertical: 5),
-                            width: 300,
-                            height: 40,
-                            child: ElevatedButton(
-                              onLongPress: loading ? null : () {},
-                              onPressed: loading
-                                  ? null
-                                  : () => ref
-                                      .read(authProvider.notifier)
-                                      .googleLogin(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text(
-                                '使用Google登入',
-                                style: TextStyle(fontSize: 15),
-                              ),
-                            )),
-                        Container(
-                            margin: const EdgeInsets.symmetric(vertical: 5),
-                            width: 300,
-                            height: 40,
-                            child: ElevatedButton(
-                              onLongPress: loading ? null : () {},
-                              onPressed: loading
-                                  ? null
-                                  : () => ref
-                                      .read(authProvider.notifier)
-                                      .anonymousLogin(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text(
-                                '訪客',
-                                style: TextStyle(fontSize: 15),
-                              ),
-                            )),
-                      ],
-                    ),
-                  ),
+                  Container(
+                      margin: const EdgeInsets.symmetric(vertical: 5),
+                      width: 300,
+                      height: 40,
+                      child: ElevatedButton(
+                        onLongPress: loading ? null : () {},
+                        onPressed: loading
+                            ? null
+                            : () =>
+                                ref.read(authProvider.notifier).googleLogin(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text(
+                          '使用Google登入',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      )),
+                  const Expanded(child: SizedBox()),
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                     child: Text(
-                        'Copyright © 2023 YCY, Licensed under the Apache License, Version 2.0.'),
-                  )
+                        'Copyright © 2024 YCY, Licensed under the Apache License, Version 2.0.'),
+                  ),
                 ],
               ),
             ),

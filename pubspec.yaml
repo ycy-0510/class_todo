@@ -19,20 +19,19 @@ dependencies:
   connectivity_plus: ^4.0.2
   flutter_native_splash: ^2.3.2
   go_router: ^11.0.0
-  pwa_install: ^0.0.5
   shared_preferences: ^2.2.1
   firebase_app_check: ^0.2.0
   url_launcher: ^6.1.14
-  flutter_linkify: ^6.0.0
   http: ^1.1.0
-  file_picker: ^6.0.0
-  firebase_storage: ^11.2.8
-  photo_view: ^0.14.0
+  google_sign_in: ^6.2.1
+  grouped_list: ^6.0.0
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -40,5 +39,18 @@ flutter:
     - assets/img/
 
 flutter_native_splash:
-  color: "#34A26D"
-  image: assets/logo.png
+  color: "#ffffff"
+  image: assets/img/icon.png
+  android_12:
+    image: assets/img/icon.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/img/appicon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/img/appicon.png"
+    background_color: "#32a7d1"
+    theme_color: "#32a7d1"
