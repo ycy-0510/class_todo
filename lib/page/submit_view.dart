@@ -142,7 +142,7 @@ class SubmittedDone extends ConsumerWidget {
                                 onPressed: () {
                                   Fluttertoast.showToast(
                                     msg: '傳送中',
-                                    timeInSecForIosWeb: 1,
+                                    timeInSecForIosWeb: 2,
                                     webShowClose: true,
                                   );
                                   Navigator.of(context).pop();

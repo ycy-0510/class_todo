@@ -19,6 +19,7 @@ Future<void> main() async {
   );
   await FirebaseAppCheck.instance.activate(
     appleProvider: AppleProvider.debug,
+    androidProvider: AndroidProvider.playIntegrity,
     webProvider:
         ReCaptchaEnterpriseProvider('6LdOJ10oAAAAAGthrAXTn_Fk3GaHCoex00TVuEDw'),
   );

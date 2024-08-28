@@ -37,7 +37,7 @@ class AnnounceNotifier extends StateNotifier<List> {
   void _showError(String error) {
     Fluttertoast.showToast(
       msg: error,
-      timeInSecForIosWeb: 1,
+      timeInSecForIosWeb: 2,
       webShowClose: true,
     );
   }

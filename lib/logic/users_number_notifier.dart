@@ -41,7 +41,7 @@ class UsersNumberNotifier extends StateNotifier<Map<String, String>> {
   void _showError(String error) {
     Fluttertoast.showToast(
       msg: error,
-      timeInSecForIosWeb: 1,
+      timeInSecForIosWeb: 2,
       webShowClose: true,
     );
   }

@@ -124,19 +124,20 @@ class TaskNotifier extends StateNotifier<TaskState> {
   void _showError(String error) {
     Fluttertoast.showToast(
       msg: error,
-      timeInSecForIosWeb: 1,
+      timeInSecForIosWeb: 2,
       webShowClose: true,
     );
   }
 
+  void cancelListener() {
+    for (var key in listeners.keys) {
+      listeners[key]!.cancel();
+    }
+  }
+
   @override
   void dispose() {
-    print(listeners.length);
-    for (MapEntry<int, StreamSubscription<QuerySnapshot>> entry
-        in listeners.entries) {
-      entry.value.cancel();
-      listeners.remove(entry.key);
-    }
+    cancelListener();
     super.dispose();
   }
 }

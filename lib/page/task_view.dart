@@ -398,7 +398,7 @@ class TaskListView extends ConsumerWidget {
                                 ClipboardData(text: task.name));
                             Fluttertoast.showToast(
                               msg: '已複製到剪貼簿',
-                              timeInSecForIosWeb: 1,
+                              timeInSecForIosWeb: 2,
                               webShowClose: true,
                             );
                             break;
@@ -576,7 +576,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                 HapticFeedback.lightImpact();
                 Fluttertoast.showToast(
                   msg: '建立資料中',
-                  timeInSecForIosWeb: 1,
+                  timeInSecForIosWeb: 2,
                   webShowClose: true,
                 );
                 Navigator.of(context).pop();
@@ -601,7 +601,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     HapticFeedback.lightImpact();
                     Fluttertoast.showToast(
                       msg: '更新資料中',
-                      timeInSecForIosWeb: 1,
+                      timeInSecForIosWeb: 2,
                       webShowClose: true,
                     );
                     Navigator.of(context).pop();
@@ -632,7 +632,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     HapticFeedback.heavyImpact();
                     Fluttertoast.showToast(
                       msg: '刪除資料中',
-                      timeInSecForIosWeb: 1,
+                      timeInSecForIosWeb: 2,
                       webShowClose: true,
                     );
                     Navigator.of(context).pop();

@@ -15,7 +15,7 @@ class ClassesPage extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             width: 400,
-            height: 450,
+            height: 500,
             child: Card(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

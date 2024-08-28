@@ -11,7 +11,6 @@ import 'package:class_todo_list/logic/task_notifier.dart';
 import 'package:class_todo_list/logic/todo_notifier.dart';
 import 'package:class_todo_list/logic/users_notifier.dart';
 import 'package:class_todo_list/logic/users_number_notifier.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final toastProvider = StateProvider<String>(

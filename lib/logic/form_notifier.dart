@@ -85,7 +85,7 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
   void _showError(String error) {
     Fluttertoast.showToast(
       msg: error,
-      timeInSecForIosWeb: 1,
+      timeInSecForIosWeb: 2,
       webShowClose: true,
     );
   }
