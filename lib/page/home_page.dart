@@ -1,5 +1,6 @@
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
+import 'package:class_todo_list/page/school_view.dart';
 import 'package:class_todo_list/page/setting.dart';
 import 'package:class_todo_list/page/submit_view.dart';
 import 'package:class_todo_list/page/task_view.dart';
@@ -23,6 +24,21 @@ class HomePage extends ConsumerWidget {
       appBar: AppBar(
         systemOverlayStyle: const SystemUiOverlayStyle(),
         title: Text('共享聯絡簿 $classCode'),
+        actions: [
+          if (ref.watch(bottomTabProvider) == 0)
+            IconButton(
+              tooltip: '新增事項',
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                ref.read(formProvider.notifier).dateChange(DateTime.now());
+                showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) => const TaskForm());
+              },
+              icon: const Icon(Icons.add_task),
+            ),
+        ],
         bottom: ref.watch(bottomTabProvider) != 0
             ? null
             : PreferredSize(
@@ -64,23 +80,8 @@ class HomePage extends ConsumerWidget {
           child: [
         const HomeTaskBody(),
         const HomeSubmittedBody(),
+        const HomeSchoolBody(),
       ][ref.watch(bottomTabProvider)]),
-      floatingActionButton: ref.watch(bottomTabProvider) != 0 ||
-              ref.watch(authProvider).user!.isAnonymous
-          ? null
-          : FloatingActionButton(
-              tooltip: '新增事項',
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                ref.read(formProvider.notifier).dateChange(DateTime.now());
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) => const TaskForm());
-              },
-              child: const Icon(Icons.add_task),
-            ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: ref.watch(bottomTabProvider),
@@ -89,6 +90,7 @@ class HomePage extends ConsumerWidget {
               icon: Icon(Icons.task_alt_outlined), label: '所有項目'),
           BottomNavigationBarItem(
               icon: Icon(Icons.text_snippet_outlined), label: '繳交列表'),
+          BottomNavigationBarItem(icon: Icon(Icons.school), label: '學校公告'),
         ],
         onTap: (value) => ref.read(bottomTabProvider.notifier).state = value,
       ),
