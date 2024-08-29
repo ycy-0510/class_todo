@@ -1,4 +1,4 @@
-import 'package:class_todo_list/logic/announce_notifier.dart';
+// import 'package:class_todo_list/logic/announce_notifier.dart';
 import 'package:class_todo_list/logic/auth_notifier.dart';
 import 'package:class_todo_list/logic/class_table_notifier.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
@@ -39,10 +39,10 @@ final taskProvider =
   return TaskNotifier(ref);
 });
 
-final announceProvider =
-    StateNotifierProvider.autoDispose<AnnounceNotifier, List>((ref) {
-  return AnnounceNotifier(ref);
-});
+// final announceProvider =
+//     StateNotifierProvider.autoDispose<AnnounceNotifier, List>((ref) {
+//   return AnnounceNotifier(ref);
+// });
 
 final classTableProvider =
     StateNotifierProvider<ClassTableNotifier, ClassTableState>(

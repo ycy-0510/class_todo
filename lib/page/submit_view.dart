@@ -4,7 +4,7 @@ import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HomeSubmittedBody extends ConsumerWidget {
   const HomeSubmittedBody({super.key});
@@ -110,7 +110,7 @@ class SubmittedDone extends ConsumerWidget {
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('發送繳交通知'),
+                                const Text('分享繳交列表'),
                                 IconButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
@@ -132,7 +132,7 @@ class SubmittedDone extends ConsumerWidget {
                                       hintText: '如：請繳交給班長',
                                       hintStyle: TextStyle(height: 2),
                                       labelText: '其他提醒內容(選填)',
-                                      helperText: '通知已包含名單，這裡只需要輸入其他的提醒內容！',
+                                      helperText: '通知已包含名單，不需要手動輸入！',
                                       helperStyle:
                                           TextStyle(color: Colors.red)),
                                 ),
@@ -140,15 +140,16 @@ class SubmittedDone extends ConsumerWidget {
                               const SizedBox(height: 10),
                               ElevatedButton(
                                 onPressed: () {
-                                  Fluttertoast.showToast(
-                                    msg: '傳送中',
-                                    timeInSecForIosWeb: 2,
-                                    webShowClose: true,
-                                  );
-                                  Navigator.of(context).pop();
-                                  ref.read(announceProvider.notifier).sendData(
-                                        '${submitted.name}請於${submitted.date.toString().substring(0, 16)}前繳交，缺交名單：\n${usersNumber.keys.where((e) => !submitted.done.contains(e)).toList().join('、')}\n${controller.text}',
-                                      );
+                                  Share.share(
+                                    '''${submitted.name}請於${submitted.date.toString().substring(0, 16)}前繳交，缺交名單：
+${usersNumber.keys.where((e) => !submitted.done.contains(e)).toList().join('、')}
+${controller.text}''',
+                                  ).then((v) {
+                                    if (v.status == ShareResultStatus.success &&
+                                        context.mounted) {
+                                      Navigator.of(context).pop();
+                                    }
+                                  });
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,

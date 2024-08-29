@@ -281,14 +281,23 @@ class _RssUrlFieldState extends ConsumerState<RssUrlField> {
 
   @override
   void initState() {
-    _controller.text = ref.read(rssUrlProvider).toString();
+    final rssUrl = ref.read(rssUrlProvider);
+    if (rssUrl == null) {
+      _controller.text = '';
+    } else {
+      _controller.text = rssUrl.toString();
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(selfNumberProvider, (prev, next) {
-      _controller.text = next;
+    ref.listen(rssUrlProvider, (prev, next) {
+      if (next == null) {
+        _controller.text = '';
+      } else {
+        _controller.text = next.toString();
+      }
     });
 
     return Container(

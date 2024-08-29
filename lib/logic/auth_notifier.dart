@@ -13,7 +13,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   late FirebaseAuth _auth;
   final Ref _ref;
 
-  AuthNotifier(this._ref) : super(AuthState()) {
+  AuthNotifier(this._ref) : super(AuthState(init: false)) {
     _auth = FirebaseAuth.instance;
     if (_auth.currentUser != null) {
       _auth.currentUser!.reload();
@@ -113,11 +113,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 class AuthState {
-  AuthState({this.user, this.classCode, this.loading = false});
+  AuthState(
+      {this.user, this.classCode, this.loading = false, this.init = true});
   final User? user;
   final String? classCode;
+  final bool init;
   final bool loading;
   bool get loggedIn => user != null;
+  AuthState initialized() =>
+      AuthState(user: user, classCode: classCode, loading: loading);
   AuthState load(bool isLoading) =>
       AuthState(user: user, classCode: classCode, loading: isLoading);
   AuthState classJoined(String classCode) =>

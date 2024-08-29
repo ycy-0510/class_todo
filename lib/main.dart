@@ -1,4 +1,5 @@
 import 'package:class_todo_list/page/class_page.dart';
+import 'package:class_todo_list/page/loading_page.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:class_todo_list/logic/auth_notifier.dart';
@@ -62,7 +63,9 @@ class MainApp extends ConsumerWidget {
           GoRoute(
             path: '/',
             builder: (context, state) {
-              if (!authState.loggedIn) {
+              if (!authState.init) {
+                return const LoadingPage();
+              } else if (!authState.loggedIn) {
                 return const LoginPage();
               } else if (authState.classCode == null) {
                 return const ClassesPage();
