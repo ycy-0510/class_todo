@@ -96,72 +96,66 @@ class SubmittedDone extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: IconButton(
-              onPressed: submitted.userId != ref.watch(authProvider).user!.uid
-                  ? null
-                  : () {
-                      HapticFeedback.mediumImpact();
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          TextEditingController controller =
-                              TextEditingController();
-                          return SimpleDialog(
-                            contentPadding: const EdgeInsets.all(20),
-                            title: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('分享繳交列表'),
-                                IconButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      ref
-                                          .read(formProvider.notifier)
-                                          .editFinish();
-                                    },
-                                    icon: const Icon(Icons.close))
-                              ],
-                            ),
-                            children: [
-                              SizedBox(
-                                width: 300,
-                                child: TextFormField(
-                                  controller: controller,
-                                  maxLines: 2,
-                                  minLines: 1,
-                                  decoration: const InputDecoration(
-                                      hintText: '如：請繳交給班長',
-                                      hintStyle: TextStyle(height: 2),
-                                      labelText: '其他提醒內容(選填)',
-                                      helperText: '通知已包含名單，不需要手動輸入！',
-                                      helperStyle:
-                                          TextStyle(color: Colors.red)),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Share.share(
-                                    '''${submitted.name}請於${submitted.date.toString().substring(0, 16)}前繳交，缺交名單：
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    TextEditingController controller = TextEditingController();
+                    return SimpleDialog(
+                      contentPadding: const EdgeInsets.all(20),
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('分享繳交列表'),
+                          IconButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                ref.read(formProvider.notifier).editFinish();
+                              },
+                              icon: const Icon(Icons.close))
+                        ],
+                      ),
+                      children: [
+                        SizedBox(
+                          width: 300,
+                          child: TextFormField(
+                            controller: controller,
+                            maxLines: 2,
+                            minLines: 1,
+                            decoration: const InputDecoration(
+                                hintText: '如：請繳交給班長',
+                                hintStyle: TextStyle(height: 2),
+                                labelText: '其他提醒內容(選填)',
+                                helperText: '通知已包含名單，不需要手動輸入！',
+                                helperStyle: TextStyle(color: Colors.red)),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            Share.share(
+                              '''${submitted.name}請於${submitted.date.toString().substring(0, 16)}前繳交，缺交名單：
 ${usersNumber.keys.where((e) => !submitted.done.contains(e)).toList().join('、')}
 ${controller.text}''',
-                                  ).then((v) {
-                                    if (v.status == ShareResultStatus.success &&
-                                        context.mounted) {
-                                      Navigator.of(context).pop();
-                                    }
-                                  });
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: const Text('傳送'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
+                            ).then((v) {
+                              if (v.status == ShareResultStatus.success &&
+                                  context.mounted) {
+                                Navigator.of(context).pop();
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('分享'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
               icon: const Icon(Icons.announcement),
               tooltip: '發送繳交題提醒',
             ),
