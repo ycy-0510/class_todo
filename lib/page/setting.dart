@@ -200,7 +200,8 @@ class SettingPageBody extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 25),
             child: Text(
-                '''RSS網址可以讓這個app擷取你的學校的最新訊息，此網址通常放在學校網站最新訊息附近(會有類似上面的圖示)，或是你可以在Google上搜尋[學校名稱]+RSS也有機會可以找到。若你找不到，也歡迎你聯絡我們。'''),
+                '''RSS網址可以讓這個app擷取你的學校的最新訊息，此網址通常放在學校網站最新訊息附近(會有類似上面的圖示)，或是你可以在Google上搜尋[學校名稱]+RSS也有機會可以找到。若你找不到，也歡迎你聯絡我們。
+為了確保資訊安全，目前您只能輸入學校的RSS網址，不開放其他來源。'''),
           ),
           const SizedBox(
             height: 10,

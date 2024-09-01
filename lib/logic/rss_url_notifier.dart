@@ -17,7 +17,7 @@ class RssUrlNumberNotifier extends StateNotifier<Uri?> {
 
   Future<void> setUrl(String url) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final rssUrl = Uri.tryParse(url);
+    final rssUrl = url.contains('.edu.tw/') ? Uri.tryParse(url) : null;
     prefs.setString(key, rssUrl == null ? '::Not valid URI::' : url);
     state = rssUrl;
   }

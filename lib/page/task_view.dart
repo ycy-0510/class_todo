@@ -45,43 +45,99 @@ class HomeTaskBody extends ConsumerWidget {
                 importantTasks.add(tasks[i]);
               }
             }
-            switch (taskViewTypeState) {
-              case TaskViewType.table:
-                return TaskTableView(tasks, idx - 1000);
-              case TaskViewType.list:
-                return Column(
-                  children: [
-                    Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 5, horizontal: 20),
-                        child: Row(
-                          children: [
-                            const Text(
-                              '顯示過去項目',
-                              style: TextStyle(fontSize: 15),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Switch(
-                              value: showPast,
-                              onChanged: (value) {
-                                HapticFeedback.mediumImpact();
-                                ref
-                                    .read(pastSwitchProvider.notifier)
-                                    .update((state) => value);
-                              },
-                            ),
-                          ],
-                        )),
-                    Expanded(
-                      child: TaskListView(
-                        showTasks,
-                        showDateTitle: true,
-                      ),
+            if (MediaQuery.of(context).size.width > 800 &&
+                MediaQuery.of(context).size.width >
+                    MediaQuery.of(context).size.height) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const Expanded(child: SizedBox()),
+                      Expanded(
+                        child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 5, horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  '顯示過去項目',
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Switch(
+                                  value: showPast,
+                                  onChanged: (value) {
+                                    HapticFeedback.mediumImpact();
+                                    ref
+                                        .read(pastSwitchProvider.notifier)
+                                        .update((state) => value);
+                                  },
+                                ),
+                              ],
+                            )),
+                      )
+                    ],
+                  ),
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: TaskTableView(tasks, idx - 1000)),
+                        Expanded(
+                          child: TaskListView(
+                            showTasks,
+                            showDateTitle: true,
+                          ),
+                        )
+                      ],
                     ),
-                  ],
-                );
+                  ),
+                ],
+              );
+            } else {
+              switch (taskViewTypeState) {
+                case TaskViewType.table:
+                  return TaskTableView(tasks, idx - 1000);
+                case TaskViewType.list:
+                  return Column(
+                    children: [
+                      Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const Text(
+                                '顯示過去項目',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Switch(
+                                value: showPast,
+                                onChanged: (value) {
+                                  HapticFeedback.mediumImpact();
+                                  ref
+                                      .read(pastSwitchProvider.notifier)
+                                      .update((state) => value);
+                                },
+                              ),
+                            ],
+                          )),
+                      Expanded(
+                        child: TaskListView(
+                          showTasks,
+                          showDateTitle: true,
+                        ),
+                      ),
+                    ],
+                  );
+              }
             }
           }),
     );
@@ -169,12 +225,12 @@ class TaskTableView extends ConsumerWidget {
                             child: Text(
                               lesson[d * 9 + l],
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: hasTask(d + 1, l, tasks) ? 16 : 15,
                                 fontWeight: hasTask(d + 1, l, tasks)
-                                    ? FontWeight.bold
+                                    ? FontWeight.w900
                                     : null,
                                 color: hasTask(d + 1, l, tasks)
-                                    ? Colors.blue
+                                    ? Colors.red
                                     : null,
                               ),
                             ),
@@ -419,7 +475,8 @@ class TaskListView extends ConsumerWidget {
 }
 
 class TaskForm extends ConsumerStatefulWidget {
-  const TaskForm({super.key});
+  const TaskForm({this.initText = '', super.key});
+  final String initText;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _TaskFormState();
@@ -432,7 +489,10 @@ class _TaskFormState extends ConsumerState<TaskForm> {
 
   @override
   void initState() {
-    _controller.text = ref.read(formProvider).name;
+    _controller.text =
+        ref.read(formProvider).formStatus == TaskFormStatus.create
+            ? widget.initText
+            : ref.read(formProvider).name;
     super.initState();
   }
 
@@ -743,22 +803,22 @@ class BottomSheet extends ConsumerWidget {
                   '${date.month}/${date.day} 第$lessonIdx節 $className',
                   style: const TextStyle(fontSize: 22.5),
                 ),
-                if (!ref.watch(authProvider).user!.isAnonymous)
-                  IconButton(
-                    onPressed: ref.watch(nowTimeProvider).isBefore(date)
-                        ? () {
-                            HapticFeedback.mediumImpact();
-                            ref.read(formProvider.notifier).dateChange(date);
-                            showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) =>
-                                    const TaskForm());
-                          }
-                        : null,
-                    icon: const Icon(Icons.add_task),
-                    tooltip: '新增事項在這一節課',
-                  ),
+                IconButton(
+                  onPressed: ref.watch(nowTimeProvider).isBefore(date)
+                      ? () {
+                          HapticFeedback.mediumImpact();
+                          ref.read(formProvider.notifier).dateChange(date);
+                          showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) => TaskForm(
+                                    initText: className,
+                                  ));
+                        }
+                      : null,
+                  icon: const Icon(Icons.add_task),
+                  tooltip: '新增事項在這一節課',
+                ),
               ],
             ),
           ),

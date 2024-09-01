@@ -41,40 +41,44 @@ class HomePage extends ConsumerWidget {
         ],
         bottom: ref.watch(bottomTabProvider) != 0
             ? null
-            : PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: SegmentedButton<TaskViewType>(
-                            segments: const <ButtonSegment<TaskViewType>>[
-                              ButtonSegment<TaskViewType>(
-                                  value: TaskViewType.table,
-                                  label: Text('課表'),
-                                  icon: Icon(Icons.table_chart)),
-                              ButtonSegment<TaskViewType>(
-                                  value: TaskViewType.list,
-                                  label: Text('清單'),
-                                  icon: Icon(Icons.list)),
-                            ],
-                            selected: <TaskViewType>{
-                              taskViewTypeState
-                            },
-                            onSelectionChanged:
-                                (Set<TaskViewType> newSelection) {
-                              HapticFeedback.lightImpact();
-                              ref
-                                  .read(taskViewTypeProvider.notifier)
-                                  .update((state) => newSelection.first);
-                            }),
+            : MediaQuery.of(context).size.width > 800 &&
+                    MediaQuery.of(context).size.width >
+                        MediaQuery.of(context).size.height
+                ? null
+                : PreferredSize(
+                    preferredSize: const Size.fromHeight(60),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SegmentedButton<TaskViewType>(
+                                segments: const <ButtonSegment<TaskViewType>>[
+                                  ButtonSegment<TaskViewType>(
+                                      value: TaskViewType.table,
+                                      label: Text('課表'),
+                                      icon: Icon(Icons.table_chart)),
+                                  ButtonSegment<TaskViewType>(
+                                      value: TaskViewType.list,
+                                      label: Text('清單'),
+                                      icon: Icon(Icons.list)),
+                                ],
+                                selected: <TaskViewType>{
+                                  taskViewTypeState
+                                },
+                                onSelectionChanged:
+                                    (Set<TaskViewType> newSelection) {
+                                  HapticFeedback.lightImpact();
+                                  ref
+                                      .read(taskViewTypeProvider.notifier)
+                                      .update((state) => newSelection.first);
+                                }),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
       ),
       body: SafeArea(
           child: [
@@ -149,7 +153,6 @@ class HomePage extends ConsumerWidget {
               ],
             )),
             ListTile(
-              enabled: !ref.watch(authProvider).user!.isAnonymous,
               leading: const Icon(Icons.people),
               title: const Text('成員'),
               onTap: () => Navigator.of(context).push(

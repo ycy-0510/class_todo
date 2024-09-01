@@ -1,6 +1,7 @@
 import 'package:class_todo_list/page/class_page.dart';
 import 'package:class_todo_list/page/loading_page.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:class_todo_list/logic/auth_notifier.dart';
 import 'package:class_todo_list/page/home_page.dart';
@@ -19,8 +20,11 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await FirebaseAppCheck.instance.activate(
-    appleProvider: AppleProvider.debug,
-    androidProvider: AndroidProvider.playIntegrity,
+    appleProvider: kDebugMode
+        ? AppleProvider.debug
+        : AppleProvider.appAttestWithDeviceCheckFallback,
+    androidProvider:
+        kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
     webProvider:
         ReCaptchaEnterpriseProvider('6LdOJ10oAAAAAGthrAXTn_Fk3GaHCoex00TVuEDw'),
   );
@@ -57,6 +61,7 @@ class MainApp extends ConsumerWidget {
         Locale('zh', 'TW'),
         Locale('en', 'US'),
       ],
+      locale: const Locale('zh', 'TW'),
       debugShowCheckedModeBanner: false,
       routerConfig: GoRouter(
         routes: [
