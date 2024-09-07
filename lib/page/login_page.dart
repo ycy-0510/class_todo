@@ -1,6 +1,7 @@
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 final controller = PageController(initialPage: 0);
 
@@ -41,8 +42,8 @@ class LoginPage extends ConsumerWidget {
                   Container(
                       margin: const EdgeInsets.symmetric(vertical: 5),
                       width: 300,
-                      height: 40,
-                      child: ElevatedButton(
+                      height: 45,
+                      child: ElevatedButton.icon(
                         onLongPress: loading ? null : () {},
                         onPressed: loading
                             ? null
@@ -52,11 +53,34 @@ class LoginPage extends ConsumerWidget {
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text(
+                        icon: const FaIcon(
+                          FontAwesomeIcons.google,
+                        ),
+                        label: const Text(
                           '使用Google登入',
                           style: TextStyle(fontSize: 18),
                         ),
                       )),
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    width: 300,
+                    height: 45,
+                    child: ElevatedButton.icon(
+                      onLongPress: loading ? null : () {},
+                      onPressed: loading
+                          ? null
+                          : () => ref.read(authProvider.notifier).appleLogin(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                      ),
+                      icon: const FaIcon(FontAwesomeIcons.apple),
+                      label: const Text(
+                        '使用Apple登入',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
                   const Expanded(child: SizedBox()),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),

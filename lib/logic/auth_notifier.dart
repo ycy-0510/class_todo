@@ -25,13 +25,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } else {
         FirebaseFirestore db = FirebaseFirestore.instance;
         final userData = await db.collection("user").doc(user.uid).get();
-        if (userData.exists) {
+        if (userData.exists && userData.data()!['name'] is String) {
           state = AuthState(user: user, classCode: userData.data()?['class']);
         } else {
           state = AuthState(user: user);
-          await db.collection("user").doc(user.uid).set({
-            "name": user.displayName,
-          });
+          try {
+            await db.collection("user").doc(user.uid).set({
+              "name": user.displayName,
+            });
+          } catch (e) {
+            _showError(e.toString());
+          }
         }
       }
     });
@@ -45,7 +49,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           GoogleAuthProvider googleProvider = GoogleAuthProvider();
           await _auth.signInWithPopup(googleProvider);
         } else {
-          final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+          final GoogleSignInAccount? googleUser =
+              await GoogleSignIn().signIn().catchError((onError) => null);
           final GoogleSignInAuthentication? googleAuth =
               await googleUser?.authentication;
 
@@ -63,6 +68,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  void appleLogin() async {
+    if (!state.loggedIn) {
+      state = state.load(true);
+      try {
+        final appleProvider = AppleAuthProvider()
+          ..addScope('name')
+          ..addScope('email');
+        if (kIsWeb) {
+          await FirebaseAuth.instance.signInWithPopup(appleProvider);
+        } else {
+          await FirebaseAuth.instance.signInWithProvider(appleProvider);
+        }
+      } catch (err) {
+        state = state.load(false);
+        _showError(err.toString());
+      }
+    }
+  }
+
   void logout() async {
     if (state.loggedIn) {
       state = state.load(true);
@@ -70,6 +94,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.read(classTableProvider.notifier).clear();
         _ref.read(classTableProvider.notifier).dispose();
         await _auth.signOut();
+      } catch (err) {
+        state = AuthState();
+        _showError(err.toString());
+      }
+    }
+  }
+
+  void deleteAccount() async {
+    if (state.loggedIn) {
+      state = state.load(true);
+      FirebaseFirestore db = FirebaseFirestore.instance;
+      try {
+        _ref.read(classTableProvider.notifier).clear();
+        _ref.read(classTableProvider.notifier).dispose();
+        await db.collection("user").doc(_auth.currentUser!.uid).delete();
+        await _auth.currentUser!.delete();
       } catch (err) {
         state = AuthState();
         _showError(err.toString());

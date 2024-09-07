@@ -111,13 +111,24 @@ class HomePage extends ConsumerWidget {
                   child: ref.watch(authProvider).user?.photoURL == null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(100),
-                          child: const ColoredBox(
-                            color: Colors.white,
+                          child: ColoredBox(
+                            color: Colors.blueGrey,
                             child: Padding(
-                              padding: EdgeInsets.all(5),
-                              child: Icon(
-                                Icons.person,
-                                size: 80,
+                              padding: const EdgeInsets.all(5),
+                              child: SizedBox(
+                                height: 85,
+                                width: 85,
+                                child: Center(
+                                  child: Text(
+                                    (ref
+                                            .watch(authProvider)
+                                            .user
+                                            ?.displayName ??
+                                        '訪客')[0],
+                                    style: const TextStyle(
+                                        fontSize: 50, color: Colors.white),
+                                  ),
+                                ),
                               ),
                             ),
                           ),

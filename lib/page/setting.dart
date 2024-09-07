@@ -220,6 +220,48 @@ class SettingPageBody extends ConsumerWidget {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            child: OutlinedButton.icon(
+              onPressed: () {
+                showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('刪除帳號'),
+                    content: const Text('請注意：刪除帳號後將無法復原，是否要刪除帳號？'),
+                    actions: [
+                      OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(true);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                        ),
+                        child: const Text('刪除'),
+                      ),
+                      OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(false);
+                        },
+                        child: const Text('取消'),
+                      )
+                    ],
+                  ),
+                ).then((value) {
+                  if (value == true && context.mounted) {
+                    Navigator.of(context).pop();
+                    ref.read(authProvider.notifier).deleteAccount();
+                  }
+                });
+              },
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+              icon: const Icon(Icons.delete_forever),
+              label: const Text(
+                '刪除帳號',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ),
         ],
       ),
     );

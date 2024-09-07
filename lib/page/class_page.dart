@@ -153,7 +153,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
         Container(
             margin: const EdgeInsets.symmetric(vertical: 5),
             width: 300,
-            height: 40,
+            height: 45,
             child: ElevatedButton(
               onPressed: loading
                   ? null
