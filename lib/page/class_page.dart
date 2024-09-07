@@ -1,4 +1,6 @@
+import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/provider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -39,6 +41,26 @@ class ClassesPage extends ConsumerWidget {
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     child: JoinClassForm(),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    child: RichText(
+                      textAlign: TextAlign.start,
+                      text: TextSpan(
+                        text: '你的班級尚未加入這個app嗎？ ',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        children: <TextSpan>[
+                          TextSpan(
+                              text: '前往官網',
+                              style: const TextStyle(color: Colors.blue),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => openUrl(
+                                    'https://sites.google.com/view/classtodo/home#h.lnjtm8ihgxy1')),
+                          const TextSpan(text: '申請加入吧！'),
+                        ],
+                      ),
+                    ),
                   ),
                   const Divider(),
                   Wrap(

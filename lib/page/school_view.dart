@@ -1,10 +1,10 @@
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/page/home_page.dart';
-import 'package:class_todo_list/page/setting.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:intl/intl.dart';
 
 class HomeSchoolBody extends ConsumerWidget {
   const HomeSchoolBody({super.key});
@@ -12,59 +12,47 @@ class HomeSchoolBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(schoolAnnouncementProvider);
-    ref.listen(rssUrlProvider, (prev, next) {
-      ref.read(schoolAnnouncementProvider.notifier).getData();
-    });
+    final readState = ref.watch(rssReadProvider);
     return LoadingView(
         loading: state.loading,
         child: RefreshIndicator(
           onRefresh: () async =>
               ref.read(schoolAnnouncementProvider.notifier).getData(),
-          child: Builder(builder: (context) {
-            if (ref.watch(rssUrlProvider) == null) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error,
-                      size: 50,
-                    ),
-                    const Text(
-                      '請先輸入學校RSS網址',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    ElevatedButton(
-                        onPressed: () =>
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => const SettingPage(),
-                            )),
-                        child: const Text('前往設定'))
-                  ],
-                ),
-              );
-            } else {
-              return ListView.builder(
-                itemCount: state.announcements.length,
-                itemBuilder: (context, idx) {
-                  return ListTile(
-                    title: Text(state.announcements[idx].title ?? '無標題'),
-                    subtitle: Text('發布於${state.announcements[idx].pubDate}'),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) {
-                          return RssPreview(idx);
-                        },
-                      ));
-                    },
-                  );
-                },
-              );
-            }
-          }),
+          child: ListView.builder(
+            itemCount: state.announcements.length,
+            itemBuilder: (context, idx) {
+              DateTime? publish = DateFormat('EEE, d MMM yyyy HH:mm:ss')
+                  .tryParse(state.announcements[idx].pubDate ?? '')
+                  ?.add(DateTime.now().timeZoneOffset);
+              String? guid = state.announcements[idx].guid;
+              if (!ref.watch(rssReadFilterProvider) ||
+                  !readState.contains(guid)) {
+                return ListTile(
+                  title: Text(
+                    state.announcements[idx].title ?? '無標題',
+                    style: TextStyle(
+                        fontWeight:
+                            readState.contains(guid) ? null : FontWeight.bold),
+                  ),
+                  subtitle: publish != null
+                      ? Text(
+                          '發布於${DateFormat('yyyy-MM-dd HH:mm').format(publish)}')
+                      : null,
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) {
+                        return RssPreview(idx);
+                      },
+                    )).then((value) {
+                      ref.read(rssReadProvider.notifier).markRead(guid!);
+                    });
+                  },
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            },
+          ),
         ));
   }
 }
@@ -94,12 +82,12 @@ class RssPreview extends ConsumerWidget {
             child: HtmlWidget(
               (state.announcements[idx].description
                           ?.replaceAll('src="/',
-                              'src="${ref.watch(rssUrlProvider)?.origin}/')
+                              'src="${ref.watch(rssUrlProvider).rssEndpoints.first.url.origin}/')
                           .replaceAll('color:', 'c:') ??
                       '') +
                   (state.announcements[idx].content?.value
                           .replaceAll('src="/',
-                              'src="${ref.watch(rssUrlProvider)?.origin}/')
+                              'src="${ref.watch(rssUrlProvider).rssEndpoints.first.url.origin}/')
                           .replaceAll('color:', 'c:') ??
                       ''),
               onTapUrl: (url) {

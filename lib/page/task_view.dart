@@ -489,10 +489,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
 
   @override
   void initState() {
-    _controller.text =
-        ref.read(formProvider).formStatus == TaskFormStatus.create
-            ? widget.initText
-            : ref.read(formProvider).name;
+    _controller.text = ref.read(formProvider).name;
     super.initState();
   }
 
@@ -521,6 +518,45 @@ class _TaskFormState extends ConsumerState<TaskForm> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                child: Wrap(
+                  spacing: 5,
+                  children: [
+                    if (widget.initText.isNotEmpty)
+                      ActionChip(
+                        label: Text(widget.initText),
+                        onPressed: () {
+                          setState(() {
+                            _controller.text += widget.initText;
+                          });
+                        },
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(color: Colors.blue),
+                          borderRadius: BorderRadius.circular(
+                            10,
+                          ),
+                        ),
+                      ),
+                    for (final item in ['習作', '講義', '考卷', '學資', '雜誌', '小考'])
+                      ActionChip(
+                        label: Text(item),
+                        onPressed: () {
+                          setState(() {
+                            _controller.text += item;
+                          });
+                        },
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(color: Colors.blue),
+                          borderRadius: BorderRadius.circular(
+                            10,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
               TextFormField(
                 controller: _controller,
                 decoration: const InputDecoration(
@@ -731,7 +767,7 @@ class TaskDetail extends ConsumerWidget {
       children: [
         Text(
           '''
-時間：\t${DateFormat('yyyy-MM-dd hh:mm').format(task.date)}
+時間：\t${DateFormat('yyyy-MM-dd HH:mm').format(task.date)}
 類別：\t${['考試', '作業', '報告', '提醒', '繳交'][task.type]}
 課程：\t$lessonName
 建立者：\t${ref.watch(usersProvider)[task.userId]}

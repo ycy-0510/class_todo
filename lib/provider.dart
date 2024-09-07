@@ -5,6 +5,7 @@ import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/date_notifier.dart';
 import 'package:class_todo_list/logic/form_notifier.dart';
 import 'package:class_todo_list/logic/nowtime_notifier.dart';
+import 'package:class_todo_list/logic/rss_read_notifier.dart';
 import 'package:class_todo_list/logic/rss_url_notifier.dart';
 import 'package:class_todo_list/logic/school_notifier.dart';
 import 'package:class_todo_list/logic/self_number_notifier.dart';
@@ -75,6 +76,10 @@ enum TaskViewType { table, list }
 final taskViewTypeProvider =
     StateProvider<TaskViewType>((ref) => TaskViewType.table);
 
+enum UsersType { users, students }
+
+final usersTypeProvider = StateProvider<UsersType>((ref) => UsersType.users);
+
 final pastSwitchProvider = StateProvider.autoDispose<bool>((ref) => false);
 
 final nowTimeProvider = StateNotifierProvider<NowTimeNotifier, DateTime>(
@@ -86,11 +91,16 @@ final todoProvider = StateNotifierProvider<TodoNotifier, List<String>>(
 final selfNumberProvider = StateNotifierProvider<SelfNumberNotifier, String>(
     (ref) => SelfNumberNotifier());
 
-final rssUrlProvider = StateNotifierProvider<RssUrlNumberNotifier, Uri?>(
-    (ref) => RssUrlNumberNotifier());
+final rssUrlProvider = StateNotifierProvider<RssUrlNotifier, RssUrlState>(
+    (ref) => RssUrlNotifier(ref));
 
 final schoolAnnouncementProvider =
     StateNotifierProvider<SchoolAnnouncementNotifier, SchoolAnnouncementState>(
         (ref) => SchoolAnnouncementNotifier(ref));
+
+final rssReadProvider = StateNotifierProvider<RssReadNotifier, List<String>>(
+    (ref) => RssReadNotifier(ref));
+
+final rssReadFilterProvider = StateProvider<bool>((ref) => false);
 
 final bottomTabProvider = StateProvider<int>((ref) => 0);

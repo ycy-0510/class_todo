@@ -1,24 +1,72 @@
+import 'package:class_todo_list/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-class RssUrlNumberNotifier extends StateNotifier<Uri?> {
-  static String key = 'rssUrl';
-  RssUrlNumberNotifier() : super(null) {
-    getUrl();
+class RssUrlNotifier extends StateNotifier<RssUrlState> {
+  final Ref _ref;
+  late FirebaseFirestore db;
+  RssUrlNotifier(this._ref)
+      : super(RssUrlState([
+          RssEndPoint('官方公告',
+              'https://classtodo.blogspot.com/feeds/posts/default?alt=rss')
+        ])) {
+    db = FirebaseFirestore.instance;
+    getRssUrl();
   }
 
-  Future<void> getUrl() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final rssUrl = Uri.tryParse(
-      prefs.getString(key) ?? '::Not valid URI::',
+  void getRssUrl() async {
+    final userClassCode = _ref.read(authProvider).classCode;
+    state = RssUrlState([
+      RssEndPoint(
+          '官方公告', 'https://classtodo.blogspot.com/feeds/posts/default?alt=rss')
+    ]);
+    if (!_ref.read(authProvider).user!.isAnonymous) {
+      final dataRef = db.collection("class/$userClassCode/config").doc('rss');
+      try {
+        final usersData = await dataRef.get();
+        List<RssEndPoint> rssEndPoints = [];
+        if (usersData.exists && usersData.data()?['items'] is Map) {
+          final originMap = usersData.data()?['items'] as Map<String, dynamic>;
+          final keys = originMap.keys.toList();
+          for (var key in keys) {
+            rssEndPoints.add(RssEndPoint(key, originMap[key].toString()));
+          }
+          rssEndPoints.add(RssEndPoint('官方公告',
+              'https://classtodo.blogspot.com/feeds/posts/default?alt=rss'));
+        } else {
+          _showError('Rss not found');
+        }
+        state = RssUrlState(rssEndPoints);
+      } catch (e) {
+        _showError(e.toString());
+      }
+      _ref.read(schoolAnnouncementProvider.notifier).getData();
+    }
+  }
+
+  void _showError(String error) {
+    Fluttertoast.showToast(
+      msg: error,
+      timeInSecForIosWeb: 2,
+      webShowClose: true,
     );
-    state = rssUrl;
   }
+}
 
-  Future<void> setUrl(String url) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final rssUrl = url.contains('.edu.tw/') ? Uri.tryParse(url) : null;
-    prefs.setString(key, rssUrl == null ? '::Not valid URI::' : url);
-    state = rssUrl;
+class RssUrlState {
+  List<RssEndPoint> rssEndpoints;
+  RssUrlState(this.rssEndpoints);
+
+  RssUrlState copy() {
+    return RssUrlState(rssEndpoints);
+  }
+}
+
+class RssEndPoint {
+  String name;
+  late Uri url;
+  RssEndPoint(this.name, String _url) {
+    url = Uri.parse(_url);
   }
 }

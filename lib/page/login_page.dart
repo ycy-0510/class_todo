@@ -1,4 +1,6 @@
+import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/provider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -82,6 +84,25 @@ class LoginPage extends ConsumerWidget {
                     ),
                   ),
                   const Expanded(child: SizedBox()),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 15, vertical: 5),
+                      child: RichText(
+                        textAlign: TextAlign.start,
+                        text: TextSpan(
+                          text: '登入即表示您同意我們的',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          children: <TextSpan>[
+                            TextSpan(
+                                text: '隱私政策',
+                                style: const TextStyle(color: Colors.blue),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () => openUrl(
+                                      'https://sites.google.com/view/classtodo/privacypolicy')),
+                            const TextSpan(text: '。'),
+                          ],
+                        ),
+                      )),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                     child: Text(

@@ -1,4 +1,5 @@
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
+import 'package:class_todo_list/logic/rss_url_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/page/school_view.dart';
 import 'package:class_todo_list/page/setting.dart';
@@ -9,16 +10,28 @@ import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    String version = '';
+    String buildNumber = '';
+    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+      version = packageInfo.version;
+      buildNumber = packageInfo.buildNumber;
+    });
+    //version
     ref.watch(usersProvider);
     ref.watch(usersNumberProvider);
     ref.watch(taskProvider);
+    RssUrlState rssUrlState = ref.watch(rssUrlProvider);
     TaskViewType taskViewTypeState = ref.watch(taskViewTypeProvider);
+    int schoolAnnouncementSource =
+        ref.watch(schoolAnnouncementProvider).rssEndPointIdx;
     String? classCode = ref.watch(authProvider).classCode;
     return Scaffold(
       appBar: AppBar(
@@ -38,10 +51,73 @@ class HomePage extends ConsumerWidget {
               },
               icon: const Icon(Icons.add_task),
             ),
+          if (ref.watch(bottomTabProvider) == 2)
+            PopupMenuButton(
+              itemBuilder: (context) => <PopupMenuEntry<int>>[
+                const PopupMenuItem(
+                  value: -1,
+                  child: Text('全部已讀'),
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 0,
+                  enabled: ref.watch(rssReadFilterProvider) == true,
+                  child: const Text('查看全部'),
+                ),
+                PopupMenuItem(
+                  value: 1,
+                  enabled: ref.watch(rssReadFilterProvider) == false,
+                  child: const Text('查看未讀'),
+                )
+              ],
+              onSelected: (value) {
+                switch (value) {
+                  case -1:
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('是否全部已讀'),
+                        content: const Text('此操作將無法復原！'),
+                        actions: [
+                          OutlinedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(true);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                            child: const Text('已讀'),
+                          ),
+                          OutlinedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                            child: const Text('取消'),
+                          )
+                        ],
+                      ),
+                    ).then((value) {
+                      if (value == true) {
+                        ref.read(rssReadProvider.notifier).readAll();
+                      }
+                    });
+                    break;
+                  case 0:
+                    ref
+                        .read(rssReadFilterProvider.notifier)
+                        .update((state) => false);
+                    break;
+                  case 1:
+                    ref
+                        .read(rssReadFilterProvider.notifier)
+                        .update((state) => true);
+                    break;
+                }
+              },
+            ),
         ],
-        bottom: ref.watch(bottomTabProvider) != 0
-            ? null
-            : MediaQuery.of(context).size.width > 800 &&
+        bottom: ref.watch(bottomTabProvider) == 0
+            ? MediaQuery.of(context).size.width > 800 &&
                     MediaQuery.of(context).size.width >
                         MediaQuery.of(context).size.height
                 ? null
@@ -78,7 +154,42 @@ class HomePage extends ConsumerWidget {
                         ],
                       ),
                     ),
-                  ),
+                  )
+            : ref.watch(bottomTabProvider) == 2
+                ? PreferredSize(
+                    preferredSize: const Size.fromHeight(60),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SegmentedButton<int>(
+                                segments: <ButtonSegment<int>>[
+                                  for (int idx = 0;
+                                      idx < rssUrlState.rssEndpoints.length;
+                                      idx++)
+                                    ButtonSegment<int>(
+                                      value: idx,
+                                      label: Text(
+                                          rssUrlState.rssEndpoints[idx].name),
+                                    ),
+                                ],
+                                selected: <int>{
+                                  schoolAnnouncementSource
+                                },
+                                onSelectionChanged: (Set<int> idx) {
+                                  HapticFeedback.lightImpact();
+                                  ref
+                                      .read(schoolAnnouncementProvider.notifier)
+                                      .changeSource(idx.first);
+                                }),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : null,
       ),
       body: SafeArea(
           child: [
@@ -165,22 +276,23 @@ class HomePage extends ConsumerWidget {
             )),
             ListTile(
               leading: const Icon(Icons.people),
-              title: const Text('成員'),
+              title: const Text('班級成員'),
               onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) => const UsersPage())),
             ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.info),
               title: const Text('關於這個app'),
               onTap: () => showAboutDialog(
                   context: context,
                   applicationName: '共享聯絡簿',
-                  applicationVersion: 'V2.0.0',
+                  applicationVersion: 'V$version ($buildNumber)',
                   applicationIcon: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Image.asset(
                       'assets/img/icon.png',
-                      height: 90,
+                      height: 80,
                     ),
                   ),
                   applicationLegalese:
@@ -189,6 +301,11 @@ class HomePage extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.web),
               title: const Text('官方網頁'),
+              onTap: () => openUrl('https://sites.google.com/view/classtodo'),
+            ),
+            ListTile(
+              leading: const FaIcon(FontAwesomeIcons.dev),
+              title: const Text('開發者網頁'),
               onTap: () => openUrl('https://sites.google.com/view/ycyprogram'),
             ),
             ListTile(
