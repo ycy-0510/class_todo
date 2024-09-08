@@ -178,11 +178,14 @@ class TaskTableView extends ConsumerWidget {
                     }
                     int month = date.month;
                     int day = date.day;
+                    String weekday =
+                        ['日', '一', '二', '三', '四', '五', '六'][date.weekday % 7];
                     return Container(
-                      height: 30,
+                      height: 60,
                       alignment: Alignment.center,
                       child: Text(
-                        '$month/$day',
+                        '$month/$day\n($weekday)',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 15,
                           color: isToday ? Colors.blue : null,
@@ -286,15 +289,8 @@ class TaskListView extends ConsumerWidget {
                   child: Text(
                     task.top
                         ? '置頂'
-                        : '${task.date.toString().split(' ')[0]}  週${[
-                            '日',
-                            'ㄧ',
-                            '二',
-                            '三',
-                            '四',
-                            '五',
-                            '六'
-                          ][task.date.weekday % 7]}',
+                        : DateFormat('yyyy/MM/dd EE', 'zh-TW')
+                            .format(task.date),
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 15),
                   ),
@@ -310,7 +306,7 @@ class TaskListView extends ConsumerWidget {
         ),
         itemBuilder: (context, Task task) {
           String lessonName = [-1, 0, 8].contains(task.classTime)
-              ? task.date.toString().split(' ')[1].substring(0, 5)
+              ? DateFormat('HH:mm', 'zh-TW').format(task.date)
               : '第${task.classTime}節';
           return InkWell(
             onLongPress: () {
@@ -530,6 +526,11 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                         onPressed: () {
                           setState(() {
                             _controller.text += widget.initText;
+                            willRemove = false;
+                            _formKey.currentState!.validate();
+                            ref
+                                .read(formProvider.notifier)
+                                .nameChange(_controller.text);
                           });
                         },
                         shape: RoundedRectangleBorder(
@@ -545,6 +546,11 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                         onPressed: () {
                           setState(() {
                             _controller.text += item;
+                            willRemove = false;
+                            _formKey.currentState!.validate();
+                            ref
+                                .read(formProvider.notifier)
+                                .nameChange(_controller.text);
                           });
                         },
                         shape: RoundedRectangleBorder(
@@ -558,6 +564,9 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                 ),
               ),
               TextFormField(
+                onTapOutside: (event) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
                 controller: _controller,
                 decoration: const InputDecoration(
                   hintText: '請輸入完整，如：英文U1單字',
@@ -634,7 +643,8 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     },
                     style: TextButton.styleFrom(),
                     child: Text(
-                      ref.watch(formProvider).date.toString().split(' ')[0],
+                      DateFormat('yyyy/MM/dd EE', 'zh-TW')
+                          .format(ref.watch(formProvider).date),
                       style: const TextStyle(fontSize: 18),
                     ),
                   ),
@@ -650,12 +660,8 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     },
                     style: TextButton.styleFrom(),
                     child: Text(
-                      ref
-                          .watch(formProvider)
-                          .date
-                          .toString()
-                          .split(' ')[1]
-                          .split('.')[0],
+                      DateFormat('HH:mm', 'zh-TW')
+                          .format(ref.watch(formProvider).date),
                       style: const TextStyle(fontSize: 18),
                     ),
                   ),
@@ -767,7 +773,7 @@ class TaskDetail extends ConsumerWidget {
       children: [
         Text(
           '''
-時間：\t${DateFormat('yyyy-MM-dd HH:mm').format(task.date)}
+時間：\t${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(task.date)}
 類別：\t${['考試', '作業', '報告', '提醒', '繳交'][task.type]}
 課程：\t$lessonName
 建立者：\t${ref.watch(usersProvider)[task.userId]}

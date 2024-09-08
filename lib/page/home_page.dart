@@ -35,7 +35,6 @@ class HomePage extends ConsumerWidget {
     String? classCode = ref.watch(authProvider).classCode;
     return Scaffold(
       appBar: AppBar(
-        systemOverlayStyle: const SystemUiOverlayStyle(),
         title: Text('共享聯絡簿 $classCode'),
         actions: [
           if (ref.watch(bottomTabProvider) == 0)
@@ -52,31 +51,40 @@ class HomePage extends ConsumerWidget {
               icon: const Icon(Icons.add_task),
             ),
           if (ref.watch(bottomTabProvider) == 2)
-            PopupMenuButton(
-              itemBuilder: (context) => <PopupMenuEntry<int>>[
-                const PopupMenuItem(
-                  value: -1,
-                  child: Text('全部已讀'),
+            PopupMenu<int>(
+              icon: Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color: Theme.of(context).iconTheme.color ?? Colors.blue,
+                    ),
+                    color: ref.watch(rssReadFilterProvider)
+                        ? Theme.of(context).iconTheme.color ?? Colors.blue
+                        : null),
+                padding: const EdgeInsets.all(1.5),
+                child: Icon(
+                  Icons.filter_list,
+                  color: ref.watch(rssReadFilterProvider)
+                      ? Theme.of(context).scaffoldBackgroundColor
+                      : Theme.of(context).iconTheme.color ?? Colors.blue,
                 ),
-                const PopupMenuDivider(),
+              ),
+              item: const [
                 PopupMenuItem(
                   value: 0,
-                  enabled: ref.watch(rssReadFilterProvider) == true,
-                  child: const Text('查看全部'),
+                  child: Text('全部已讀'),
                 ),
-                PopupMenuItem(
-                  value: 1,
-                  enabled: ref.watch(rssReadFilterProvider) == false,
-                  child: const Text('查看未讀'),
-                )
               ],
+              onPressed: () => ref
+                  .read(rssReadFilterProvider.notifier)
+                  .update((state) => !state),
               onSelected: (value) {
                 switch (value) {
-                  case -1:
+                  case 0:
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: Text('是否全部已讀'),
+                        title: const Text('是否全部已讀'),
                         content: const Text('此操作將無法復原！'),
                         actions: [
                           OutlinedButton(
@@ -101,16 +109,6 @@ class HomePage extends ConsumerWidget {
                         ref.read(rssReadProvider.notifier).readAll();
                       }
                     });
-                    break;
-                  case 0:
-                    ref
-                        .read(rssReadFilterProvider.notifier)
-                        .update((state) => false);
-                    break;
-                  case 1:
-                    ref
-                        .read(rssReadFilterProvider.notifier)
-                        .update((state) => true);
                     break;
                 }
               },
@@ -369,5 +367,60 @@ class LoadingView extends ConsumerWidget {
         ),
       );
     }
+  }
+}
+
+class PopupMenu<T> extends ConsumerStatefulWidget {
+  const PopupMenu(
+      {super.key,
+      required this.icon,
+      required this.item,
+      this.onPressed,
+      required this.onSelected});
+  final Widget icon;
+  final List<PopupMenuEntry<T>> item;
+  final VoidCallback? onPressed;
+  final void Function(T value) onSelected;
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _PopupMenuState<T>();
+}
+
+class _PopupMenuState<T> extends ConsumerState<PopupMenu<T>> {
+  GlobalKey key = GlobalKey();
+
+  void _showPopupMenu(BuildContext context) async {
+    final RenderObject? overlay =
+        Overlay.of(context).context.findRenderObject();
+    final RenderBox renderBox =
+        key.currentContext?.findRenderObject() as RenderBox;
+    final Offset tapDownPosition = renderBox.localToGlobal(Offset.zero);
+    final result = await showMenu<T>(
+        context: context,
+        position: RelativeRect.fromRect(
+          Rect.fromLTWH(tapDownPosition.dx, tapDownPosition.dy + 40, 30, 30),
+          Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
+              overlay.paintBounds.size.height),
+        ),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(15))),
+        items: widget.item);
+    if (result != null) {
+      widget.onSelected(result);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(25),
+      onTap: widget.onPressed,
+      onLongPress: () => _showPopupMenu(context),
+      child: Padding(
+        key: key,
+        padding: const EdgeInsets.all(8),
+        child: widget.icon,
+      ),
+    );
   }
 }

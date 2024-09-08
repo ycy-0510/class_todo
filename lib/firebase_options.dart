@@ -62,8 +62,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '65396233679',
     projectId: 'class-todo-list',
     storageBucket: 'class-todo-list.appspot.com',
-    iosClientId:
-        '65396233679-v8ib5ec8p7a3hkdi46rr2i4c2tfhe9iv.apps.googleusercontent.com',
+    androidClientId: '65396233679-73rhj9jdq247svj1ptu4gjo1q44eev0j.apps.googleusercontent.com',
+    iosClientId: '65396233679-31se8450oaah8viiqqtob4h9omb0durk.apps.googleusercontent.com',
     iosBundleId: 'com.ycy.classtodo',
   );
 
@@ -74,4 +74,5 @@ class DefaultFirebaseOptions {
     projectId: 'class-todo-list',
     storageBucket: 'class-todo-list.appspot.com',
   );
+
 }

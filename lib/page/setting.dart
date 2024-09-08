@@ -154,7 +154,7 @@ class SettingPageBody extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 25),
             child: Text(
-                '''上次更新課表：${DateFormat('yyyy-MM-dd HH:mm').format(ref.watch(classTableProvider).lastUpdate)}。
+                '''上次更新課表：${DateFormat('yyyy/MM/dd HH:mm', 'zh-TW').format(ref.watch(classTableProvider).lastUpdate)}。
 輸入您的座號後，繳交列表方可顯示你是否缺交。'''),
           ),
           const SizedBox(

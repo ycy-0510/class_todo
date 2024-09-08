@@ -1,6 +1,7 @@
 import 'package:class_todo_list/page/class_page.dart';
 import 'package:class_todo_list/page/loading_page.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:class_todo_list/logic/auth_notifier.dart';
@@ -28,6 +29,14 @@ Future<void> main() async {
     webProvider:
         ReCaptchaEnterpriseProvider('6LdOJ10oAAAAAGthrAXTn_Fk3GaHCoex00TVuEDw'),
   );
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   FlutterNativeSplash.remove();
   runApp(const ProviderScope(
@@ -50,7 +59,6 @@ class MainApp extends ConsumerWidget {
         colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.lightBlue, brightness: Brightness.dark),
       ).copyWith(splashFactory: NoSplash.splashFactory),
-      themeMode: ThemeMode.system,
       title: '共享聯絡簿',
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -59,7 +67,6 @@ class MainApp extends ConsumerWidget {
       ],
       supportedLocales: const [
         Locale('zh', 'TW'),
-        Locale('en', 'US'),
       ],
       locale: const Locale('zh', 'TW'),
       debugShowCheckedModeBanner: false,

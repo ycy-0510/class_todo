@@ -28,6 +28,14 @@ class HomeSchoolBody extends ConsumerWidget {
               if (!ref.watch(rssReadFilterProvider) ||
                   !readState.contains(guid)) {
                 return ListTile(
+                  minLeadingWidth: 15,
+                  leading: readState.contains(guid)
+                      ? const SizedBox.shrink()
+                      : const Icon(
+                          Icons.circle,
+                          color: Colors.blue,
+                          size: 15,
+                        ),
                   title: Text(
                     state.announcements[idx].title ?? '無標題',
                     style: TextStyle(
@@ -36,16 +44,15 @@ class HomeSchoolBody extends ConsumerWidget {
                   ),
                   subtitle: publish != null
                       ? Text(
-                          '發布於${DateFormat('yyyy-MM-dd HH:mm').format(publish)}')
+                          '發布於${DateFormat('yyyy/MM/dd HH:mm', 'zh-TW').format(publish)}')
                       : null,
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) {
                         return RssPreview(idx);
                       },
-                    )).then((value) {
-                      ref.read(rssReadProvider.notifier).markRead(guid!);
-                    });
+                    ));
+                    ref.read(rssReadProvider.notifier).markRead(guid!);
                   },
                 );
               } else {

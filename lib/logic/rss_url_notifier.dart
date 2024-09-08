@@ -8,7 +8,7 @@ class RssUrlNotifier extends StateNotifier<RssUrlState> {
   late FirebaseFirestore db;
   RssUrlNotifier(this._ref)
       : super(RssUrlState([
-          RssEndPoint('官方公告',
+          RssEndPoint('App公告',
               'https://classtodo.blogspot.com/feeds/posts/default?alt=rss')
         ])) {
     db = FirebaseFirestore.instance;
@@ -19,7 +19,7 @@ class RssUrlNotifier extends StateNotifier<RssUrlState> {
     final userClassCode = _ref.read(authProvider).classCode;
     state = RssUrlState([
       RssEndPoint(
-          '官方公告', 'https://classtodo.blogspot.com/feeds/posts/default?alt=rss')
+          'App公告', 'https://classtodo.blogspot.com/feeds/posts/default?alt=rss')
     ]);
     if (!_ref.read(authProvider).user!.isAnonymous) {
       final dataRef = db.collection("class/$userClassCode/config").doc('rss');
@@ -32,7 +32,7 @@ class RssUrlNotifier extends StateNotifier<RssUrlState> {
           for (var key in keys) {
             rssEndPoints.add(RssEndPoint(key, originMap[key].toString()));
           }
-          rssEndPoints.add(RssEndPoint('官方公告',
+          rssEndPoints.add(RssEndPoint('App公告',
               'https://classtodo.blogspot.com/feeds/posts/default?alt=rss'));
         } else {
           _showError('Rss not found');

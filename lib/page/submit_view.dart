@@ -4,6 +4,7 @@ import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
 class HomeSubmittedBody extends ConsumerWidget {
@@ -20,9 +21,7 @@ class HomeSubmittedBody extends ConsumerWidget {
         itemCount: submittedState.submittedItems.length,
         itemBuilder: (context, idx) {
           Submitted submitted = submittedState.submittedItems[idx];
-          bool done = submitted.done.contains(usersNumber.keys.firstWhere(
-              (k) => usersNumber[k] == ref.watch(selfNumberProvider),
-              orElse: () => ''));
+          bool done = submitted.done.contains(ref.watch(selfNumberProvider));
           return ListTile(
             leading: Icon(Icons.text_snippet_outlined,
                 color: done ||
@@ -43,18 +42,17 @@ class HomeSubmittedBody extends ConsumerWidget {
               spacing: 5,
               children: [
                 Text(usersData[submitted.userId] ?? '未知使用者'),
-                Text('截止日期：${submitted.date.toString().substring(0, 16)}'),
+                Text(
+                    '截止日期：${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(submitted.date)}'),
               ],
             ),
-            trailing:
-                !usersNumber.values.contains(ref.watch(selfNumberProvider))
-                    ? null
-                    : Text(
-                        done ? '已繳交' : '缺交',
-                        style: TextStyle(
-                            fontSize: 15,
-                            color: done ? Colors.green : Colors.red),
-                      ),
+            trailing: !usersNumber.keys.contains(ref.watch(selfNumberProvider))
+                ? null
+                : Text(
+                    done ? '已繳交' : '缺交',
+                    style: TextStyle(
+                        fontSize: 15, color: done ? Colors.green : Colors.red),
+                  ),
             onTap: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SubmittedDone(submitted.submittedId))),
           );
@@ -120,6 +118,9 @@ class SubmittedDone extends ConsumerWidget {
                         SizedBox(
                           width: 300,
                           child: TextFormField(
+                            onTapOutside: (event) {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
                             controller: controller,
                             maxLines: 2,
                             minLines: 1,
@@ -132,10 +133,10 @@ class SubmittedDone extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        ElevatedButton(
+                        OutlinedButton(
                           onPressed: () {
                             Share.share(
-                              '''${submitted.name}請於${submitted.date.toString().substring(0, 16)}前繳交，缺交名單：
+                              '''${submitted.name}請於${DateFormat('yyyy/MM/dd EEEE HH:mm', 'zh-TW').format(submitted.date)}前繳交，缺交名單：
 ${usersNumber.keys.where((e) => !submitted.done.contains(e)).toList().join('、')}
 ${controller.text}''',
                             ).then((v) {
@@ -145,9 +146,8 @@ ${controller.text}''',
                               }
                             });
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.blue,
                           ),
                           child: const Text('分享'),
                         ),
@@ -167,13 +167,12 @@ ${controller.text}''',
               itemCount: usersNumber.keys.length,
               itemBuilder: (context, idx) {
                 String key = usersNumber.keys.toList()[idx];
-                bool checked = submitted.done.contains('${usersNumber[key]}');
+                bool checked = submitted.done.contains(key);
                 return CheckboxListTile(
                     title: Text(
                       '$key號 ${usersNumber[key] ?? ''}',
                       style: TextStyle(
-                          color: usersNumber[key] ==
-                                  (ref.watch(selfNumberProvider))
+                          color: key == (ref.watch(selfNumberProvider))
                               ? (checked ? Colors.green : Colors.red)
                               : null),
                     ),
