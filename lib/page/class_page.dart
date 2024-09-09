@@ -56,7 +56,7 @@ class ClassesPage extends ConsumerWidget {
                               style: const TextStyle(color: Colors.blue),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () => openUrl(
-                                    'https://sites.google.com/view/classtodo/home#h.lnjtm8ihgxy1')),
+                                    'https://classtodo.ycydev.org/home#h.lnjtm8ihgxy1')),
                           const TextSpan(text: '申請加入吧！'),
                         ],
                       ),
@@ -127,6 +127,9 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                     margin: const EdgeInsets.symmetric(vertical: 5),
                     width: 300,
                     child: TextFormField(
+                      onTapOutside: (event) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
                       controller: _classCodecontroller,
                       validator: (value) {
                         if (value == null ||
@@ -151,6 +154,9 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                     margin: const EdgeInsets.symmetric(vertical: 5),
                     width: 300,
                     child: TextFormField(
+                      onTapOutside: (event) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
                       controller: _serialCodecontroller,
                       validator: (value) {
                         if (value == null ||

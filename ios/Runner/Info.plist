@@ -29,7 +29,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.65396233679-v8ib5ec8p7a3hkdi46rr2i4c2tfhe9iv</string>
+				<string>com.googleusercontent.apps.65396233679-31se8450oaah8viiqqtob4h9omb0durk</string>
 			</array>
 		</dict>
 	</array>
@@ -39,7 +39,6 @@
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>mailto</string>
 		<string>sms</string>
 		<string>tel</string>
 	</array>

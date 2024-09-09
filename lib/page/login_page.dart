@@ -98,7 +98,7 @@ class LoginPage extends ConsumerWidget {
                                 style: const TextStyle(color: Colors.blue),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () => openUrl(
-                                      'https://sites.google.com/view/classtodo/privacypolicy')),
+                                      'https://classtodo.ycydev.org/privacypolicy')),
                             const TextSpan(text: '。'),
                           ],
                         ),

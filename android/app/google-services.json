@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "65396233679",
+    "project_id": "class-todo-list",
+    "storage_bucket": "class-todo-list.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65396233679:android:427f47da3c362aaa536eba",
+        "android_client_info": {
+          "package_name": "com.ycy.classtodo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "65396233679-73rhj9jdq247svj1ptu4gjo1q44eev0j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ycy.classtodo",
+            "certificate_hash": "48e89800e9fd014802e86093e53a1d7d77ce7c20"
+          }
+        },
+        {
+          "client_id": "65396233679-um69mjiens7et046c9k522m2qkbr9j5n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ycy.classtodo",
+            "certificate_hash": "8725757cc1b1e8b5e959dcb151a1aa6e4d2329b3"
+          }
+        },
+        {
+          "client_id": "65396233679-o1eoab1l9kj381oppn7m4ucaob358l1l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUMrV3B6DgRuvY9ptsX3niYBAvRz_Axl8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "65396233679-lk81s3r3e7sek4uori1qvmgjni6fcek6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "65396233679-31se8450oaah8viiqqtob4h9omb0durk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ycy.classtodo",
+                "app_store_id": "6670305489"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

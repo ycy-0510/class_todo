@@ -1,1 +1,46 @@
-{"hosting":{"public":"build/web","site":"classtodo","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"flutter":{"platforms":{"ios":{"default":{"projectId":"class-todo-list","appId":"1:65396233679:ios:fa06ef83c83f87bc536eba","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"class-todo-list","configurations":{"android":"1:65396233679:android:427f47da3c362aaa536eba","ios":"1:65396233679:ios:fa06ef83c83f87bc536eba","web":"1:65396233679:web:8aa53eb5ec9914e4536eba"}}}}}}
+{
+    "hosting": {
+        "public": "build/web",
+        "site": "classtodo",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    },
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "class-todo-list",
+                    "appId": "1:65396233679:android:427f47da3c362aaa536eba",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "class-todo-list",
+                    "appId": "1:65396233679:ios:fa06ef83c83f87bc536eba",
+                    "uploadDebugSymbols": true,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "class-todo-list",
+                    "configurations": {
+                        "android": "1:65396233679:android:427f47da3c362aaa536eba",
+                        "ios": "1:65396233679:ios:fa06ef83c83f87bc536eba",
+                        "web": "1:65396233679:web:8aa53eb5ec9914e4536eba"
+                    }
+                }
+            }
+        }
+    }
+}

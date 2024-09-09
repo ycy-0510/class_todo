@@ -1,4 +1,4 @@
-package com.ycy.class_todo_list
+package com.ycy.classtodo
 
 import io.flutter.embedding.android.FlutterActivity
 

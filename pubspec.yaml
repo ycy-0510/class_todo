@@ -1,7 +1,7 @@
 name: class_todo_list
 description: "A fully shared online contact book"
 publish_to: "none"
-version: 2.1.0+12
+version: 2.1.1+14
 
 environment:
   sdk: ">=3.1.2 <4.0.0"

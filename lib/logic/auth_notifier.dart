@@ -53,7 +53,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
               await GoogleSignIn().signIn().catchError((onError) => null);
           final GoogleSignInAuthentication? googleAuth =
               await googleUser?.authentication;
-
           final credential = GoogleAuthProvider.credential(
             accessToken: googleAuth?.accessToken,
             idToken: googleAuth?.idToken,
