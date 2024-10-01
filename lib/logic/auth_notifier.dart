@@ -154,7 +154,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _showError('正在驗證資料');
       state = state.load(true);
       http
-          .post(Uri.parse('http://v2.apis.classtodo.ycydev.org/join_class'),
+          .post(
+              Uri.parse(
+                  '${_ref.read(remoteConfigProvider.notifier).getServerUrl()}/join_class'),
               headers: {'Content-Type': 'application/json'},
               body: json.encode({
                 "idToken": await state.user?.getIdToken(),

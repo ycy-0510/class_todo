@@ -7,6 +7,7 @@ import 'package:class_todo_list/logic/form_notifier.dart';
 import 'package:class_todo_list/logic/google_api_notifier.dart';
 import 'package:class_todo_list/logic/notification_notifier.dart';
 import 'package:class_todo_list/logic/nowtime_notifier.dart';
+import 'package:class_todo_list/logic/remote_config_notifier.dart';
 import 'package:class_todo_list/logic/rss_read_notifier.dart';
 import 'package:class_todo_list/logic/rss_url_notifier.dart';
 import 'package:class_todo_list/logic/school_notifier.dart';
@@ -17,10 +18,6 @@ import 'package:class_todo_list/logic/todo_notifier.dart';
 import 'package:class_todo_list/logic/users_notifier.dart';
 import 'package:class_todo_list/logic/users_number_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-final toastProvider = StateProvider<String>(
-  (ref) => '',
-);
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   (ref) {
@@ -36,7 +33,7 @@ final googleApiProvider =
 );
 
 final notificationProvider =
-    StateNotifierProvider<NotificationNotifier, NotificationState>(
+    StateNotifierProvider.autoDispose<NotificationNotifier, NotificationState>(
   (ref) {
     return NotificationNotifier(ref);
   },
@@ -121,3 +118,7 @@ final rssReadProvider = StateNotifierProvider<RssReadNotifier, List<String>>(
 final rssReadFilterProvider = StateProvider<bool>((ref) => false);
 
 final bottomTabProvider = StateProvider<int>((ref) => 0);
+
+final remoteConfigProvider = NotifierProvider<RemoteConfigNotifier, bool>(() {
+  return RemoteConfigNotifier();
+});

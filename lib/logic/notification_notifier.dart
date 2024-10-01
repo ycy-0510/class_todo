@@ -25,6 +25,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
             NotificationAuthorizationStatus.notDetermined, '', false)) {
     db = FirebaseFirestore.instance;
     messaging = FirebaseMessaging.instance;
+    init();
   }
 
   void init() async {
@@ -57,7 +58,9 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         break;
       case AuthorizationStatus.notDetermined:
         if (prefs.getString(notificationKey) == null) {
-          state = state.copy(openBottomSheet: true);
+          Future.delayed(const Duration(seconds: 5), () {
+            state = state.copy(openBottomSheet: true);
+          });
         }
       default:
         break;

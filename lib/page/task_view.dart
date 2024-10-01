@@ -299,34 +299,32 @@ class TaskTableView extends ConsumerWidget {
                                         const TaskForm());
                               }
                             },
-                            child: Text(
-                              lesson[d * 9 + l],
-                              style: TextStyle(
-                                fontSize: hasTask(d + 1, l, tasks) ? 16 : 15,
-                                fontWeight: hasTask(d + 1, l, tasks)
-                                    ? FontWeight.w900
-                                    : null,
-                                color: hasTask(d + 1, l, tasks)
-                                    ? Colors.red
-                                    : null,
-                              ),
-                            ),
+                            child: Builder(builder: (context) {
+                              final int weekDay = d + 1;
+                              int counter = 0;
+                              for (Task task in tasks) {
+                                if (task.classTime == l &&
+                                    task.date.weekday == weekDay) {
+                                  counter++;
+                                }
+                              }
+                              bool hasTask = counter > 0;
+
+                              return Text(
+                                lesson[d * 9 + l],
+                                style: TextStyle(
+                                  fontSize: hasTask ? 16 : 15,
+                                  fontWeight: hasTask ? FontWeight.w900 : null,
+                                  color: hasTask ? Colors.red : null,
+                                ),
+                              );
+                            }),
                           ),
                         ),
                     ]),
             ]),
       ),
     );
-  }
-
-  bool hasTask(int weekDay, int lessonIdx, List<Task> tasks) {
-    int counter = 0;
-    for (Task task in tasks) {
-      if (task.classTime == lessonIdx && task.date.weekday == weekDay) {
-        counter++;
-      }
-    }
-    return counter > 0;
   }
 }
 
