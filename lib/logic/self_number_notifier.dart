@@ -9,7 +9,6 @@ class SelfNumberNotifier extends StateNotifier<String> {
 
   Future<void> getNumber() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
     state = prefs.getString(key) ?? '';
   }
 

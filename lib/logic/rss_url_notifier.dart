@@ -1,7 +1,8 @@
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:toastification/toastification.dart';
 
 class RssUrlNotifier extends StateNotifier<RssUrlState> {
   final Ref _ref;
@@ -35,7 +36,7 @@ class RssUrlNotifier extends StateNotifier<RssUrlState> {
           rssEndPoints.add(RssEndPoint('App公告',
               'https://blog.classtodo.ycydev.org/feeds/posts/default?alt=rss'));
         } else {
-          _showError('Rss not found');
+          _showError('找不到Rss');
         }
         state = RssUrlState(rssEndPoints);
       } catch (e) {
@@ -46,10 +47,14 @@ class RssUrlNotifier extends StateNotifier<RssUrlState> {
   }
 
   void _showError(String error) {
-    Fluttertoast.showToast(
-      msg: error,
-      timeInSecForIosWeb: 2,
-      webShowClose: true,
+    toastification.show(
+      type: ToastificationType.error,
+      style: ToastificationStyle.flatColored,
+      title: const Text("發生錯誤"),
+      description: Text(error),
+      alignment: Alignment.topCenter,
+      showProgressBar: false,
+      autoCloseDuration: const Duration(milliseconds: 1500),
     );
   }
 }

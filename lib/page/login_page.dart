@@ -72,10 +72,15 @@ class LoginPage extends ConsumerWidget {
                       onPressed: loading
                           ? null
                           : () => ref.read(authProvider.notifier).appleLogin(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                      ),
+                      style: Theme.of(context).brightness == Brightness.light
+                          ? ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                            )
+                          : ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                            ),
                       icon: const FaIcon(FontAwesomeIcons.apple),
                       label: const Text(
                         '使用Apple登入',

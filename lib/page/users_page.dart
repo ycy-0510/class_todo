@@ -1,3 +1,4 @@
+import 'package:class_todo_list/page/draw_lots.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,14 @@ class UsersPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('成員'),
+        actions: [
+          IconButton(
+              onPressed: () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (BuildContext context) => const DrawLotsPage())),
+              icon: const FaIcon(FontAwesomeIcons.dice))
+        ],
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),

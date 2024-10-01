@@ -39,12 +39,12 @@ class ClassesPage extends ConsumerWidget {
                     style: const TextStyle(fontSize: 15),
                   ),
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                     child: JoinClassForm(),
                   ),
                   Padding(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                     child: RichText(
                       textAlign: TextAlign.start,
                       text: TextSpan(
@@ -116,6 +116,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
   Widget build(BuildContext context) {
     bool loading = ref.watch(authProvider).loading;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Form(
             key: _formKey,
@@ -123,9 +124,8 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    width: 300,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
                     child: TextFormField(
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
@@ -150,9 +150,8 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                               borderRadius: BorderRadius.circular(15))),
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    width: 300,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
                     child: TextFormField(
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
@@ -178,31 +177,26 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                     ),
                   ),
                 ])),
-        Container(
-            margin: const EdgeInsets.symmetric(vertical: 5),
-            width: 300,
-            height: 45,
-            child: ElevatedButton(
-              onPressed: loading
-                  ? null
-                  : () {
-                      if (_formKey.currentState!.validate()) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        ref.read(authProvider.notifier).joinClass(
-                            _classCodecontroller.text,
-                            _serialCodecontroller.text);
-                        _serialCodecontroller.clear();
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text(
-                '加入班級',
-                style: TextStyle(fontSize: 18),
-              ),
-            )),
+        ElevatedButton(
+          onPressed: loading
+              ? null
+              : () {
+                  if (_formKey.currentState!.validate()) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    ref.read(authProvider.notifier).joinClass(
+                        _classCodecontroller.text, _serialCodecontroller.text);
+                    _serialCodecontroller.clear();
+                  }
+                },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text(
+            '加入班級',
+            style: TextStyle(fontSize: 18),
+          ),
+        )
       ],
     );
   }

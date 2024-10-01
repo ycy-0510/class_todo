@@ -1,33 +1,118 @@
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/rss_url_notifier.dart';
-import 'package:class_todo_list/open_url.dart';
+import 'package:class_todo_list/page/more_view.dart';
 import 'package:class_todo_list/page/school_view.dart';
-import 'package:class_todo_list/page/setting.dart';
 import 'package:class_todo_list/page/submit_view.dart';
 import 'package:class_todo_list/page/task_view.dart';
-import 'package:class_todo_list/page/users_page.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:toastification/toastification.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    String version = '';
-    String buildNumber = '';
-    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
-      version = packageInfo.version;
-      buildNumber = packageInfo.buildNumber;
+  ConsumerState<ConsumerStatefulWidget> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  @override
+  void initState() {
+    ref.read(notificationProvider.notifier).init();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(notificationProvider, (prev, next) {
+      if (prev?.openBottomSheet != next.openBottomSheet &&
+          next.openBottomSheet) {
+        showModalBottomSheet(
+          context: context,
+          isDismissible: false,
+          enableDrag: false,
+          useSafeArea: true,
+          isScrollControlled: true,
+          builder: (context) => SizedBox(
+            height: 700,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+              child: SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.notifications,
+                            size: 30,
+                          ),
+                          Text(
+                            '接收通知',
+                            style: TextStyle(
+                                fontSize: 30, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ]),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Expanded(
+                      child: Image.asset(
+                        'assets/img/notification.png',
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text(
+                        '我們需要通知權限才能發送「每日提醒」和「最新消息」給您，稍後您也可以在「更多>個人帳號設定」中調整通知發送時間。',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                    ElevatedButton(
+                        onPressed: () async {
+                          await ref
+                              .read(notificationProvider.notifier)
+                              .requestPermission();
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: const Text(
+                          '開啟通知',
+                          style: TextStyle(fontSize: 20),
+                        )),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          ref
+                              .read(notificationProvider.notifier)
+                              .closeBottomSheet();
+                        },
+                        child: const Text(
+                          '稍後設定',
+                          style: TextStyle(fontSize: 20),
+                        ))
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }
     });
-    //version
+
     ref.watch(usersProvider);
     ref.watch(usersNumberProvider);
     ref.watch(taskProvider);
+    ref.watch(calendarTaskProvider);
     RssUrlState rssUrlState = ref.watch(rssUrlProvider);
     TaskViewType taskViewTypeState = ref.watch(taskViewTypeProvider);
     int schoolAnnouncementSource =
@@ -50,7 +135,7 @@ class HomePage extends ConsumerWidget {
               },
               icon: const Icon(Icons.add_task),
             ),
-          if (ref.watch(bottomTabProvider) == 2)
+          if (ref.watch(bottomTabProvider) == 2) ...[
             PopupMenu<int>(
               icon: Container(
                 decoration: BoxDecoration(
@@ -90,6 +175,15 @@ class HomePage extends ConsumerWidget {
                           OutlinedButton(
                             onPressed: () {
                               Navigator.of(context).pop(true);
+                              toastification.show(
+                                type: ToastificationType.info,
+                                style: ToastificationStyle.flatColored,
+                                title: const Text("已全部標示已讀"),
+                                alignment: Alignment.topCenter,
+                                showProgressBar: false,
+                                autoCloseDuration:
+                                    const Duration(milliseconds: 1500),
+                              );
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.red,
@@ -113,6 +207,15 @@ class HomePage extends ConsumerWidget {
                 }
               },
             ),
+            IconButton(
+              onPressed: () => showSearch(
+                  context: context,
+                  delegate: AnnounceSearchDelegate(
+                      ref.read(schoolAnnouncementProvider).announcements)),
+              icon: const Icon(Icons.search),
+              tooltip: '搜尋公告',
+            )
+          ],
         ],
         bottom: ref.watch(bottomTabProvider) == 0
             ? MediaQuery.of(context).size.width > 800 &&
@@ -134,9 +237,15 @@ class HomePage extends ConsumerWidget {
                                       label: Text('課表'),
                                       icon: Icon(Icons.table_chart)),
                                   ButtonSegment<TaskViewType>(
-                                      value: TaskViewType.list,
-                                      label: Text('清單'),
-                                      icon: Icon(Icons.list)),
+                                    value: TaskViewType.list,
+                                    label: Text('清單'),
+                                    icon: Icon(Icons.list),
+                                  ),
+                                  ButtonSegment<TaskViewType>(
+                                    value: TaskViewType.calendar,
+                                    label: Text('個人'),
+                                    icon: Icon(Icons.person),
+                                  ),
                                 ],
                                 selected: <TaskViewType>{
                                   taskViewTypeState
@@ -194,6 +303,7 @@ class HomePage extends ConsumerWidget {
         const HomeTaskBody(),
         const HomeSubmittedBody(),
         const HomeSchoolBody(),
+        const HomeMoreBody(),
       ][ref.watch(bottomTabProvider)]),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -204,120 +314,10 @@ class HomePage extends ConsumerWidget {
           BottomNavigationBarItem(
               icon: Icon(Icons.text_snippet_outlined), label: '繳交列表'),
           BottomNavigationBarItem(icon: Icon(Icons.school), label: '學校公告'),
+          BottomNavigationBarItem(
+              icon: FaIcon(FontAwesomeIcons.shapes), label: '更多'),
         ],
         onTap: (value) => ref.read(bottomTabProvider.notifier).state = value,
-      ),
-      drawer: Drawer(
-        child: SafeArea(
-            child: Column(
-          children: [
-            DrawerHeader(
-                child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: ref.watch(authProvider).user?.photoURL == null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: ColoredBox(
-                            color: Colors.blueGrey,
-                            child: Padding(
-                              padding: const EdgeInsets.all(5),
-                              child: SizedBox(
-                                height: 85,
-                                width: 85,
-                                child: Center(
-                                  child: Text(
-                                    (ref
-                                            .watch(authProvider)
-                                            .user
-                                            ?.displayName ??
-                                        '訪客')[0],
-                                    style: const TextStyle(
-                                        fontSize: 50, color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: Image.network(
-                            ref.watch(authProvider).user?.photoURL ?? '',
-                            height: 85,
-                          ),
-                        ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      ref.watch(authProvider).user?.displayName ?? '訪客',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 5),
-                    OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => const SettingPage())),
-                      icon: const Icon(Icons.settings),
-                      label: const Text(
-                        '個人設定',
-                        style: TextStyle(fontSize: 15),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            )),
-            ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('班級成員'),
-              onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const UsersPage())),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('關於這個app'),
-              onTap: () => showAboutDialog(
-                  context: context,
-                  applicationName: '共享聯絡簿',
-                  applicationVersion: 'V$version ($buildNumber)',
-                  applicationIcon: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Image.asset(
-                      'assets/img/icon.png',
-                      height: 80,
-                    ),
-                  ),
-                  applicationLegalese:
-                      'Copyright © 2024 YCY, Licensed under the Apache License, Version 2.0.'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.web),
-              title: const Text('官方網頁'),
-              onTap: () => openUrl('https://sites.google.com/view/classtodo'),
-            ),
-            ListTile(
-              leading: const FaIcon(FontAwesomeIcons.dev),
-              title: const Text('開發者網頁'),
-              onTap: () => openUrl('https://sites.google.com/view/ycyprogram'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.chat),
-              title: const Text('線上支援'),
-              onTap: () => openUrl('https://tawk.to/ycyprogram'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.code),
-              title: const Text('開放原始碼'),
-              onTap: () => openUrl('https://github.com/ycy-0510/class_todo'),
-            ),
-          ],
-        )),
       ),
     );
   }

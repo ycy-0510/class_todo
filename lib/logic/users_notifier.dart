@@ -1,7 +1,8 @@
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:toastification/toastification.dart';
 
 class UsersNotifier extends StateNotifier<Map<String, String>> {
   late FirebaseFirestore db;
@@ -31,10 +32,14 @@ class UsersNotifier extends StateNotifier<Map<String, String>> {
   }
 
   void _showError(String error) {
-    Fluttertoast.showToast(
-      msg: error,
-      timeInSecForIosWeb: 2,
-      webShowClose: true,
+    toastification.show(
+      type: ToastificationType.error,
+      style: ToastificationStyle.flatColored,
+      title: const Text("發生錯誤"),
+      description: Text(error),
+      alignment: Alignment.topCenter,
+      showProgressBar: false,
+      autoCloseDuration: const Duration(milliseconds: 1500),
     );
   }
 }

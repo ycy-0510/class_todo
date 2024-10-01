@@ -4,7 +4,7 @@ import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:toastification/toastification.dart';
 
 int toClassTime(DateTime dateTime, List<TimeOfDay> classTimes) {
   TimeOfDay time = TimeOfDay.fromDateTime(dateTime);
@@ -35,7 +35,8 @@ class TaskNotifier extends StateNotifier<TaskState> {
   void getData(int prevWeek, int nextWeek) {
     final userClassCode = _ref.read(authProvider).classCode;
     if (nextWeek == prevWeek) {
-      for (int i = nextWeek - 2; i <= nextWeek + 2; i++) {
+      for (final k in [0, 1, -1, 2, -2]) {
+        final i = k + nextWeek;
         final dataRef = db
             .collection("class/$userClassCode/task")
             .where("date",
@@ -122,10 +123,14 @@ class TaskNotifier extends StateNotifier<TaskState> {
   }
 
   void _showError(String error) {
-    Fluttertoast.showToast(
-      msg: error,
-      timeInSecForIosWeb: 2,
-      webShowClose: true,
+    toastification.show(
+      type: ToastificationType.error,
+      style: ToastificationStyle.flatColored,
+      title: const Text("發生錯誤"),
+      description: Text(error),
+      alignment: Alignment.topCenter,
+      showProgressBar: false,
+      autoCloseDuration: const Duration(milliseconds: 1500),
     );
   }
 

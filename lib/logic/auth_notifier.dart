@@ -4,10 +4,11 @@ import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:toastification/toastification.dart';
 
 class AuthNotifier extends StateNotifier<AuthState> {
   late FirebaseAuth _auth;
@@ -36,6 +37,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
           } catch (e) {
             _showError(e.toString());
           }
+        }
+        if (userData.data()?['notificationTime'] is! Timestamp) {
+          await db
+              .collection("user")
+              .doc(user.uid)
+              .update({"notificationTime": DateTime(2024, 1, 1, 20)});
+        }
+        final fcmData =
+            await db.collection("user/${user.uid}/private").doc('fcm').get();
+        if (!fcmData.exists || fcmData.data()?['tokens'] is! List) {
+          await db
+              .collection("user/${user.uid}/private")
+              .doc('fcm')
+              .set({"tokens": []});
         }
       }
     });
@@ -93,6 +108,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.read(classTableProvider.notifier).clear();
         _ref.read(classTableProvider.notifier).dispose();
         await _auth.signOut();
+        _ref.read(bottomTabProvider.notifier).state = 0;
       } catch (err) {
         state = AuthState();
         _showError(err.toString());
@@ -108,7 +124,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.read(classTableProvider.notifier).clear();
         _ref.read(classTableProvider.notifier).dispose();
         await db.collection("user").doc(_auth.currentUser!.uid).delete();
+        await db
+            .collection("user/${_auth.currentUser!.uid}/private")
+            .doc('fcm')
+            .delete();
         await _auth.currentUser!.delete();
+        _ref.read(bottomTabProvider.notifier).state = 0;
       } catch (err) {
         state = AuthState();
         _showError(err.toString());
@@ -117,10 +138,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void _showError(String error) {
-    Fluttertoast.showToast(
-      msg: error,
-      timeInSecForIosWeb: 2,
-      webShowClose: true,
+    toastification.show(
+      type: ToastificationType.error,
+      style: ToastificationStyle.flatColored,
+      title: const Text("發生錯誤"),
+      description: Text(error),
+      alignment: Alignment.topCenter,
+      showProgressBar: false,
+      autoCloseDuration: const Duration(milliseconds: 1500),
     );
   }
 
@@ -129,7 +154,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _showError('正在驗證資料');
       state = state.load(true);
       http
-          .post(Uri.parse('https://class-todo-server.onrender.com/join_class'),
+          .post(Uri.parse('http://v2.apis.classtodo.ycydev.org/join_class'),
               headers: {'Content-Type': 'application/json'},
               body: json.encode({
                 "idToken": await state.user?.getIdToken(),

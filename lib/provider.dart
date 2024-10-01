@@ -1,9 +1,11 @@
-// import 'package:class_todo_list/logic/announce_notifier.dart';
 import 'package:class_todo_list/logic/auth_notifier.dart';
+import 'package:class_todo_list/logic/calendar_task_notifier.dart';
 import 'package:class_todo_list/logic/class_table_notifier.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/date_notifier.dart';
 import 'package:class_todo_list/logic/form_notifier.dart';
+import 'package:class_todo_list/logic/google_api_notifier.dart';
+import 'package:class_todo_list/logic/notification_notifier.dart';
 import 'package:class_todo_list/logic/nowtime_notifier.dart';
 import 'package:class_todo_list/logic/rss_read_notifier.dart';
 import 'package:class_todo_list/logic/rss_url_notifier.dart';
@@ -26,6 +28,20 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   },
 );
 
+final googleApiProvider =
+    StateNotifierProvider<GoogleApiNotifier, GoogleApiState>(
+  (ref) {
+    return GoogleApiNotifier(ref);
+  },
+);
+
+final notificationProvider =
+    StateNotifierProvider<NotificationNotifier, NotificationState>(
+  (ref) {
+    return NotificationNotifier(ref);
+  },
+);
+
 final formProvider =
     StateNotifierProvider<TaskFormNotifier, TaskFormState>((ref) {
   return TaskFormNotifier(ref);
@@ -40,10 +56,11 @@ final taskProvider =
   return TaskNotifier(ref);
 });
 
-// final announceProvider =
-//     StateNotifierProvider.autoDispose<AnnounceNotifier, List>((ref) {
-//   return AnnounceNotifier(ref);
-// });
+final calendarTaskProvider =
+    StateNotifierProvider.autoDispose<CalendarTaskNotifier, CalendarTaskState>(
+        (ref) {
+  return CalendarTaskNotifier(ref);
+});
 
 final classTableProvider =
     StateNotifierProvider<ClassTableNotifier, ClassTableState>(
@@ -71,7 +88,7 @@ final connectivityStatusProvider = StateNotifierProvider.autoDispose<
   return ConnectivityStatusNotifier();
 });
 
-enum TaskViewType { table, list }
+enum TaskViewType { table, list, calendar }
 
 final taskViewTypeProvider =
     StateProvider<TaskViewType>((ref) => TaskViewType.table);

@@ -4,8 +4,8 @@ import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:toastification/toastification.dart';
 
 class ClassTableNotifier extends StateNotifier<ClassTableState> {
   static String tableKey = 'classTable';
@@ -73,7 +73,14 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
       _showError(e.toString());
     }
     if (success) {
-      _showError('更新課表成功');
+      toastification.show(
+        type: ToastificationType.success,
+        style: ToastificationStyle.flatColored,
+        title: const Text("更新課表成功"),
+        alignment: Alignment.topCenter,
+        showProgressBar: false,
+        autoCloseDuration: const Duration(milliseconds: 1500),
+      );
       prefs.setString(classTableUpdateKey, DateTime.now().toIso8601String());
     }
     getClassTable();
@@ -127,10 +134,14 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
   }
 
   void _showError(String error) {
-    Fluttertoast.showToast(
-      msg: error,
-      timeInSecForIosWeb: 2,
-      webShowClose: true,
+    toastification.show(
+      type: ToastificationType.error,
+      style: ToastificationStyle.flatColored,
+      title: const Text("發生錯誤"),
+      description: Text(error),
+      alignment: Alignment.topCenter,
+      showProgressBar: false,
+      autoCloseDuration: const Duration(milliseconds: 1500),
     );
   }
 }

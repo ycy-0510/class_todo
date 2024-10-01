@@ -47,11 +47,10 @@
               "client_type": 3
             },
             {
-              "client_id": "65396233679-31se8450oaah8viiqqtob4h9omb0durk.apps.googleusercontent.com",
+              "client_id": "65396233679-2aurfkapfcdbumni2tv5ofrcrktldftd.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.ycy.classtodo",
-                "app_store_id": "6670305489"
+                "bundle_id": "com.ycy.classtodo.mac"
               }
             }
           ]

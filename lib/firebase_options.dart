@@ -25,10 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -70,8 +67,23 @@ class DefaultFirebaseOptions {
     messagingSenderId: '65396233679',
     projectId: 'class-todo-list',
     storageBucket: 'class-todo-list.appspot.com',
-    androidClientId: '65396233679-73rhj9jdq247svj1ptu4gjo1q44eev0j.apps.googleusercontent.com',
-    iosClientId: '65396233679-31se8450oaah8viiqqtob4h9omb0durk.apps.googleusercontent.com',
+    androidClientId:
+        '65396233679-73rhj9jdq247svj1ptu4gjo1q44eev0j.apps.googleusercontent.com',
+    iosClientId:
+        '65396233679-31se8450oaah8viiqqtob4h9omb0durk.apps.googleusercontent.com',
     iosBundleId: 'com.ycy.classtodo',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyALitzb8usNfrCj-ciBn7CwmiffkD_h5Lo',
+    appId: '1:65396233679:ios:54f7fad13cf5dedc536eba',
+    messagingSenderId: '65396233679',
+    projectId: 'class-todo-list',
+    storageBucket: 'class-todo-list.appspot.com',
+    androidClientId:
+        '65396233679-73rhj9jdq247svj1ptu4gjo1q44eev0j.apps.googleusercontent.com',
+    iosClientId:
+        '65396233679-2aurfkapfcdbumni2tv5ofrcrktldftd.apps.googleusercontent.com',
+    iosBundleId: 'com.ycy.classtodo.mac',
   );
 }
