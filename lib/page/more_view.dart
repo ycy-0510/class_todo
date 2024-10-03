@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:toastification/toastification.dart';
 
 class HomeMoreBody extends ConsumerWidget {
@@ -215,35 +216,34 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const Icon(Icons.notifications),
                     title: const Text('推播通知'),
-                    onTap: ref
-                                .watch(notificationProvider)
-                                .authorizationStatus ==
-                            NotificationAuthorizationStatus.systemDenied
-                        ? null
-                        : () async {
-                            if (ref
-                                    .read(notificationProvider)
-                                    .authorizationStatus ==
-                                NotificationAuthorizationStatus.authorized) {
-                              await Clipboard.setData(ClipboardData(
-                                  text:
-                                      ref.read(notificationProvider).fcmToken));
-                              toastification.show(
-                                type: ToastificationType.info,
-                                style: ToastificationStyle.flatColored,
-                                title: const Text("已複製通知ID到剪貼簿"),
-                                description: const Text('請勿隨意分享給他人'),
-                                alignment: Alignment.topCenter,
-                                showProgressBar: false,
-                                autoCloseDuration:
-                                    const Duration(milliseconds: 1500),
-                              );
-                            } else {
-                              ref
-                                  .read(notificationProvider.notifier)
-                                  .openBottomSheet();
-                            }
-                          },
+                    onTap: () async {
+                      switch (
+                          ref.read(notificationProvider).authorizationStatus) {
+                        case NotificationAuthorizationStatus.authorized:
+                          await Clipboard.setData(ClipboardData(
+                              text: ref.read(notificationProvider).fcmToken));
+                          toastification.show(
+                            type: ToastificationType.info,
+                            style: ToastificationStyle.flatColored,
+                            title: const Text("已複製通知ID到剪貼簿"),
+                            description: const Text('請勿隨意分享給他人'),
+                            alignment: Alignment.topCenter,
+                            showProgressBar: false,
+                            autoCloseDuration:
+                                const Duration(milliseconds: 1500),
+                          );
+                          break;
+                        case NotificationAuthorizationStatus.appDenied:
+                        case NotificationAuthorizationStatus.notDetermined:
+                          ref
+                              .read(notificationProvider.notifier)
+                              .openBottomSheet();
+                          break;
+                        case NotificationAuthorizationStatus.systemDenied:
+                          openAppSettings();
+                          break;
+                      }
+                    },
                     trailing: Builder(builder: (context) {
                       String status = '';
                       switch (
@@ -256,7 +256,7 @@ class HomeMoreBody extends ConsumerWidget {
                           status = '接收通知';
                           break;
                         case NotificationAuthorizationStatus.systemDenied:
-                          status = '請至系統設定開啟';
+                          status = '開啟通知權限';
                           break;
                       }
                       return Text(

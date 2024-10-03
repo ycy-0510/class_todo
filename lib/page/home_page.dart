@@ -186,6 +186,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
                             ),
                             child: const Text('已讀'),
                           ),

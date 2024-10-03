@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -33,6 +35,11 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
     NotificationSettings settings = await messaging.getNotificationSettings();
     state = NotificationState(
         NotificationAuthorizationStatus.notDetermined, '', false);
+    if (prefs.getString(notificationKey) == null) {
+      Future.delayed(const Duration(seconds: 5), () {
+        state = state.copy(openBottomSheet: true);
+      });
+    }
     switch (settings.authorizationStatus) {
       case AuthorizationStatus.authorized:
         String? token = await messaging.getToken();
@@ -51,17 +58,18 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         getNotificationTime();
         break;
       case AuthorizationStatus.denied:
-        state = state.copy(
-          openBottomSheet: false,
-          authorizationStatus: NotificationAuthorizationStatus.systemDenied,
-        );
-        break;
-      case AuthorizationStatus.notDetermined:
-        if (prefs.getString(notificationKey) == null) {
-          Future.delayed(const Duration(seconds: 5), () {
-            state = state.copy(openBottomSheet: true);
-          });
+        if (Platform.isAndroid) {
+          state = state.copy(
+            openBottomSheet: false,
+            authorizationStatus: NotificationAuthorizationStatus.appDenied,
+          );
+        } else {
+          state = state.copy(
+            openBottomSheet: false,
+            authorizationStatus: NotificationAuthorizationStatus.systemDenied,
+          );
         }
+        break;
       default:
         break;
     }
@@ -126,11 +134,18 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
           getNotificationTime();
           break;
         case AuthorizationStatus.denied:
-          state = state.copy(
-            openBottomSheet: false,
-            authorizationStatus: NotificationAuthorizationStatus.systemDenied,
-          );
-          _showError('若要接收通知請至系統設定開啟。');
+          if (Platform.isAndroid) {
+            state = state.copy(
+              openBottomSheet: false,
+              authorizationStatus: NotificationAuthorizationStatus.appDenied,
+            );
+          } else {
+            state = state.copy(
+              openBottomSheet: false,
+              authorizationStatus: NotificationAuthorizationStatus.systemDenied,
+            );
+          }
+          _showError('若要接收通知請至「系統設定」開啟。');
           break;
         default:
           break;
