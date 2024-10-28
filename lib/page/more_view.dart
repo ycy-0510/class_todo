@@ -1,9 +1,11 @@
 import 'package:class_todo_list/logic/notification_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/page/draw_lots.dart';
+import 'package:class_todo_list/page/intro_page.dart';
 import 'package:class_todo_list/page/setting_page.dart';
 import 'package:class_todo_list/page/users_page.dart';
 import 'package:class_todo_list/provider.dart';
+import 'package:feedback_sentry/feedback_sentry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +19,7 @@ class HomeMoreBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    String? classCode = ref.watch(authProvider).classCode;
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
@@ -106,6 +109,20 @@ class HomeMoreBody extends ConsumerWidget {
                 children: [
                   ListTile(
                     minLeadingWidth: 30,
+                    leading: const FaIcon(FontAwesomeIcons.school),
+                    title: const Text('班級代碼'),
+                    trailing: Text(
+                      classCode ?? '無班級',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  const Divider(
+                    height: 0,
+                    indent: 50,
+                    thickness: 0.5,
+                  ),
+                  ListTile(
+                    minLeadingWidth: 30,
                     leading: const Icon(Icons.people),
                     title: const Text('班級成員'),
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
@@ -155,6 +172,38 @@ class HomeMoreBody extends ConsumerWidget {
                           applicationLegalese:
                               'Copyright © 2024 YCY, Licensed under the Apache License, Version 2.0.');
                     },
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                  ),
+                  const Divider(
+                    height: 0,
+                    indent: 50,
+                    thickness: 0.5,
+                  ),
+                  ListTile(
+                    minLeadingWidth: 30,
+                    leading: const Icon(Icons.app_shortcut),
+                    title: const Text('app介紹'),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const IntroPage())),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                  ),
+                  const Divider(
+                    height: 0,
+                    indent: 50,
+                    thickness: 0.5,
+                  ),
+                  ListTile(
+                    minLeadingWidth: 30,
+                    leading: const Icon(Icons.feedback),
+                    title: const Text('回饋意見'),
+                    onTap: () =>
+                        BetterFeedback.of(context).showAndUploadToSentry(
+                      name: ref.read(authProvider).user?.displayName,
+                      email: ref.read(authProvider).user?.email,
+                    ),
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
                   const Divider(
@@ -249,7 +298,7 @@ class HomeMoreBody extends ConsumerWidget {
                       switch (
                           ref.watch(notificationProvider).authorizationStatus) {
                         case NotificationAuthorizationStatus.authorized:
-                          status = '複製通知ID';
+                          status = '已啟用';
                           break;
                         case NotificationAuthorizationStatus.appDenied:
                         case NotificationAuthorizationStatus.notDetermined:

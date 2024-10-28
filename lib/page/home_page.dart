@@ -1,5 +1,6 @@
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/rss_url_notifier.dart';
+import 'package:class_todo_list/page/intro_page.dart';
 import 'package:class_todo_list/page/more_view.dart';
 import 'package:class_todo_list/page/school_view.dart';
 import 'package:class_todo_list/page/submit_view.dart';
@@ -9,19 +10,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
-
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _HomePageState();
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  final GlobalKey<_HomePageState> homeKey = GlobalKey();
   @override
   void initState() {
     super.initState();
+    SharedPreferences.getInstance().then((prefs) {
+      bool showedIntro = prefs.getBool('intro') ?? false;
+      if (!showedIntro) {
+        Future.delayed(const Duration(seconds: 1)).then((_) {
+          if (mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const IntroPage()),
+            );
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -116,10 +130,27 @@ class _HomePageState extends ConsumerState<HomePage> {
     TaskViewType taskViewTypeState = ref.watch(taskViewTypeProvider);
     int schoolAnnouncementSource =
         ref.watch(schoolAnnouncementProvider).rssEndPointIdx;
-    String? classCode = ref.watch(authProvider).classCode;
     return Scaffold(
       appBar: AppBar(
-        title: Text('共享聯絡簿 $classCode'),
+        centerTitle: false,
+        title: [
+          const Text(
+            '所有項目',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ),
+          const Text(
+            '繳交列表',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ),
+          const Text(
+            '學校公告',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ),
+          const Text(
+            '更多',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ),
+        ][ref.watch(bottomTabProvider)],
         actions: [
           if (ref.watch(bottomTabProvider) == 0)
             IconButton(
@@ -132,7 +163,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                     barrierDismissible: false,
                     builder: (BuildContext context) => const TaskForm());
               },
-              icon: const Icon(Icons.add_task),
+              icon: const Icon(
+                Icons.add_task,
+                color: Colors.blue,
+              ),
             ),
           if (ref.watch(bottomTabProvider) == 2) ...[
             PopupMenu<int>(
@@ -140,17 +174,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(100),
                     border: Border.all(
-                      color: Theme.of(context).iconTheme.color ?? Colors.blue,
+                      color: Colors.blue,
                     ),
-                    color: ref.watch(rssReadFilterProvider)
-                        ? Theme.of(context).iconTheme.color ?? Colors.blue
-                        : null),
+                    color:
+                        ref.watch(rssReadFilterProvider) ? Colors.blue : null),
                 padding: const EdgeInsets.all(1.5),
                 child: Icon(
                   Icons.filter_list,
                   color: ref.watch(rssReadFilterProvider)
                       ? Theme.of(context).scaffoldBackgroundColor
-                      : Theme.of(context).iconTheme.color ?? Colors.blue,
+                      : Colors.blue,
                 ),
               ),
               item: const [
@@ -213,6 +246,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   delegate: AnnounceSearchDelegate(
                       ref.read(schoolAnnouncementProvider).announcements)),
               icon: const Icon(Icons.search),
+              color: Colors.blue,
               tooltip: '搜尋公告',
             )
           ],

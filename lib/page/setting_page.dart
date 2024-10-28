@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -354,6 +356,7 @@ class _SelfNumberFieldState extends ConsumerState<SelfNumberField> {
 
     return TextField(
       controller: _controller,
+      selectionHeightStyle: BoxHeightStyle.strut,
       textAlign: TextAlign.center,
       onEditingComplete: () {
         FocusManager.instance.primaryFocus?.unfocus();

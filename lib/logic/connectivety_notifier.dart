@@ -8,7 +8,7 @@ class ConnectivityStatusNotifier extends StateNotifier<ConnectivityStatus> {
   StreamController<ConnectivityResult> controller =
       StreamController<ConnectivityResult>();
 
-  StreamSubscription<ConnectivityResult>? listener;
+  StreamSubscription<List<ConnectivityResult>>? listener;
 
   ConnectivityStatusNotifier() : super(ConnectivityStatus.isConnected) {
     late ConnectivityStatus lastResult;
@@ -17,21 +17,23 @@ class ConnectivityStatusNotifier extends StateNotifier<ConnectivityStatus> {
     lastResult = ConnectivityStatus.notDetermined;
     listener = Connectivity()
         .onConnectivityChanged
-        .listen((ConnectivityResult result) {
-      switch (result) {
-        case ConnectivityResult.mobile:
-        case ConnectivityResult.wifi:
-          newState = ConnectivityStatus.isConnected;
-          break;
-        case ConnectivityResult.none:
-          newState = ConnectivityStatus.isDisonnected;
-          break;
-        default:
-          newState = ConnectivityStatus.isDisonnected;
-      }
-      if (newState != lastResult) {
-        state = newState;
-        lastResult = newState;
+        .listen((List<ConnectivityResult> results) {
+      for (var result in results) {
+        switch (result) {
+          case ConnectivityResult.mobile:
+          case ConnectivityResult.wifi:
+            newState = ConnectivityStatus.isConnected;
+            break;
+          case ConnectivityResult.none:
+            newState = ConnectivityStatus.isDisonnected;
+            break;
+          default:
+            newState = ConnectivityStatus.isDisonnected;
+        }
+        if (newState != lastResult) {
+          state = newState;
+          lastResult = newState;
+        }
       }
     });
   }

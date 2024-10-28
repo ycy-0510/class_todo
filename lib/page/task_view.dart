@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:class_todo_list/logic/calendar_task_notifier.dart';
 import 'package:class_todo_list/logic/class_table_notifier.dart';
 import 'package:class_todo_list/logic/form_notifier.dart';
@@ -51,6 +52,14 @@ class HomeTaskBody extends ConsumerWidget {
                 importantTasks.add(tasks[i]);
               }
             }
+            int week = idx - 1000;
+            DateTime dateStart =
+                ref.watch(dateProvider).thisWeek.add(Duration(days: 7 * week));
+            DateTime dateEnd = ref
+                .watch(dateProvider)
+                .thisWeek
+                .add(Duration(days: 7 * week))
+                .add(const Duration(days: 6));
             if (MediaQuery.of(context).size.width > 800 &&
                 MediaQuery.of(context).size.width >
                     MediaQuery.of(context).size.height) {
@@ -59,40 +68,45 @@ class HomeTaskBody extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          '${DateFormat('MM/dd').format(dateStart)} ~ ${DateFormat('MM/dd').format(dateEnd)}',
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ),
                       const Expanded(child: SizedBox()),
-                      Expanded(
-                        child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 5, horizontal: 20),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                const Text(
-                                  '顯示過去項目',
-                                  style: TextStyle(fontSize: 15),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Switch(
-                                  value: showPast,
-                                  onChanged: (value) {
-                                    HapticFeedback.mediumImpact();
-                                    ref
-                                        .read(pastSwitchProvider.notifier)
-                                        .update((state) => value);
-                                  },
-                                ),
-                              ],
-                            )),
-                      )
+                      Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const Text(
+                                '顯示過去項目',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Switch(
+                                value: showPast,
+                                onChanged: (value) {
+                                  HapticFeedback.mediumImpact();
+                                  ref
+                                      .read(pastSwitchProvider.notifier)
+                                      .update((state) => value);
+                                },
+                              ),
+                            ],
+                          )),
                     ],
                   ),
                   Expanded(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: TaskTableView(tasks, idx - 1000)),
+                        Expanded(child: TaskTableView(tasks, week)),
                         Expanded(
                           child: TaskListView(
                             showTasks,
@@ -107,7 +121,7 @@ class HomeTaskBody extends ConsumerWidget {
             } else {
               switch (taskViewTypeState) {
                 case TaskViewType.table:
-                  return TaskTableView(tasks, idx - 1000);
+                  return TaskTableView(tasks, week);
                 case TaskViewType.list:
                   return Column(
                     children: [
@@ -115,8 +129,12 @@ class HomeTaskBody extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                               vertical: 5, horizontal: 20),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
+                              Text(
+                                '${DateFormat('MM/dd').format(dateStart)} ~ ${DateFormat('MM/dd').format(dateEnd)}',
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                              const Expanded(child: SizedBox()),
                               const Text(
                                 '顯示過去項目',
                                 style: TextStyle(fontSize: 15),
@@ -241,36 +259,31 @@ class TaskTableView extends ConsumerWidget {
                         : null,
                     children: [
                       for (int d = 0; d < 6; d++)
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Theme.of(context).cardTheme.color,
-                              borderRadius: l == 9 - 1
-                                  ? d == 0
-                                      ? const BorderRadius.only(
-                                          bottomLeft: Radius.circular(25))
-                                      : d == 6 - 1
-                                          ? const BorderRadius.only(
-                                              bottomRight: Radius.circular(25))
-                                          : null
-                                  : null),
-                          margin: l == 0 || l == 4 || l == 7
-                              ? const EdgeInsets.only(bottom: 5)
-                              : null,
-                          height: 60,
-                          alignment: Alignment.center,
-                          child: TextButton(
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              showModalBottomSheet(
-                                  showDragHandle: true,
-                                  context: context,
-                                  builder: (context) => BottomSheet(
-                                      className: lesson[d * 9 + l],
-                                      weekDay: d + 1,
-                                      lessonIdx: l));
-                            },
-                            onLongPress: () {
-                              final DateTime date = ref
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            showModalBottomSheet(
+                                showDragHandle: true,
+                                context: context,
+                                builder: (context) => BottomSheet(
+                                    className: lesson[d * 9 + l],
+                                    weekDay: d + 1,
+                                    lessonIdx: l));
+                          },
+                          onLongPress: () {
+                            final DateTime date = ref
+                                .watch(dateProvider)
+                                .thisWeek
+                                .add(Duration(days: 7 * week))
+                                .add(Duration(days: d + 1))
+                                .copyWith(
+                                  hour: classTimes[l].hour,
+                                  minute: classTimes[l].minute,
+                                  second: 0,
+                                );
+                            if (ref.watch(nowTimeProvider).isBefore(date)) {
+                              HapticFeedback.mediumImpact();
+                              ref.read(formProvider.notifier).dateChange(ref
                                   .watch(dateProvider)
                                   .thisWeek
                                   .add(Duration(days: 7 * week))
@@ -279,45 +292,143 @@ class TaskTableView extends ConsumerWidget {
                                     hour: classTimes[l].hour,
                                     minute: classTimes[l].minute,
                                     second: 0,
-                                  );
-                              if (ref.watch(nowTimeProvider).isBefore(date)) {
-                                HapticFeedback.mediumImpact();
-                                ref.read(formProvider.notifier).dateChange(ref
-                                    .watch(dateProvider)
-                                    .thisWeek
-                                    .add(Duration(days: 7 * week))
-                                    .add(Duration(days: d + 1))
-                                    .copyWith(
-                                      hour: classTimes[l].hour,
-                                      minute: classTimes[l].minute,
-                                      second: 0,
-                                    ));
-                                showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (BuildContext context) =>
-                                        const TaskForm());
-                              }
-                            },
+                                  ));
+                              showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (BuildContext context) =>
+                                      const TaskForm());
+                            }
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Theme.of(context).cardTheme.color,
+                                borderRadius: l == 9 - 1
+                                    ? d == 0
+                                        ? const BorderRadius.only(
+                                            bottomLeft: Radius.circular(25))
+                                        : d == 6 - 1
+                                            ? const BorderRadius.only(
+                                                bottomRight:
+                                                    Radius.circular(25))
+                                            : null
+                                    : null),
+                            margin: l == 0 || l == 4 || l == 7
+                                ? const EdgeInsets.only(bottom: 5)
+                                : null,
+                            height: 60,
+                            alignment: Alignment.center,
                             child: Builder(builder: (context) {
                               final int weekDay = d + 1;
-                              int counter = 0;
-                              for (Task task in tasks) {
-                                if (task.classTime == l &&
-                                    task.date.weekday == weekDay) {
-                                  counter++;
-                                }
-                              }
-                              bool hasTask = counter > 0;
-
-                              return Text(
-                                lesson[d * 9 + l],
-                                style: TextStyle(
-                                  fontSize: hasTask ? 16 : 15,
-                                  fontWeight: hasTask ? FontWeight.w900 : null,
-                                  color: hasTask ? Colors.red : null,
-                                ),
+                              List<Task> subTasks = tasks
+                                  .where((task) =>
+                                      task.classTime == l &&
+                                      task.date.weekday == weekDay)
+                                  .toList();
+                              return Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(5),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        // Text(lesson[d * 9 + l],
+                                        //     textAlign: TextAlign.center,
+                                        //     style: TextStyle(
+                                        //       fontSize: 12,
+                                        //       fontWeight: subTasks.isNotEmpty
+                                        //           ? FontWeight.w900
+                                        //           : null,
+                                        //       color: subTasks.isNotEmpty
+                                        //           ? Colors.red
+                                        //           : (Theme.of(context)
+                                        //               .textButtonTheme
+                                        //               .style
+                                        //               ?.foregroundColor
+                                        //               ?.resolve({})),
+                                        //     )),
+                                        for (int i = 0;
+                                            i <
+                                                (subTasks.length <= 3
+                                                    ? subTasks.length
+                                                    : 2);
+                                            i++)
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 1),
+                                            child: DecoratedBox(
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primaryContainer,
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 1),
+                                                child: Text(
+                                                  subTasks[i].name,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onPrimaryContainer,
+                                                      fontSize: 10,
+                                                      overflow: TextOverflow
+                                                          .ellipsis),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        if (subTasks.length > 3)
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 1),
+                                            child: Text(
+                                              '+${subTasks.length - 2}',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    lesson[d * 9 + l],
+                                    style: TextStyle(
+                                        fontSize: subTasks.isNotEmpty ? 25 : 18,
+                                        fontWeight: subTasks.isNotEmpty
+                                            ? FontWeight.w900
+                                            : null,
+                                        color: subTasks.isNotEmpty
+                                            ? Colors.red.withAlpha(120)
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .primary),
+                                  ),
+                                ],
                               );
+                              // return Text(
+                              //   lesson[d * 9 + l],
+                              //   style: TextStyle(
+                              //     fontSize: hasTask ? 16 : 15,
+                              //     fontWeight: hasTask ? FontWeight.w900 : null,
+                              //     color: hasTask
+                              //         ? Colors.red
+                              //         : (Theme.of(context)
+                              //             .textButtonTheme
+                              //             .style
+                              //             ?.foregroundColor
+                              //             ?.resolve({})),
+                              //   ),
+                              // );
                             }),
                           ),
                         ),
@@ -348,200 +459,222 @@ class TaskListView extends ConsumerWidget {
       ),
       elevation: showDateTitle ? 1 : 0,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: GroupedListView<Task, int>(
-        physics: const BouncingScrollPhysics(),
-        elements: tasks,
-        groupBy: (task) => task.top ? -1 : task.date.weekday % 7,
-        groupHeaderBuilder: (Task task) => showDateTitle
-            ? ColoredBox(
-                color: headerColor,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Text(
-                    task.top
-                        ? '置頂'
-                        : DateFormat('yyyy/MM/dd EE', 'zh-TW')
-                            .format(task.date),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-              )
-            : const SizedBox(),
-        stickyHeaderBackgroundColor: Colors.transparent,
-        separator: const Divider(
-          thickness: 0.5,
-          indent: 80,
-          endIndent: 20,
-          height: 0,
-        ),
-        itemBuilder: (context, Task task) {
-          String lessonName = [-1, 0, 8].contains(task.classTime)
-              ? DateFormat('HH:mm', 'zh-TW').format(task.date)
-              : '第${task.classTime}節';
-          return InkWell(
-            onLongPress: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return TaskDetail(task, lessonName);
-                },
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
+      child: Builder(
+        builder: (context) {
+          if (tasks.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: Checkbox(
-                      value: ref.watch(todoProvider).contains(task.taskId),
-                      onChanged: (value) {
-                        HapticFeedback.mediumImpact();
-                        ref.read(todoProvider.notifier).changeData(task.taskId);
-                      },
-                    ),
+                  const Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.blue,
+                    size: 50,
                   ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          spacing: 5,
-                          crossAxisAlignment: WrapCrossAlignment.end,
-                          children: [
-                            if (task.top)
-                              const Icon(
-                                Icons.push_pin,
-                                color: Colors.red,
-                                size: 25,
-                              ),
-                            Text(
-                              task.name,
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        if (!short)
-                          Text(
-                            '$lessonName ${[
-                              '考試',
-                              '作業',
-                              '報告',
-                              '提醒',
-                              '繳交',
-                            ][task.type]}',
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                        if (!short)
-                          Text(
-                            usersData[task.userId] ?? '',
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: PopupMenuButton(
-                      itemBuilder: (context) => <PopupMenuEntry>[
-                        PopupMenuItem(
-                            enabled: task.userId ==
-                                ref.watch(authProvider).user?.uid,
-                            value: 'top',
-                            child: Row(
-                              children: [
-                                Icon(task.top
-                                    ? Icons.push_pin_outlined
-                                    : Icons.push_pin),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(task.top ? '取消置頂' : '置頂'),
-                              ],
-                            )),
-                        const PopupMenuItem(
-                            value: 'copy',
-                            child: Row(
-                              children: [
-                                Icon(Icons.copy),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text('複製項目'),
-                              ],
-                            )),
-                        const PopupMenuItem(
-                            enabled: false,
-                            value: 'star',
-                            child: Row(
-                              children: [
-                                Icon(Icons.star),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text('標記星號'),
-                              ],
-                            )),
-                        PopupMenuItem(
-                            enabled: task.userId ==
-                                ref.watch(authProvider).user?.uid,
-                            value: 'edit',
-                            child: const Row(
-                              children: [
-                                Icon(Icons.edit_note),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text('修改'),
-                              ],
-                            )),
-                      ],
-                      onSelected: (value) async {
-                        HapticFeedback.selectionClick();
-                        switch (value) {
-                          case 'top':
-                            task.pinTop(ref);
-                            break;
-                          case 'edit':
-                            ref.read(formProvider.notifier).startUpdate(task);
-                            showDialog(
-                              context: context,
-                              builder: (context) => const TaskForm(),
-                            );
-                            break;
-                          case 'star':
-                            break;
-                          case 'copy':
-                            await Clipboard.setData(
-                                ClipboardData(text: task.name));
-                            toastification.show(
-                              type: ToastificationType.info,
-                              style: ToastificationStyle.flatColored,
-                              title: const Text("已複製到剪貼簿"),
-                              description: Text(task.name),
-                              alignment: Alignment.topCenter,
-                              showProgressBar: false,
-                              autoCloseDuration:
-                                  const Duration(milliseconds: 1500),
-                            );
-                            break;
-                        }
-                      },
-                      tooltip: '更多',
-                    ),
-                  ),
+                  Text(
+                      '${showDateTitle ? '這週' : '這節課'}沒有${!showDateTitle || ref.watch(pastSwitchProvider) ? '' : '即將到來的'}事項')
                 ],
               ),
-            ),
-          );
+            );
+          } else {
+            return GroupedListView<Task, int>(
+              physics: const BouncingScrollPhysics(),
+              elements: tasks,
+              groupBy: (task) => task.top ? -1 : task.date.weekday % 7,
+              groupHeaderBuilder: (Task task) => showDateTitle
+                  ? ColoredBox(
+                      color: headerColor,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        child: Text(
+                          task.top
+                              ? '置頂'
+                              : DateFormat('yyyy/MM/dd EE', 'zh-TW')
+                                  .format(task.date),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      ),
+                    )
+                  : const SizedBox(),
+              stickyHeaderBackgroundColor: Colors.transparent,
+              separator: const Divider(
+                thickness: 0.5,
+                indent: 80,
+                endIndent: 20,
+                height: 0,
+              ),
+              itemBuilder: (context, Task task) {
+                String lessonName = [-1, 0, 8].contains(task.classTime)
+                    ? DateFormat('HH:mm', 'zh-TW').format(task.date)
+                    : '第${task.classTime}節';
+                return InkWell(
+                  onLongPress: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return TaskDetail(task, lessonName);
+                      },
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Checkbox(
+                            value:
+                                ref.watch(todoProvider).contains(task.taskId),
+                            onChanged: (value) {
+                              HapticFeedback.mediumImpact();
+                              ref
+                                  .read(todoProvider.notifier)
+                                  .changeData(task.taskId);
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Wrap(
+                                spacing: 5,
+                                crossAxisAlignment: WrapCrossAlignment.end,
+                                children: [
+                                  if (task.top)
+                                    const Icon(
+                                      Icons.push_pin,
+                                      color: Colors.red,
+                                      size: 25,
+                                    ),
+                                  Text(
+                                    task.name,
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              if (!short)
+                                Text(
+                                  '$lessonName ${[
+                                    '考試',
+                                    '作業',
+                                    '報告',
+                                    '提醒',
+                                    '繳交',
+                                  ][task.type]}',
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                              if (!short)
+                                Text(
+                                  usersData[task.userId] ?? '',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: PopupMenuButton(
+                            itemBuilder: (context) => <PopupMenuEntry>[
+                              PopupMenuItem(
+                                  value: 'top',
+                                  child: Row(
+                                    children: [
+                                      Icon(task.top
+                                          ? Icons.push_pin_outlined
+                                          : Icons.push_pin),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(task.top ? '取消置頂' : '置頂'),
+                                    ],
+                                  )),
+                              const PopupMenuItem(
+                                  value: 'copy',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.copy),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text('複製項目'),
+                                    ],
+                                  )),
+                              const PopupMenuItem(
+                                  enabled: false,
+                                  value: 'star',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.star),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text('標記星號'),
+                                    ],
+                                  )),
+                              const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_note),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text('修改'),
+                                    ],
+                                  )),
+                            ],
+                            onSelected: (value) async {
+                              HapticFeedback.selectionClick();
+                              switch (value) {
+                                case 'top':
+                                  task.pinTop(ref);
+                                  break;
+                                case 'edit':
+                                  ref
+                                      .read(formProvider.notifier)
+                                      .startUpdate(task);
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => const TaskForm(),
+                                  );
+                                  break;
+                                case 'star':
+                                  break;
+                                case 'copy':
+                                  await Clipboard.setData(
+                                      ClipboardData(text: task.name));
+                                  toastification.show(
+                                    type: ToastificationType.info,
+                                    style: ToastificationStyle.flatColored,
+                                    title: const Text("已複製到剪貼簿"),
+                                    description: Text(task.name),
+                                    alignment: Alignment.topCenter,
+                                    showProgressBar: false,
+                                    autoCloseDuration:
+                                        const Duration(milliseconds: 1500),
+                                  );
+                                  break;
+                              }
+                            },
+                            tooltip: '更多',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              useStickyGroupSeparators: true, // optional
+            );
+          }
         },
-        useStickyGroupSeparators: true, // optional
       ),
     );
   }
@@ -734,6 +867,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextFormField(
+                  selectionHeightStyle: BoxHeightStyle.strut,
                   controller: _controller,
                   decoration: const InputDecoration(
                     hintText: '請輸入完整，如：英文U1單字',

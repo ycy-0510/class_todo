@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:class_todo_list/logic/submit_notifier.dart';
 import 'package:class_todo_list/page/home_page.dart';
 import 'package:class_todo_list/provider.dart';
@@ -17,61 +19,78 @@ class HomeSubmittedBody extends ConsumerWidget {
     Map<String, String> usersData = ref.watch(usersProvider);
     return LoadingView(
         loading: submittedState.loading,
-        child: ListView.separated(
-          itemCount: submittedState.submittedItems.length,
-          itemBuilder: (context, idx) {
-            Submitted submitted = submittedState.submittedItems[idx];
-            bool done = submitted.done.contains(ref.watch(selfNumberProvider));
-            return Card(
-              clipBehavior: Clip.hardEdge,
-              margin: submittedState.submittedItems.length == 1
-                  ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
-                  : idx == 0
-                      ? const EdgeInsets.fromLTRB(20, 10, 20, 0)
-                      : idx == submittedState.submittedItems.length - 1
-                          ? const EdgeInsets.fromLTRB(20, 0, 20, 10)
-                          : const EdgeInsets.symmetric(horizontal: 20),
-              shape: submittedState.submittedItems.length == 1
-                  ? RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25))
-                  : idx == 0
-                      ? const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(25),
-                              topRight: Radius.circular(25)))
-                      : idx == submittedState.submittedItems.length - 1
+        child: Builder(builder: (context) {
+          if (submittedState.submittedItems.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.blue,
+                    size: 50,
+                  ),
+                  Text('目前沒有繳交項目')
+                ],
+              ),
+            );
+          } else {
+            return ListView.separated(
+              itemCount: submittedState.submittedItems.length,
+              itemBuilder: (context, idx) {
+                Submitted submitted = submittedState.submittedItems[idx];
+                bool done =
+                    submitted.done.contains(ref.watch(selfNumberProvider));
+                return Card(
+                  clipBehavior: Clip.hardEdge,
+                  margin: submittedState.submittedItems.length == 1
+                      ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
+                      : idx == 0
+                          ? const EdgeInsets.fromLTRB(20, 10, 20, 0)
+                          : idx == submittedState.submittedItems.length - 1
+                              ? const EdgeInsets.fromLTRB(20, 0, 20, 10)
+                              : const EdgeInsets.symmetric(horizontal: 20),
+                  shape: submittedState.submittedItems.length == 1
+                      ? RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25))
+                      : idx == 0
                           ? const RoundedRectangleBorder(
                               borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(25),
-                                  bottomRight: Radius.circular(25)))
-                          : const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero),
-              child: ListTile(
-                leading: Icon(Icons.text_snippet_outlined,
-                    color: done ||
-                            !usersNumber.values
-                                .contains(ref.watch(selfNumberProvider))
-                        ? null
-                        : Colors.red),
-                title: Text(
-                  '${submitted.name} ${submitted.done.length}/${usersNumber.keys.length}',
-                  style: TextStyle(
-                      color: done ||
-                              !usersNumber.values
-                                  .contains(ref.watch(selfNumberProvider))
-                          ? null
-                          : Colors.red),
-                ),
-                subtitle: Wrap(
-                  spacing: 5,
-                  children: [
-                    Text(usersData[submitted.userId] ?? '未知使用者'),
-                    Text(
-                        '截止日期：${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(submitted.date)}'),
-                  ],
-                ),
-                trailing:
-                    !usersNumber.keys.contains(ref.watch(selfNumberProvider))
+                                  topLeft: Radius.circular(25),
+                                  topRight: Radius.circular(25)))
+                          : idx == submittedState.submittedItems.length - 1
+                              ? const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(25),
+                                      bottomRight: Radius.circular(25)))
+                              : const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.zero),
+                  child: ListTile(
+                    leading: Icon(Icons.text_snippet_outlined,
+                        color: done ||
+                                !usersNumber.values
+                                    .contains(ref.watch(selfNumberProvider))
+                            ? null
+                            : Colors.red),
+                    title: Text(
+                      '${submitted.name} ${submitted.done.length}/${usersNumber.keys.length}',
+                      style: TextStyle(
+                          color: done ||
+                                  !usersNumber.values
+                                      .contains(ref.watch(selfNumberProvider))
+                              ? null
+                              : Colors.red),
+                    ),
+                    subtitle: Wrap(
+                      spacing: 5,
+                      children: [
+                        Text(usersData[submitted.userId] ?? '未知使用者'),
+                        Text(
+                            '截止日期：${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(submitted.date)}'),
+                      ],
+                    ),
+                    trailing: !usersNumber.keys
+                            .contains(ref.watch(selfNumberProvider))
                         ? null
                         : Text(
                             done ? '已繳交' : '缺交',
@@ -79,18 +98,21 @@ class HomeSubmittedBody extends ConsumerWidget {
                                 fontSize: 15,
                                 color: done ? Colors.green : Colors.red),
                           ),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) =>
-                        SubmittedDone(submitted.submittedId))),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) =>
+                            SubmittedDone(submitted.submittedId))),
+                  ),
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) =>
+                  const Divider(
+                height: 0,
+                indent: 70,
+                endIndent: 20,
               ),
             );
-          },
-          separatorBuilder: (BuildContext context, int index) => const Divider(
-            height: 0,
-            indent: 70,
-            endIndent: 20,
-          ),
-        ));
+          }
+        }));
   }
 }
 
@@ -150,6 +172,7 @@ class SubmittedDone extends ConsumerWidget {
                         SizedBox(
                           width: 300,
                           child: TextFormField(
+                            selectionHeightStyle: BoxHeightStyle.strut,
                             onTapOutside: (event) {
                               FocusManager.instance.primaryFocus?.unfocus();
                             },

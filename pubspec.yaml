@@ -1,7 +1,7 @@
 name: class_todo_list
 description: "A fully shared online contact book"
 publish_to: "none"
-version: 2.2.0+25
+version: 2.2.0+28
 
 environment:
   sdk: ">=3.1.2 <4.0.0"
@@ -19,7 +19,7 @@ dependencies:
   firebase_messaging: ^15.1.2
   flutter_riverpod: ^2.5.1
   fluttertoast: ^8.2.2
-  connectivity_plus: ^4.0.2
+  connectivity_plus: ^6.1.0
   flutter_native_splash: ^2.3.2
   go_router: ^11.0.0
   shared_preferences: ^2.2.1
@@ -41,18 +41,32 @@ dependencies:
   smooth_page_indicator: ^1.2.0+3
   firebase_remote_config: ^5.1.3
   permission_handler: ^11.3.1
+  animations: ^2.0.11
+  feedback: 
+    git:
+      url: https://github.com/ycy-0510/feedback.git
+      ref: master
+      path: feedback
+  feedback_sentry:
+    git:
+      url: https://github.com/ycy-0510/feedback.git
+      ref: temp
+      path: feedback_sentry
+  sentry_flutter: ^8.9.0
+  introduction_screen: ^3.1.14
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/img/
     - assets/config/
+    - assets/img/intro/
 
 flutter_native_splash:
   color: "#f3f2f7"
@@ -65,9 +79,12 @@ flutter_native_splash:
 
 flutter_launcher_icons:
   android: true
-  ios: true
-  image_path: "assets/img/appicon.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
+  ios: true
+  image_path_ios_dark_transparent: assets/img/ios_dark_icon.png
+  image_path_ios_tinted_grayscale: assets/img/ios_tinted_icon.png
+  image_path: "assets/img/appicon.png"
+ 
   macos:
     generate: true
     image_path: "assets/img/icon.png"

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,6 +75,7 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          selectionHeightStyle: BoxHeightStyle.strut,
                           onTapOutside: (event) =>
                               FocusManager.instance.primaryFocus?.unfocus(),
                           controller: _controllerGroup,
@@ -103,6 +106,7 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
                       const SizedBox(width: 16.0),
                       Expanded(
                         child: TextFormField(
+                          selectionHeightStyle: BoxHeightStyle.strut,
                           onTapOutside: (event) =>
                               FocusManager.instance.primaryFocus?.unfocus(),
                           controller: _controllerPeople,

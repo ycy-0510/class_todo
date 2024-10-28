@@ -34,7 +34,8 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
           scopes: [CalendarApi.calendarReadonlyScope],
         ).signInSilently().catchError((onError) => null);
         httpClient = GoogleHttpClient(await googleUser!.authHeaders);
-        timer = Timer.periodic(const Duration(minutes: 60), (timer) async {
+        timer = Timer.periodic(const Duration(minutes: 60, seconds: 30),
+            (timer) async {
           final GoogleSignInAccount? googleUser = await GoogleSignIn(
             scopes: [CalendarApi.calendarReadonlyScope],
           ).signInSilently().catchError((onError) => null);

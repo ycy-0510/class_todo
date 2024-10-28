@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/gestures.dart';
@@ -127,6 +129,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: TextFormField(
+                      selectionHeightStyle: BoxHeightStyle.strut,
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
@@ -153,6 +156,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: TextFormField(
+                      selectionHeightStyle: BoxHeightStyle.strut,
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
