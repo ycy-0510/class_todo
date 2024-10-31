@@ -139,7 +139,7 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Text('若只要抽籤，請輸入於組別數，每組人數填0。'),
+                  child: Text('若只要抽籤，請輸入於組別數，每組人數填1。'),
                 ),
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(),

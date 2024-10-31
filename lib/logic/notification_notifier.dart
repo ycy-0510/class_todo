@@ -31,15 +31,9 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
   }
 
   void init() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     NotificationSettings settings = await messaging.getNotificationSettings();
     state = NotificationState(
         NotificationAuthorizationStatus.notDetermined, '', false);
-    if (prefs.getString(notificationKey) == null) {
-      Future.delayed(const Duration(seconds: 5), () {
-        state = state.copy(openBottomSheet: true);
-      });
-    }
     switch (settings.authorizationStatus) {
       case AuthorizationStatus.authorized:
         String? token = await messaging.getToken();

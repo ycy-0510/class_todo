@@ -51,80 +51,95 @@ class IntroPageState extends ConsumerState<IntroPage> {
           body: "只要隨手記下，不用再每天回想有哪些考試或作業。",
           image: _buildImage('intro-task.jpg'),
           decoration: pageDecoration,
+          useRowInLandscape: true,
         ),
         PageViewModel(
           title: "輕鬆清點班上事務",
           body: "透過清點功能，你可以在同學繳交時登記，直接分享缺交名單到班群。",
           image: _buildImage('intro-submit.jpg'),
           decoration: pageDecoration,
+          useRowInLandscape: true,
         ),
         PageViewModel(
           title: "即時掌握校園公告",
           body: "在app內直接瀏覽最新公告並標記已讀，不用開啟學校網站也不怕漏看。",
           image: _buildImage('intro-schoolannounce.jpg'),
           decoration: pageDecoration,
+          useRowInLandscape: true,
         ),
         PageViewModel(
           title: "共享好處多",
           body: "透過共享，平均每人可減少60%時間管理學校待辦事項。",
           image: _buildImage('intro-sharing.jpg'),
           decoration: pageDecoration,
+          useRowInLandscape: true,
         ),
         PageViewModel(
           title: "更多功能等你來使用",
           body: "這裡還有其他附加功能，例如：班級名單、抽籤分組等。",
           image: _buildImage('intro-morefeatures.jpg'),
           decoration: pageDecoration,
+          useRowInLandscape: true,
         ),
         PageViewModel(
           title: "使用後發現功能不夠嗎？",
           body: "你可以使用app內的意見回饋或傳送mail，我們樂意聆聽你的想法。",
           image: _buildImage('intro-feedbacks.jpg'),
           decoration: pageDecoration,
+          useRowInLandscape: true,
         ),
         PageViewModel(
           title: "最重要的，開啟通知",
-          body: "開啟通知可以讓你在每天固定時間，得知24小時內的事項，不怕考試前才想到。",
+          bodyWidget: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                "開啟通知可以讓你在每天固定時間，得知24小時內的事項，不怕考試前才想到。",
+                style: bodyStyle,
+              ),
+              const SizedBox(
+                height: 80,
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                child: ElevatedButton(
+                  onPressed: () {
+                    switch (
+                        ref.read(notificationProvider).authorizationStatus) {
+                      case NotificationAuthorizationStatus.authorized:
+                        toastification.show(
+                          type: ToastificationType.info,
+                          style: ToastificationStyle.flatColored,
+                          title: const Text("你已成功啟用通知"),
+                          alignment: Alignment.topCenter,
+                          showProgressBar: false,
+                          autoCloseDuration: const Duration(milliseconds: 1500),
+                        );
+                        _onIntroEnd(context);
+                        break;
+                      case NotificationAuthorizationStatus.appDenied:
+                      case NotificationAuthorizationStatus.notDetermined:
+                        ref
+                            .read(notificationProvider.notifier)
+                            .openBottomSheet();
+                        break;
+                      case NotificationAuthorizationStatus.systemDenied:
+                        openAppSettings();
+                        break;
+                    }
+                  },
+                  child: const Text(
+                    '開啟通知',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                ),
+              ),
+            ],
+          ),
           image: _buildImage('intro-notification.jpg'),
-          footer: Padding(
-            padding: const EdgeInsets.all(5),
-            child: ElevatedButton(
-              onPressed: () {
-                switch (ref.read(notificationProvider).authorizationStatus) {
-                  case NotificationAuthorizationStatus.authorized:
-                    toastification.show(
-                      type: ToastificationType.info,
-                      style: ToastificationStyle.flatColored,
-                      title: const Text("你已成功啟用通知"),
-                      alignment: Alignment.topCenter,
-                      showProgressBar: false,
-                      autoCloseDuration: const Duration(milliseconds: 1500),
-                    );
-                    _onIntroEnd(context);
-                    break;
-                  case NotificationAuthorizationStatus.appDenied:
-                  case NotificationAuthorizationStatus.notDetermined:
-                    ref.read(notificationProvider.notifier).openBottomSheet();
-                    break;
-                  case NotificationAuthorizationStatus.systemDenied:
-                    openAppSettings();
-                    break;
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.lightBlue,
-              ),
-              child: const Text(
-                '開啟通知',
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ),
-          ),
-          decoration: pageDecoration.copyWith(
-            bodyFlex: 5,
-            imageFlex: 8,
-            safeArea: 80,
-          ),
+          decoration: pageDecoration,
+          useRowInLandscape: true,
         ),
       ],
       onDone: () => _onIntroEnd(context),
@@ -133,7 +148,6 @@ class IntroPageState extends ConsumerState<IntroPage> {
       skipOrBackFlex: 0,
       nextFlex: 0,
       showBackButton: false,
-      //rtl: true, // Display as right-to-left
       back: const Icon(Icons.arrow_back),
       skip: const Text('跳過', style: TextStyle(fontWeight: FontWeight.w600)),
       next: const Icon(Icons.arrow_forward),
