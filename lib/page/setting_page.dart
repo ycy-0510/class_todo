@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:class_todo_list/adaptive_action.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -282,22 +283,20 @@ class SettingPageBody extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
             child: OutlinedButton.icon(
               onPressed: () {
-                showDialog<bool>(
+                showAdaptiveDialog<bool>(
                   context: context,
-                  builder: (context) => AlertDialog(
+                  builder: (context) => AlertDialog.adaptive(
                     title: const Text('刪除帳號'),
                     content: const Text('請注意：刪除帳號後將無法復原，是否要刪除帳號？'),
                     actions: [
-                      OutlinedButton(
+                      AdaptiveAction(
                         onPressed: () {
                           Navigator.of(context).pop(true);
                         },
-                        style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red,
-                            side: const BorderSide(color: Colors.red)),
+                        danger: true,
                         child: const Text('刪除'),
                       ),
-                      OutlinedButton(
+                      AdaptiveAction(
                         onPressed: () {
                           Navigator.of(context).pop(false);
                         },

@@ -3,6 +3,7 @@ import 'package:class_todo_list/page/home_page.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:dart_rss/dart_rss.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:intl/intl.dart';
@@ -67,39 +68,70 @@ class AnnouncesListView extends ConsumerWidget {
                               bottomRight: Radius.circular(25)))
                       : const RoundedRectangleBorder(
                           borderRadius: BorderRadius.zero),
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            minLeadingWidth: 15,
-            leading: readState.contains(guid)
-                ? const SizedBox.shrink()
-                : const Icon(
-                    Icons.circle,
-                    color: Colors.blue,
-                    size: 15,
-                  ),
-            title: Text(
-              announces[idx].title ?? '無標題',
-              style: TextStyle(
-                  fontWeight:
-                      readState.contains(guid) ? null : FontWeight.bold),
+          child: Dismissible(
+            key: ValueKey(guid),
+            background: Container(
+              color: Colors.green,
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 16),
+              child: const Text(
+                '已讀',
+                style: TextStyle(fontSize: 20),
+              ),
             ),
-            subtitle: publish != null
-                ? Text(
-                    '發布於${DateFormat('yyyy/MM/dd HH:mm', 'zh-TW').format(publish)}')
-                : null,
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return RssPreview(
-                      announces[idx].title,
-                      announces[idx].description,
-                      announces[idx].content?.value,
-                      announces[idx].link);
-                },
-              ));
-              ref.read(rssReadProvider.notifier).markRead(guid!);
+            secondaryBackground: Container(
+              color: Colors.blue,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 16),
+              child: const Text(
+                '未讀',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+            confirmDismiss: (direction) async {
+              if (direction == DismissDirection.startToEnd) {
+                ref.read(rssReadProvider.notifier).markRead(guid!);
+                HapticFeedback.selectionClick();
+              } else {
+                ref.read(rssReadProvider.notifier).markUnread(guid!);
+                HapticFeedback.selectionClick();
+              }
+              return false;
             },
+            child: ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              minLeadingWidth: 15,
+              leading: readState.contains(guid)
+                  ? const SizedBox.shrink()
+                  : const Icon(
+                      Icons.circle,
+                      color: Colors.blue,
+                      size: 15,
+                    ),
+              title: Text(
+                announces[idx].title ?? '無標題',
+                style: TextStyle(
+                    fontWeight:
+                        readState.contains(guid) ? null : FontWeight.bold),
+              ),
+              subtitle: publish != null
+                  ? Text(
+                      '發布於${DateFormat('yyyy/MM/dd HH:mm', 'zh-TW').format(publish)}')
+                  : null,
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) {
+                    return RssPreview(
+                        announces[idx].title,
+                        announces[idx].description,
+                        announces[idx].content?.value,
+                        announces[idx].link);
+                  },
+                ));
+                ref.read(rssReadProvider.notifier).markRead(guid!);
+              },
+            ),
           ),
         );
       },

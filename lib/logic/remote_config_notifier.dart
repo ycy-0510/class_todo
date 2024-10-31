@@ -1,6 +1,7 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:toastification/toastification.dart';
 
 class RemoteConfigNotifier extends Notifier<bool> {
@@ -17,8 +18,10 @@ class RemoteConfigNotifier extends Notifier<bool> {
         fetchTimeout: const Duration(minutes: 1),
         minimumFetchInterval: const Duration(hours: 1),
       ));
-      await _remoteConfig.setDefaults(const {
+      await _remoteConfig.setDefaults({
         "server_url": 'https://v2.apis.classtodo.ycydev.org',
+        "version": (await PackageInfo.fromPlatform()).version,
+        "allow_cancel_update": true
       });
       _remoteConfig.onConfigUpdated.listen((event) async {
         await _remoteConfig.activate();
@@ -29,6 +32,8 @@ class RemoteConfigNotifier extends Notifier<bool> {
   }
 
   String getServerUrl() => _remoteConfig.getString('server_url');
+  String getRequiredVersion() => _remoteConfig.getString('version');
+  bool getAllowCancelUpdate() => _remoteConfig.getBool('allow_cancel_update');
 
   void _showError(String error) {
     toastification.show(

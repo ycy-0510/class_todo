@@ -44,6 +44,24 @@ class RssReadNotifier extends StateNotifier<List<String>> {
     state = rssReadList;
   }
 
+  Future<void> markUnread(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int rssIndex = _ref.read(schoolAnnouncementProvider).rssEndPointIdx;
+    String key = sha256
+        .convert(utf8.encode(
+            _ref.read(rssUrlProvider).rssEndpoints[rssIndex].url.origin))
+        .toString();
+    List<String> rssReadList =
+        List.generate(state.length, (index) => state[index]);
+    if (rssReadList.contains(id)) {
+      rssReadList.remove(id);
+    } else {
+      return;
+    }
+    prefs.setStringList(key, rssReadList);
+    state = rssReadList;
+  }
+
   Future<void> readAll() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int rssIndex = _ref.read(schoolAnnouncementProvider).rssEndPointIdx;

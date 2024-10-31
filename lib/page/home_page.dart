@@ -1,3 +1,4 @@
+import 'package:class_todo_list/adaptive_action.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/rss_url_notifier.dart';
 import 'package:class_todo_list/page/intro_page.dart';
@@ -152,7 +153,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ][ref.watch(bottomTabProvider)],
         actions: [
-          if (ref.watch(bottomTabProvider) == 0)
+          if (ref.watch(bottomTabProvider) == 0 &&
+              ref.watch(taskViewTypeProvider) != TaskViewType.calendar)
             IconButton(
               tooltip: '新增事項',
               onPressed: () {
@@ -169,7 +171,51 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
           if (ref.watch(bottomTabProvider) == 2) ...[
-            PopupMenu<int>(
+            IconButton(
+              onPressed: () => showAdaptiveDialog(
+                context: context,
+                builder: (context) => AlertDialog.adaptive(
+                  title: const Text('是否全部已讀'),
+                  content: const Text('此操作將無法復原！'),
+                  actions: [
+                    AdaptiveAction(
+                      onPressed: () {
+                        Navigator.of(context).pop(true);
+                        toastification.show(
+                          type: ToastificationType.info,
+                          style: ToastificationStyle.flatColored,
+                          title: const Text("已全部標示已讀"),
+                          alignment: Alignment.topCenter,
+                          showProgressBar: false,
+                          autoCloseDuration: const Duration(milliseconds: 1500),
+                        );
+                      },
+                      danger: true,
+                      child: const Text('已讀'),
+                    ),
+                    AdaptiveAction(
+                      onPressed: () {
+                        Navigator.of(context).pop(false);
+                      },
+                      child: const Text('取消'),
+                    )
+                  ],
+                ),
+              ).then((value) {
+                if (value == true) {
+                  ref.read(rssReadProvider.notifier).readAll();
+                }
+              }),
+              icon: const Icon(
+                Icons.done_all,
+                color: Colors.blue,
+              ),
+              tooltip: '標示已讀',
+            ),
+            IconButton(
+              onPressed: () => ref
+                  .read(rssReadFilterProvider.notifier)
+                  .update((state) => !state),
               icon: Container(
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(100),
@@ -186,59 +232,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       : Colors.blue,
                 ),
               ),
-              item: const [
-                PopupMenuItem(
-                  value: 0,
-                  child: Text('全部已讀'),
-                ),
-              ],
-              onPressed: () => ref
-                  .read(rssReadFilterProvider.notifier)
-                  .update((state) => !state),
-              onSelected: (value) {
-                switch (value) {
-                  case 0:
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('是否全部已讀'),
-                        content: const Text('此操作將無法復原！'),
-                        actions: [
-                          OutlinedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(true);
-                              toastification.show(
-                                type: ToastificationType.info,
-                                style: ToastificationStyle.flatColored,
-                                title: const Text("已全部標示已讀"),
-                                alignment: Alignment.topCenter,
-                                showProgressBar: false,
-                                autoCloseDuration:
-                                    const Duration(milliseconds: 1500),
-                              );
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
-                            ),
-                            child: const Text('已讀'),
-                          ),
-                          OutlinedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(false);
-                            },
-                            child: const Text('取消'),
-                          )
-                        ],
-                      ),
-                    ).then((value) {
-                      if (value == true) {
-                        ref.read(rssReadProvider.notifier).readAll();
-                      }
-                    });
-                    break;
-                }
-              },
+              tooltip: '過濾',
             ),
             IconButton(
               onPressed: () => showSearch(

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -13,7 +12,6 @@ import 'package:toastification/toastification.dart';
 
 class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
   final Ref _ref;
-  Timer? timer;
   String key = 'linkGoogle';
   GoogleApiNotifier(this._ref) : super(GoogleApiState()) {
     init();
@@ -27,26 +25,35 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
   Future<void> init() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool loggedIn = prefs.getBool(key) ?? false;
-    GoogleHttpClient? httpClient;
     try {
+      state = GoogleApiState(loggedIn: false);
       if (loggedIn) {
         final GoogleSignInAccount? googleUser = await GoogleSignIn(
+          forceCodeForRefreshToken: true,
           scopes: [CalendarApi.calendarReadonlyScope],
         ).signInSilently().catchError((onError) => null);
-        httpClient = GoogleHttpClient(await googleUser!.authHeaders);
-        timer = Timer.periodic(const Duration(minutes: 60, seconds: 30),
-            (timer) async {
-          final GoogleSignInAccount? googleUser = await GoogleSignIn(
-            scopes: [CalendarApi.calendarReadonlyScope],
-          ).signInSilently().catchError((onError) => null);
-          httpClient = GoogleHttpClient(await googleUser!.authHeaders);
-          state = state.updateClient(httpClient!);
-        });
+        GoogleHttpClient httpClient =
+            GoogleHttpClient(await googleUser!.authHeaders);
+        state = state.updateClient(httpClient, DateTime.now());
       }
-      state = GoogleApiState(loggedIn: loggedIn, googleHttpClient: httpClient);
     } catch (e) {
       _showError(e.toString());
     }
+
+    Timer.periodic(const Duration(minutes: 1), (timer) async {
+      if (state.loggedIn) {
+        try {
+          final GoogleSignInAccount? googleUser = await GoogleSignIn(
+            scopes: [CalendarApi.calendarReadonlyScope],
+          ).signInSilently().catchError((onError) => null);
+          GoogleHttpClient httpClient =
+              GoogleHttpClient(await googleUser!.authHeaders);
+          state = state.updateClient(httpClient, DateTime.now());
+        } catch (e) {
+          _showError(e.toString());
+        }
+      }
+    });
   }
 
   void linkGoogle() async {
@@ -56,16 +63,13 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
         } else {
           final GoogleSignInAccount? googleUser = await GoogleSignIn(
             scopes: [CalendarApi.calendarReadonlyScope],
+            forceCodeForRefreshToken: true,
           ).signIn().catchError((onError) => null);
           final httpClient = GoogleHttpClient(await googleUser!.authHeaders);
-          state = GoogleApiState(loggedIn: true, googleHttpClient: httpClient);
-          timer = Timer.periodic(const Duration(minutes: 60), (timer) async {
-            final GoogleSignInAccount? googleUser = await GoogleSignIn(
-              scopes: [CalendarApi.calendarReadonlyScope],
-            ).signInSilently().catchError((onError) => null);
-            final httpClient = GoogleHttpClient(await googleUser!.authHeaders);
-            state = state.updateClient(httpClient);
-          });
+          state = GoogleApiState(
+            loggedIn: true,
+            googleHttpClient: httpClient,
+          );
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setBool(key, true);
         }
@@ -79,7 +83,6 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
     if (state.loggedIn) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool(key, false);
-      timer?.cancel();
       state = GoogleApiState();
     }
   }
@@ -102,7 +105,7 @@ class GoogleApiState {
   final bool loggedIn;
   final GoogleHttpClient? googleHttpClient;
 
-  GoogleApiState updateClient(GoogleHttpClient client) =>
+  GoogleApiState updateClient(GoogleHttpClient client, DateTime dateTime) =>
       GoogleApiState(loggedIn: true, googleHttpClient: client);
 }
 
