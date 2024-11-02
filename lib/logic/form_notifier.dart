@@ -16,7 +16,7 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
   void timeChange(TimeOfDay time) => state = state.copy(
       date: state.date.copyWith(hour: time.hour, minute: time.minute));
   void editFinish() =>
-      state = state.copy(name: '', type: 0, formStatus: TaskFormStatus.create);
+      state = state.copy(name: '', type: -1, formStatus: TaskFormStatus.create);
 
   void startUpdate(Task task) => state = state.copy(
         name: task.name,
@@ -100,7 +100,7 @@ enum TaskFormStatus { create, update }
 class TaskFormState {
   TaskFormState(
       {required this.name,
-      this.type = 0,
+      this.type = -1,
       required this.date,
       this.formStatus = TaskFormStatus.create,
       this.taskId});

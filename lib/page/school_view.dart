@@ -76,7 +76,10 @@ class AnnouncesListView extends ConsumerWidget {
               padding: const EdgeInsets.only(left: 16),
               child: const Text(
                 '已讀',
-                style: TextStyle(fontSize: 20),
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
               ),
             ),
             secondaryBackground: Container(
@@ -85,7 +88,10 @@ class AnnouncesListView extends ConsumerWidget {
               padding: const EdgeInsets.only(right: 16),
               child: const Text(
                 '未讀',
-                style: TextStyle(fontSize: 20),
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
               ),
             ),
             confirmDismiss: (direction) async {

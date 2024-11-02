@@ -34,12 +34,18 @@ class IntroPageState extends ConsumerState<IntroPage> {
   @override
   Widget build(BuildContext context) {
     const bodyStyle = TextStyle(fontSize: 19.0);
-
-    const pageDecoration = PageDecoration(
-      titleTextStyle: TextStyle(fontSize: 28.0, fontWeight: FontWeight.w700),
+    final pageDecoration = PageDecoration(
+      titleTextStyle:
+          const TextStyle(fontSize: 28.0, fontWeight: FontWeight.w700),
       bodyTextStyle: bodyStyle,
-      bodyPadding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+      bodyPadding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
       imagePadding: EdgeInsets.zero,
+      imageAlignment: MediaQuery.of(context).orientation == Orientation.portrait
+          ? Alignment.bottomCenter
+          : Alignment.center,
+      bodyAlignment: MediaQuery.of(context).orientation == Orientation.portrait
+          ? Alignment.topCenter
+          : Alignment.center,
     );
 
     return IntroductionScreen(

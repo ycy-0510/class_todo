@@ -211,7 +211,7 @@ ${controller.text}''',
                   },
                 );
               },
-              icon: const Icon(Icons.announcement),
+              icon: const Icon(Icons.share),
               tooltip: '發送繳交題提醒',
             ),
           )

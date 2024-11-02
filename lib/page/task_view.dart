@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:class_todo_list/logic/calendar_task_notifier.dart';
 import 'package:class_todo_list/logic/class_table_notifier.dart';
@@ -36,8 +37,7 @@ class HomeTaskBody extends ConsumerWidget {
           itemBuilder: (context, idx) {
             List<Task> tasks = tasksMap[idx - 1000] ?? [];
             List<Task> showTasks = [];
-            List<CalendarTask> calendarTask =
-                calendarTasksMap[idx - 1000] ?? [];
+            List<CalendarTask>? calendarTask = calendarTasksMap[idx - 1000];
             List<Task> importantTasks = [];
             bool showPast = ref.watch(pastSwitchProvider);
             for (int i = 0; i < tasks.length; i++) {
@@ -162,11 +162,15 @@ class HomeTaskBody extends ConsumerWidget {
                     ],
                   );
                 case TaskViewType.calendar:
-                  if (ref.watch(googleApiProvider).loggedIn) {
-                    return CalendarTaskListView(
-                      calendarTask,
-                      showDateTitle: true,
-                    );
+                  if (ref.watch(googleApiProvider).connected) {
+                    if (!ref.watch(googleApiProvider).hasError) {
+                      return CalendarTaskListView(
+                        calendarTask,
+                        showDateTitle: true,
+                      );
+                    } else {
+                      return const RetryGoogleApi();
+                    }
                   } else {
                     return Center(
                       child: OutlinedButton.icon(
@@ -181,6 +185,73 @@ class HomeTaskBody extends ConsumerWidget {
               }
             }
           }),
+    );
+  }
+}
+
+class RetryGoogleApi extends ConsumerStatefulWidget {
+  const RetryGoogleApi({super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _RetryGoogleApiState();
+}
+
+class _RetryGoogleApiState extends ConsumerState<RetryGoogleApi> {
+  Duration duration = const Duration(seconds: 30);
+  bool disabled = false;
+  Timer? countDown;
+
+  @override
+  void dispose() {
+    countDown?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          '權限取得錯誤',
+          style: TextStyle(fontSize: 18),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        OutlinedButton.icon(
+            onPressed: disabled
+                ? null
+                : () async {
+                    toastification.show(
+                      context: context,
+                      type: ToastificationType.info,
+                      style: ToastificationStyle.flatColored,
+                      title: const Text("正在嘗試取得權限"),
+                      alignment: Alignment.topCenter,
+                      showProgressBar: false,
+                      autoCloseDuration: const Duration(milliseconds: 1500),
+                    );
+                    setState(() {
+                      disabled = true;
+                    });
+                    await ref
+                        .watch(googleApiProvider.notifier)
+                        .renewHttpClient();
+                    countDown = Timer.periodic(const Duration(seconds: 1), (t) {
+                      setState(() {});
+                      if (t.tick == duration.inSeconds) {
+                        t.cancel();
+                        disabled = false;
+                        duration = duration * 2;
+                      }
+                    });
+                  },
+            icon: const Icon(Icons.refresh),
+            label: Text(countDown != null
+                ? '${duration.inSeconds - countDown!.tick}秒後再試一次'
+                : '再試一次')),
+      ],
     );
   }
 }
@@ -491,9 +562,10 @@ class TaskListView extends ConsumerWidget {
                 height: 0,
               ),
               itemBuilder: (context, Task task) {
-                String lessonName = [-1, 0, 8].contains(task.classTime)
-                    ? DateFormat('HH:mm', 'zh-TW').format(task.date)
-                    : '第${task.classTime}節';
+                String lessonName = ([-1, 0, 8].contains(task.classTime)
+                        ? ''
+                        : '第${task.classTime}節 ') +
+                    DateFormat('HH:mm', 'zh-TW').format(task.date);
                 return InkWell(
                   onLongPress: () {
                     showDialog(
@@ -671,7 +743,7 @@ class CalendarTaskListView extends ConsumerWidget {
 
   final bool showDateTitle;
   final bool short;
-  final List<CalendarTask> tasks;
+  final List<CalendarTask>? tasks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -684,124 +756,159 @@ class CalendarTaskListView extends ConsumerWidget {
       ),
       elevation: showDateTitle ? 1 : 0,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: GroupedListView<CalendarTask, int>(
-        physics: const BouncingScrollPhysics(),
-        elements: tasks,
-        groupBy: (task) => task.date.weekday % 7,
-        groupHeaderBuilder: (CalendarTask task) => showDateTitle
-            ? ColoredBox(
-                color: headerColor,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Text(
-                    DateFormat('yyyy/MM/dd EE', 'zh-TW').format(task.date),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-              )
-            : const SizedBox(),
-        stickyHeaderBackgroundColor: Colors.transparent,
-        separator: const Divider(
-          thickness: 0.5,
-          indent: 80,
-          endIndent: 20,
-          height: 0,
-        ),
-        itemBuilder: (context, CalendarTask task) {
-          String lessonName = [-1, 0, 8].contains(task.classTime)
-              ? DateFormat('HH:mm', 'zh-TW').format(task.date)
-              : '第${task.classTime}節';
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Row(
+      child: Builder(builder: (context) {
+        if (tasks == null) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Checkbox(
-                    value: ref.watch(todoProvider).contains(task.taskId),
-                    onChanged: (value) {
-                      HapticFeedback.mediumImpact();
-                      ref.read(todoProvider.notifier).changeData(task.taskId);
-                    },
-                  ),
+                CircularProgressIndicator.adaptive(),
+                SizedBox(
+                  height: 20,
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task.name,
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      const SizedBox(height: 2),
-                      if (!short)
-                        Text(
-                          '$lessonName ',
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  width: 5,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: PopupMenuButton(
-                    itemBuilder: (context) => <PopupMenuEntry>[
-                      const PopupMenuItem(
-                          value: 'copy',
-                          child: Row(
-                            children: [
-                              Icon(Icons.copy),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text('複製項目'),
-                            ],
-                          )),
-                      const PopupMenuItem(
-                          enabled: false,
-                          value: 'star',
-                          child: Row(
-                            children: [
-                              Icon(Icons.star),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text('標記星號'),
-                            ],
-                          )),
-                    ],
-                    onSelected: (value) async {
-                      HapticFeedback.selectionClick();
-                      switch (value) {
-                        case 'copy':
-                          await Clipboard.setData(
-                              ClipboardData(text: task.name));
-                          toastification.show(
-                            type: ToastificationType.info,
-                            style: ToastificationStyle.flatColored,
-                            title: const Text("已複製到剪貼簿"),
-                            alignment: Alignment.topCenter,
-                            showProgressBar: false,
-                            autoCloseDuration:
-                                const Duration(milliseconds: 1500),
-                          );
-                          break;
-                      }
-                    },
-                    tooltip: '更多',
-                  ),
-                ),
+                Text('努力讀取中'),
               ],
             ),
           );
-        },
-        useStickyGroupSeparators: true, // optional
-      ),
+        } else if (tasks!.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  color: Colors.blue,
+                  size: 50,
+                ),
+                Text(
+                    '${showDateTitle ? '這週' : '這節課'}沒有${!showDateTitle || ref.watch(pastSwitchProvider) ? '' : '即將到來的'}事項')
+              ],
+            ),
+          );
+        } else {
+          return GroupedListView<CalendarTask, int>(
+            physics: const BouncingScrollPhysics(),
+            elements: tasks!,
+            groupBy: (task) => task.date.weekday % 7,
+            groupHeaderBuilder: (CalendarTask task) => showDateTitle
+                ? ColoredBox(
+                    color: headerColor,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      child: Text(
+                        DateFormat('yyyy/MM/dd EE', 'zh-TW').format(task.date),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
+            stickyHeaderBackgroundColor: Colors.transparent,
+            separator: const Divider(
+              thickness: 0.5,
+              indent: 80,
+              endIndent: 20,
+              height: 0,
+            ),
+            itemBuilder: (context, CalendarTask task) {
+              String lessonName = ([-1, 0, 8].contains(task.classTime)
+                      ? ''
+                      : '第${task.classTime}節 ') +
+                  DateFormat('HH:mm', 'zh-TW').format(task.date);
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: Checkbox(
+                        value: ref.watch(todoProvider).contains(task.taskId),
+                        onChanged: (value) {
+                          HapticFeedback.mediumImpact();
+                          ref
+                              .read(todoProvider.notifier)
+                              .changeData(task.taskId);
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            task.name,
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                          const SizedBox(height: 2),
+                          if (!short)
+                            Text(
+                              lessonName,
+                              style: const TextStyle(fontSize: 15),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: PopupMenuButton(
+                        itemBuilder: (context) => <PopupMenuEntry>[
+                          const PopupMenuItem(
+                              value: 'copy',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.copy),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text('複製項目'),
+                                ],
+                              )),
+                          const PopupMenuItem(
+                              enabled: false,
+                              value: 'star',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.star),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text('標記星號'),
+                                ],
+                              )),
+                        ],
+                        onSelected: (value) async {
+                          HapticFeedback.selectionClick();
+                          switch (value) {
+                            case 'copy':
+                              await Clipboard.setData(
+                                  ClipboardData(text: task.name));
+                              toastification.show(
+                                type: ToastificationType.info,
+                                style: ToastificationStyle.flatColored,
+                                title: const Text("已複製到剪貼簿"),
+                                alignment: Alignment.topCenter,
+                                showProgressBar: false,
+                                autoCloseDuration:
+                                    const Duration(milliseconds: 1500),
+                              );
+                              break;
+                          }
+                        },
+                        tooltip: '更多',
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            useStickyGroupSeparators: true, // optional
+          );
+        }
+      }),
     );
   }
 }
@@ -878,9 +985,11 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                        color: Colors.grey.shade600,
+                        color: ref.watch(formProvider).type == -1
+                            ? Theme.of(context).colorScheme.error
+                            : Colors.grey.shade600,
                         style: BorderStyle.solid,
-                        width: 0.80),
+                        width: ref.watch(formProvider).type == -1 ? 1.6 : 0.80),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<int>(
@@ -893,6 +1002,11 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                           ref.read(formProvider.notifier).typeChange(value!);
                         },
                         items: const [
+                          DropdownMenuItem<int>(
+                            value: -1,
+                            enabled: false,
+                            child: Text('請選擇類別'),
+                          ),
                           DropdownMenuItem<int>(
                             value: 0,
                             child: Text('考試'),
@@ -916,8 +1030,17 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                         ]),
                   ),
                 ),
+                if (ref.watch(formProvider).type == -1)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, left: 12),
+                    child: Text(
+                      '請選擇類別',
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                  ),
                 const Padding(
-                  padding: EdgeInsets.only(top: 2, bottom: 8),
+                  padding: EdgeInsets.only(top: 4, bottom: 8, left: 12),
                   child: Text(
                     '需清點繳交物品請選擇「繳交」',
                     style: TextStyle(color: Colors.red),
@@ -992,7 +1115,8 @@ class _TaskFormState extends ConsumerState<TaskForm> {
         if (ref.watch(formProvider).formStatus == TaskFormStatus.create)
           ElevatedButton(
             onPressed: () {
-              if (_formKey.currentState!.validate()) {
+              if (_formKey.currentState!.validate() &&
+                  ref.watch(formProvider).type != -1) {
                 HapticFeedback.lightImpact();
                 toastification.show(
                   type: ToastificationType.info,
@@ -1019,7 +1143,8 @@ class _TaskFormState extends ConsumerState<TaskForm> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
+                  if (_formKey.currentState!.validate() &&
+                      ref.watch(formProvider).type != -1) {
                     HapticFeedback.lightImpact();
                     toastification.show(
                       type: ToastificationType.info,

@@ -15,21 +15,27 @@ class CalendarTaskNotifier extends StateNotifier<CalendarTaskState> {
   final Ref _ref;
   Map<int, StreamSubscription<QuerySnapshot>> listeners = {};
   CalendarTaskNotifier(this._ref)
-      : super(CalendarTaskState({-1: [], 0: [], 1: []}, loading: true)) {
+      : super(CalendarTaskState({}, loading: true)) {
     httpClient = _ref.read(googleApiProvider).googleHttpClient;
-    getData(0, 0);
+    if (httpClient != null) {
+      getData(0, 0);
+    }
     _ref.listen(dateProvider, (previous, next) {
       getData(previous!.week, next.week);
     });
     _ref.listen(googleApiProvider, (previous, next) async {
-      if (previous?.loggedIn != next.loggedIn) {
-        httpClient = _ref.read(googleApiProvider).googleHttpClient;
+      httpClient = _ref.read(googleApiProvider).googleHttpClient;
+      if (previous?.connected != next.connected ||
+          previous?.hasError != next.hasError) {
         calendarIds.clear();
-        if (next.loggedIn && next.googleHttpClient != null) {
+        if (next.connected && next.googleHttpClient != null) {
           final calendarList =
               await CalendarApi(httpClient!).calendarList.list();
           for (final calendar in calendarList.items!) {
-            calendarIds.add(calendar.id!);
+            if (!((calendar.id ?? '')
+                .endsWith('group.v.calendar.google.com'))) {
+              calendarIds.add(calendar.id!);
+            }
           }
         }
         getData(_ref.read(dateProvider).week, _ref.read(dateProvider).week);
@@ -51,9 +57,9 @@ class CalendarTaskNotifier extends StateNotifier<CalendarTaskState> {
                   timeMax: _ref.read(dateProvider).thisWeek.add(
                         Duration(days: 7 * (i + 1)),
                       ),
-                ))).then((List<Events> eventsList) {
-          final events =
-              eventsList.fold<List<Event>>(<Event>[], (events, eventsList) {
+                ))).then((List<Events> listOfEventsList) {
+          final events = listOfEventsList.fold<List<Event>>(<Event>[],
+              (events, eventsList) {
             events.addAll(eventsList.items ?? []);
             return events;
           });
@@ -154,16 +160,20 @@ class CalendarTaskState {
   CalendarTaskState copy() => CalendarTaskState(tasksMap, loading: loading);
 }
 
+enum CalendarTaskType { classroom, personal }
+
 class CalendarTask {
   String name;
   DateTime date;
   int classTime;
   String taskId;
+  CalendarTaskType type;
   CalendarTask({
     required this.name,
     required this.date,
     required this.classTime,
     required this.taskId,
+    required this.type,
   });
 
   factory CalendarTask.fromCalendar(
@@ -172,10 +182,15 @@ class CalendarTask {
     SnapshotOptions? options,
   ]) {
     return CalendarTask(
-        name: event.summary ?? '',
-        date: event.start!.dateTime ?? event.start!.date!,
-        classTime:
-            toClassTime(event.start!.dateTime ?? event.start!.date!, classTime),
-        taskId: event.id ?? '');
+      name: event.summary ?? '',
+      date: event.start!.dateTime?.add(const Duration(hours: 8)) ??
+          event.start!.date!,
+      classTime: toClassTime(
+          event.start!.dateTime?.add(const Duration(hours: 8)) ??
+              event.start!.date!,
+          classTime),
+      taskId: event.id ?? '',
+      type: CalendarTaskType.personal,
+    );
   }
 }

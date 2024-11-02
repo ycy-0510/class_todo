@@ -368,7 +368,7 @@ class LoadingView extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
+              CircularProgressIndicator.adaptive(),
               SizedBox(
                 height: 20,
               ),

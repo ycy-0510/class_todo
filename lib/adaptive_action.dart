@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AdaptiveAction extends StatelessWidget {
   const AdaptiveAction(
@@ -20,14 +21,22 @@ class AdaptiveAction extends StatelessWidget {
       case TargetPlatform.linux:
       case TargetPlatform.windows:
         return TextButton(
-            onPressed: onPressed,
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              onPressed();
+            },
             style: TextButton.styleFrom(
                 foregroundColor: danger ? Colors.red : null),
             child: child);
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         return CupertinoDialogAction(
-            onPressed: onPressed, isDestructiveAction: danger, child: child);
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              onPressed();
+            },
+            isDestructiveAction: danger,
+            child: child);
     }
   }
 }

@@ -28,7 +28,7 @@ class SettingPageBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     String? classCode = ref.watch(authProvider).classCode;
     String? name = ref.watch(authProvider).user?.displayName ?? '';
-    bool? linkedGoogle = ref.watch(googleApiProvider).loggedIn;
+    bool? linkedGoogle = ref.watch(googleApiProvider).connected;
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
