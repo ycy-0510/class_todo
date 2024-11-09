@@ -196,4 +196,13 @@ class Task {
       'top': !top,
     });
   }
+
+  void modifyDate(WidgetRef ref, DateTime newDate) {
+    final userClassCode = ref.read(authProvider).classCode;
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    db
+        .collection("class/$userClassCode/task")
+        .doc(taskId)
+        .update({'date': newDate});
+  }
 }

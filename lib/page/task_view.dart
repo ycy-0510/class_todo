@@ -371,121 +371,187 @@ class TaskTableView extends ConsumerWidget {
                                       const TaskForm());
                             }
                           },
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: Theme.of(context).cardTheme.color,
-                                borderRadius: l == 9 - 1
-                                    ? d == 0
-                                        ? const BorderRadius.only(
-                                            bottomLeft: Radius.circular(25))
-                                        : d == 6 - 1
+                          child: DragTarget<Task>(
+                            onAcceptWithDetails: (details) {
+                              TimeOfDay time = classTimes[l];
+                              DateTime date = ref
+                                  .read(dateProvider)
+                                  .thisWeek
+                                  .add(Duration(days: 7 * week))
+                                  .add(Duration(days: d + 1))
+                                  .add(Duration(
+                                      hours: time.hour, minutes: time.minute));
+                              details.data.modifyDate(ref, date);
+                            },
+                            builder: (BuildContext context,
+                                List<Task?> candidateData,
+                                List<dynamic> rejectedData) {
+                              final highLighted = candidateData.isNotEmpty;
+                              return Container(
+                                decoration: BoxDecoration(
+                                    color: highLighted
+                                        ? Theme.of(context).highlightColor
+                                        : Theme.of(context).cardTheme.color,
+                                    borderRadius: l == 9 - 1
+                                        ? d == 0
                                             ? const BorderRadius.only(
-                                                bottomRight:
-                                                    Radius.circular(25))
-                                            : null
-                                    : null),
-                            margin: l == 0 || l == 4 || l == 7
-                                ? const EdgeInsets.only(bottom: 5)
-                                : null,
-                            height: 64,
-                            alignment: Alignment.center,
-                            child: Builder(builder: (context) {
-                              final int weekDay = d + 1;
-                              List<Task> subTasks = tasks
-                                  .where((task) =>
-                                      task.classTime == l &&
-                                      task.date.weekday == weekDay)
-                                  .toList();
-                              if (subTasks.isEmpty) {
-                                return Text(
-                                  lesson[d * 9 + l],
-                                  style: TextStyle(
-                                      fontSize: subTasks.isNotEmpty ? 25 : 18,
-                                      fontWeight: subTasks.isNotEmpty
-                                          ? FontWeight.w900
-                                          : null,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
-                                );
-                              } else {
-                                return Padding(
-                                  padding: const EdgeInsets.all(5),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Text(lesson[d * 9 + l],
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: subTasks.isNotEmpty
-                                                ? FontWeight.w900
-                                                : null,
-                                            color: subTasks.isNotEmpty
-                                                ? Colors.red
-                                                : (Theme.of(context)
-                                                    .textButtonTheme
-                                                    .style
-                                                    ?.foregroundColor
-                                                    ?.resolve({})),
-                                          )),
-                                      for (int i = 0;
-                                          i <
-                                              (subTasks.length <= 2
-                                                  ? subTasks.length
-                                                  : 1);
-                                          i++)
-                                        Container(
-                                          margin: const EdgeInsets.symmetric(
-                                              vertical: 1),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                Theme.of(context).brightness ==
-                                                        Brightness.light
-                                                    ? const Color.fromARGB(
-                                                        255, 214, 237, 250)
-                                                    : const Color.fromARGB(
-                                                        255, 20, 47, 68),
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 1),
-                                          child: Text(
-                                            subTasks[i].name,
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                color: Theme.of(context)
-                                                            .brightness ==
-                                                        Brightness.light
-                                                    ? const Color.fromARGB(
-                                                        255, 39, 86, 120)
-                                                    : const Color.fromARGB(
-                                                        255, 81, 170, 242),
+                                                bottomLeft: Radius.circular(25))
+                                            : d == 6 - 1
+                                                ? const BorderRadius.only(
+                                                    bottomRight:
+                                                        Radius.circular(25))
+                                                : null
+                                        : null),
+                                margin: l == 0 || l == 4 || l == 7
+                                    ? const EdgeInsets.only(bottom: 5)
+                                    : null,
+                                height: 64,
+                                alignment: Alignment.center,
+                                child: Builder(builder: (context) {
+                                  final int weekDay = d + 1;
+                                  List<Task> subTasks = tasks
+                                      .where((task) =>
+                                          task.classTime == l &&
+                                          task.date.weekday == weekDay)
+                                      .toList();
+                                  if (subTasks.isEmpty && !highLighted) {
+                                    return Text(
+                                      lesson[d * 9 + l],
+                                      style: TextStyle(
+                                          fontSize:
+                                              subTasks.isNotEmpty ? 25 : 18,
+                                          fontWeight: subTasks.isNotEmpty
+                                              ? FontWeight.w900
+                                              : null,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary),
+                                    );
+                                  } else {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          Text(lesson[d * 9 + l],
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
                                                 fontSize: 12,
-                                                overflow:
-                                                    TextOverflow.ellipsis),
-                                          ),
-                                        ),
-                                      if (subTasks.length > 2)
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 1),
-                                          child: Text(
-                                            '+${subTasks.length - 1}',
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                overflow:
-                                                    TextOverflow.ellipsis),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                );
-                              }
-                            }),
+                                                fontWeight: subTasks.isNotEmpty
+                                                    ? FontWeight.w900
+                                                    : null,
+                                                color: subTasks.isNotEmpty
+                                                    ? Colors.red
+                                                    : (Theme.of(context)
+                                                        .textButtonTheme
+                                                        .style
+                                                        ?.foregroundColor
+                                                        ?.resolve({})),
+                                              )),
+                                          for (int i = 0;
+                                              i <
+                                                  (subTasks.length <= 2
+                                                      ? subTasks.length
+                                                      : 1);
+                                              i++)
+                                            Draggable<Task>(
+                                              data: subTasks[i],
+                                              childWhenDragging:
+                                                  const SizedBox.shrink(),
+                                              feedback: Material(
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Theme.of(context)
+                                                                .brightness ==
+                                                            Brightness.light
+                                                        ? const Color.fromARGB(
+                                                            255, 214, 237, 250)
+                                                        : const Color.fromARGB(
+                                                            255, 20, 47, 68),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.all(5),
+                                                  child: Text(
+                                                    subTasks[i].name,
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        color: Theme.of(context)
+                                                                    .brightness ==
+                                                                Brightness.light
+                                                            ? const Color
+                                                                .fromARGB(255,
+                                                                39, 86, 120)
+                                                            : const Color
+                                                                .fromARGB(255,
+                                                                81, 170, 242),
+                                                        fontSize: 15,
+                                                        overflow: TextOverflow
+                                                            .ellipsis),
+                                                  ),
+                                                ),
+                                              ),
+                                              child: Container(
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 1),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context)
+                                                              .brightness ==
+                                                          Brightness.light
+                                                      ? const Color.fromARGB(
+                                                          255, 214, 237, 250)
+                                                      : const Color.fromARGB(
+                                                          255, 20, 47, 68),
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 1),
+                                                child: Text(
+                                                  subTasks[i].name,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      color: Theme.of(context)
+                                                                  .brightness ==
+                                                              Brightness.light
+                                                          ? const Color
+                                                              .fromARGB(
+                                                              255, 39, 86, 120)
+                                                          : const Color
+                                                              .fromARGB(255, 81,
+                                                              170, 242),
+                                                      fontSize: 12,
+                                                      overflow: TextOverflow
+                                                          .ellipsis),
+                                                ),
+                                              ),
+                                            ),
+                                          if (subTasks.length > 2)
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 1),
+                                              child: Text(
+                                                '+${subTasks.length - 1}',
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    overflow:
+                                                        TextOverflow.ellipsis),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                }),
+                              );
+                            },
                           ),
                         ),
                     ]),
