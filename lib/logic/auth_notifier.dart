@@ -108,6 +108,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.read(classTableProvider.notifier).clear();
         _ref.read(classTableProvider.notifier).dispose();
         await _auth.signOut();
+        GoogleSignIn().signOut();
         _ref.read(bottomTabProvider.notifier).state = 0;
       } catch (err) {
         state = AuthState();
@@ -151,7 +152,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void joinClass(String classCode, String serialCode) async {
     if (state.loggedIn && state.classCode == null) {
-      _showError('正在驗證資料');
+      toastification.show(
+        type: ToastificationType.info,
+        style: ToastificationStyle.flatColored,
+        title: const Text("正在驗證資料"),
+        alignment: Alignment.topCenter,
+        showProgressBar: false,
+        autoCloseDuration: const Duration(milliseconds: 1500),
+      );
       state = state.load(true);
       http
           .post(

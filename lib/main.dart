@@ -84,6 +84,7 @@ class MainApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     AuthState authState = ref.watch(authProvider);
+    ref.listen(deepLinkProvider, (prev, next) {});
     _messageStreamController.listen((message) {
       if (message.notification != null) {
         toastification.show(

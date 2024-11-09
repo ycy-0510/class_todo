@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:class_todo_list/adaptive_action.dart';
+import 'package:class_todo_list/logic/auth_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/gestures.dart';
@@ -114,8 +116,64 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
   final TextEditingController _classCodecontroller = TextEditingController();
   final TextEditingController _serialCodecontroller = TextEditingController();
 
+  void handleDeepLink(Uri uri) {
+    AuthState authState = ref.read(authProvider);
+    if (!authState.loading) {
+      if (uri.host == 'app.classtodo.ycydev.org' &&
+          uri.pathSegments.length == 2 &&
+          uri.pathSegments[0] == 'join') {
+        String classCode = uri.pathSegments[1];
+        String? serialCode = uri.queryParameters['serialCode'];
+        _classCodecontroller.text = classCode;
+        _serialCodecontroller.text = serialCode!;
+        _formKey.currentState?.validate();
+        if (classCode.length >= 5 && serialCode.length >= 10) {
+          showAdaptiveDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog.adaptive(
+              title: const Text('加入班級'),
+              content: Text('是否加入$classCode?'),
+              actions: [
+                AdaptiveAction(
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                    child: const Text('加入')),
+                AdaptiveAction(
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    child: const Text('取消'))
+              ],
+            ),
+          ).then((confirm) {
+            if (confirm == true) {
+              ref.read(authProvider.notifier).joinClass(classCode, serialCode);
+              _serialCodecontroller.clear();
+            }
+          });
+        }
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    Uri? uri = ref.read(deepLinkProvider);
+    if (uri != null) {
+      Future.delayed(const Duration(milliseconds: 1000))
+          .then((_) => handleDeepLink(uri));
+    }
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(deepLinkProvider, (prev, next) {
+      if (next != null) {
+        handleDeepLink(next);
+      }
+    });
     bool loading = ref.watch(authProvider).loading;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

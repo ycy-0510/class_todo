@@ -3,6 +3,7 @@ import 'package:class_todo_list/logic/calendar_task_notifier.dart';
 import 'package:class_todo_list/logic/class_table_notifier.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/date_notifier.dart';
+import 'package:class_todo_list/logic/deep_link_notifier.dart';
 import 'package:class_todo_list/logic/form_notifier.dart';
 import 'package:class_todo_list/logic/google_api_notifier.dart';
 import 'package:class_todo_list/logic/notification_notifier.dart';
@@ -121,4 +122,8 @@ final bottomTabProvider = StateProvider<int>((ref) => 0);
 
 final remoteConfigProvider = NotifierProvider<RemoteConfigNotifier, bool>(() {
   return RemoteConfigNotifier();
+});
+
+final deepLinkProvider = NotifierProvider<DeepLinkNotifier, Uri?>(() {
+  return DeepLinkNotifier();
 });

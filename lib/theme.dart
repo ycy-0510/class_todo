@@ -78,78 +78,79 @@ final lightTheme = ThemeData(
 );
 
 final darkTheme = ThemeData(
+  brightness: Brightness.dark,
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: Colors.blue,
     brightness: Brightness.dark,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.blue,
-      brightness: Brightness.dark,
-    ),
-    cardTheme: const CardTheme(
-      color: Color.fromARGB(255, 28, 28, 30),
-      shadowColor: Colors.transparent,
-      elevation: 0,
-    ),
-    bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: Color.fromARGB(255, 28, 28, 30),
-    ),
-    dialogBackgroundColor: const Color.fromARGB(255, 28, 28, 30),
-    appBarTheme: const AppBarTheme(
-      color: Colors.black,
-      surfaceTintColor: Colors.black,
-      centerTitle: true,
-    ),
-    scaffoldBackgroundColor: Colors.black,
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: const Color.fromARGB(255, 28, 28, 30),
-        selectedItemColor: Colors.blue.shade300,
-        unselectedItemColor: Colors.white),
-    segmentedButtonTheme: SegmentedButtonThemeData(
-        style: SegmentedButton.styleFrom(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      selectedBackgroundColor: Colors.lightBlue.shade700,
+  ),
+  cardTheme: const CardTheme(
+    color: Color.fromARGB(255, 28, 28, 30),
+    shadowColor: Colors.transparent,
+    elevation: 0,
+  ),
+  bottomSheetTheme: const BottomSheetThemeData(
+    backgroundColor: Color.fromARGB(255, 28, 28, 30),
+  ),
+  dialogBackgroundColor: const Color.fromARGB(255, 28, 28, 30),
+  appBarTheme: const AppBarTheme(
+    color: Colors.black,
+    surfaceTintColor: Colors.black,
+    centerTitle: true,
+  ),
+  scaffoldBackgroundColor: Colors.black,
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: const Color.fromARGB(255, 28, 28, 30),
-      selectedForegroundColor: Colors.blue.shade100,
-      foregroundColor: Colors.blue.shade200,
-    )),
-    buttonTheme: const ButtonThemeData(
-      buttonColor: Colors.blue,
-      textTheme: ButtonTextTheme.primary,
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        elevation: 0.0,
-        shadowColor: Colors.transparent,
-        padding: const EdgeInsets.all(10),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
+      selectedItemColor: Colors.blue.shade300,
+      unselectedItemColor: Colors.white),
+  segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    selectedBackgroundColor: Colors.lightBlue.shade700,
+    backgroundColor: const Color.fromARGB(255, 28, 28, 30),
+    selectedForegroundColor: Colors.blue.shade100,
+    foregroundColor: Colors.blue.shade200,
+  )),
+  buttonTheme: const ButtonThemeData(
+    buttonColor: Colors.blue,
+    textTheme: ButtonTextTheme.primary,
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      elevation: 0.0,
+      shadowColor: Colors.transparent,
       padding: const EdgeInsets.all(10),
-      foregroundColor: Colors.blue,
-      side: const BorderSide(
-        color: Colors.blue,
-      ),
+      backgroundColor: Colors.blue,
+      foregroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-    )),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: Colors.blue.shade200,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      ),
     ),
-    inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15), gapPadding: 5),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        gapPadding: 5,
-        borderSide: const BorderSide(color: Colors.blue),
-      ),
-      floatingLabelStyle: const TextStyle(color: Colors.blue),
+  ),
+  outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+    padding: const EdgeInsets.all(10),
+    foregroundColor: Colors.blue,
+    side: const BorderSide(
+      color: Colors.blue,
     ),
-    splashFactory: NoSplash.splashFactory);
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+  )),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: Colors.blue.shade200,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    ),
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15), gapPadding: 5),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(15),
+      gapPadding: 5,
+      borderSide: const BorderSide(color: Colors.blue),
+    ),
+    floatingLabelStyle: const TextStyle(color: Colors.blue),
+  ),
+  splashFactory: NoSplash.splashFactory,
+);
 
 final feedBackLightTheme = FeedbackThemeData(
   colorScheme: lightTheme.colorScheme,
