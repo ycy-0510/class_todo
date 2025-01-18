@@ -40,18 +40,28 @@ end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
-    if target.name == 'BoringSSL-GRPC'
-      target.source_build_phase.files.each do |file|
-        if file.settings && file.settings['COMPILER_FLAGS']
-          flags = file.settings['COMPILER_FLAGS'].split
-          flags.reject! { |flag| flag == '-GCC_WARN_INHIBIT_ALL_WARNINGS' }
-          file.settings['COMPILER_FLAGS'] = flags.join(' ')
-        end
-      end
-    end
     target.build_configurations.each do |config|
       config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
     end
     flutter_additional_ios_build_settings(target)
+    # Start of the permission_handler configuration
+    target.build_configurations.each do |config|
+
+      # You can enable the permissions needed here. For example, to enable camera
+      # permission, just remove the `#` character in front so it looks like this:
+      #
+      # ## dart: PermissionGroup.camera
+      # 'PERMISSION_CAMERA=1'
+      #
+      #  Preprocessor definitions can be found at: https://github.com/Baseflow/flutter-permission-handler/blob/master/permission_handler_apple/ios/Classes/PermissionHandlerEnums.h
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+
+        ## dart: PermissionGroup.camera
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_PHOTOS=1',
+      ]
+
+    end
   end
 end
