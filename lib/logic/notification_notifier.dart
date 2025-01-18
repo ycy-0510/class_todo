@@ -101,6 +101,16 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       switch (settings.authorizationStatus) {
         case AuthorizationStatus.authorized:
           String? token = await messaging.getToken();
+          _ref
+              .read(mixPanelProvider.notifier)
+              .mixpanel
+              .track('Allow Notification', properties: {
+            'OS': defaultTargetPlatform.name,
+            'Source': state.authorizationStatus ==
+                    NotificationAuthorizationStatus.appDenied
+                ? 'Open manually'
+                : 'Open automatically'
+          });
           state = state.copy(
               openBottomSheet: false,
               authorizationStatus: NotificationAuthorizationStatus.authorized,

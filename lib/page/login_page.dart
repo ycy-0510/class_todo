@@ -54,6 +54,7 @@ class LoginPage extends ConsumerWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
+                          iconColor: Colors.white,
                         ),
                         icon: const FaIcon(
                           FontAwesomeIcons.google,
@@ -76,10 +77,12 @@ class LoginPage extends ConsumerWidget {
                           ? ElevatedButton.styleFrom(
                               backgroundColor: Colors.black,
                               foregroundColor: Colors.white,
+                              iconColor: Colors.white,
                             )
                           : ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.black,
+                              iconColor: Colors.black,
                             ),
                       icon: const FaIcon(FontAwesomeIcons.apple),
                       label: const Text(

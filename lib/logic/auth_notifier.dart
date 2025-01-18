@@ -30,6 +30,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           state = AuthState(user: user, classCode: userData.data()?['class']);
         } else {
           state = AuthState(user: user);
+          _ref
+              .read(mixPanelProvider.notifier)
+              .mixpanel
+              .track('Sign Up', properties: {'OS': defaultTargetPlatform.name});
           try {
             await db.collection("user").doc(user.uid).set({
               "name": user.displayName,
@@ -174,6 +178,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .then((res) {
         if (res.statusCode == 200) {
           state = state.classJoined(classCode);
+          _ref
+              .read(mixPanelProvider.notifier)
+              .mixpanel
+              .track('Join Class', properties: {'Class': classCode});
         } else {
           _showError('無法加入：${res.body}');
           state = state.load(false);

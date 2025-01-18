@@ -4,8 +4,11 @@ import 'package:class_todo_list/logic/class_table_notifier.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/date_notifier.dart';
 import 'package:class_todo_list/logic/deep_link_notifier.dart';
+import 'package:class_todo_list/logic/exam_activate_notifier.dart';
+import 'package:class_todo_list/logic/examlist_notifier.dart';
 import 'package:class_todo_list/logic/form_notifier.dart';
 import 'package:class_todo_list/logic/google_api_notifier.dart';
+import 'package:class_todo_list/logic/mixpanel_notifier.dart';
 import 'package:class_todo_list/logic/notification_notifier.dart';
 import 'package:class_todo_list/logic/nowtime_notifier.dart';
 import 'package:class_todo_list/logic/remote_config_notifier.dart';
@@ -126,4 +129,18 @@ final remoteConfigProvider = NotifierProvider<RemoteConfigNotifier, bool>(() {
 
 final deepLinkProvider = NotifierProvider<DeepLinkNotifier, Uri?>(() {
   return DeepLinkNotifier();
+});
+
+final mixPanelProvider = NotifierProvider<MixPanelNotifier, bool>(() {
+  return MixPanelNotifier();
+});
+
+final examActivateProvider =
+    StateNotifierProvider<ExamActivateNotifier, bool>((ref) {
+  return ExamActivateNotifier(ref);
+});
+
+final examlistProvider =
+    StateNotifierProvider<ExamlistNotifier, ExamlistState>((ref) {
+  return ExamlistNotifier(ref);
 });

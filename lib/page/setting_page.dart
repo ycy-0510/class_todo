@@ -313,6 +313,7 @@ class SettingPageBody extends ConsumerWidget {
               },
               style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red,
+                  iconColor: Colors.red,
                   side: const BorderSide(color: Colors.red)),
               icon: const Icon(Icons.delete_forever),
               label: const Text(

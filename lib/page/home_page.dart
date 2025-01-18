@@ -4,9 +4,11 @@ import 'package:class_todo_list/logic/rss_url_notifier.dart';
 import 'package:class_todo_list/page/intro_page.dart';
 import 'package:class_todo_list/page/more_view.dart';
 import 'package:class_todo_list/page/school_view.dart';
+import 'package:class_todo_list/page/score_view.dart';
 import 'package:class_todo_list/page/submit_view.dart';
 import 'package:class_todo_list/page/task_view.dart';
 import 'package:class_todo_list/provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +27,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
+    Future.delayed(const Duration(seconds: 5)).then((_) {
+      ref
+          .read(mixPanelProvider.notifier)
+          .mixpanel
+          .track('Open App', properties: {'OS': defaultTargetPlatform.name});
+    });
     SharedPreferences.getInstance().then((prefs) {
       bool showedIntro = prefs.getBool('intro') ?? false;
       if (!showedIntro) {
@@ -122,7 +130,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         );
       }
     });
-
     ref.watch(usersProvider);
     ref.watch(usersNumberProvider);
     ref.watch(taskProvider);
@@ -141,6 +148,10 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           const Text(
             '繳交列表',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ),
+          const Text(
+            '分數登記',
             style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
           ),
           const Text(
@@ -170,7 +181,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 color: Colors.blue,
               ),
             ),
-          if (ref.watch(bottomTabProvider) == 2) ...[
+          if (ref.watch(bottomTabProvider) == 3) ...[
             IconButton(
               onPressed: () => showAdaptiveDialog(
                 context: context,
@@ -290,7 +301,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ),
                   )
-            : ref.watch(bottomTabProvider) == 2
+            : ref.watch(bottomTabProvider) == 3
                 ? PreferredSize(
                     preferredSize: const Size.fromHeight(60),
                     child: Padding(
@@ -330,6 +341,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: [
         const HomeTaskBody(),
         const HomeSubmittedBody(),
+        const HomeScoreBody(),
         const HomeSchoolBody(),
         const HomeMoreBody(),
       ][ref.watch(bottomTabProvider)]),
@@ -341,6 +353,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               icon: Icon(Icons.task_alt_outlined), label: '所有項目'),
           BottomNavigationBarItem(
               icon: Icon(Icons.text_snippet_outlined), label: '繳交列表'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: '分數登記'),
           BottomNavigationBarItem(icon: Icon(Icons.school), label: '學校公告'),
           BottomNavigationBarItem(
               icon: FaIcon(FontAwesomeIcons.shapes), label: '更多'),

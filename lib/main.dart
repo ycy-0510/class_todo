@@ -7,7 +7,7 @@ import 'package:class_todo_list/page/loading_page.dart';
 import 'package:class_todo_list/theme.dart';
 import 'package:feedback/feedback.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+// import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -53,20 +53,25 @@ Future<void> main() async {
   });
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
-  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+  // FlutterError.onError = (errorDetails) {
+  //   FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  // };
+  // // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+  // PlatformDispatcher.instance.onError = (error, stack) {
+  //   FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  //   return true;
+  // };
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   FlutterNativeSplash.remove();
   await SentryFlutter.init(
     (options) {
       options.dsn =
           'https://be3ad80836734814db0aeb3bafab4eb0@o4508194045362176.ingest.de.sentry.io/4508194049163344';
+      options.sampleRate = 0.5;
+      // options.debug = kDebugMode;
+      options.profilesSampleRate = 0.5;
+      options.experimental.replay.sessionSampleRate = 1.0;
+      options.experimental.replay.onErrorSampleRate = 1.0;
     },
     appRunner: () => runApp(
       const ProviderScope(
@@ -83,6 +88,7 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(mixPanelProvider);
     AuthState authState = ref.watch(authProvider);
     ref.listen(deepLinkProvider, (prev, next) {});
     _messageStreamController.listen((message) {
@@ -94,7 +100,7 @@ class MainApp extends ConsumerWidget {
           description: Text(message.notification?.body ?? ''),
           alignment: Alignment.topCenter,
           showProgressBar: false,
-          autoCloseDuration: const Duration(milliseconds: 5000),
+          autoCloseDuration: const Duration(milliseconds: 15000),
         );
       }
     });
@@ -103,87 +109,89 @@ class MainApp extends ConsumerWidget {
       theme: feedBackLightTheme,
       darkTheme: feedBackDarkTheme,
       themeMode: ThemeMode.system,
-      child: ToastificationWrapper(
-        child: MaterialApp(
-          navigatorKey: _rootNavigatorKey,
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          title: '共享聯絡簿',
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('zh', 'TW'),
-          ],
-          locale: const Locale('zh', 'TW'),
-          debugShowCheckedModeBanner: false,
-          builder: (context, child) {
-            return ForceUpdateWidget(
-              navigatorKey: _rootNavigatorKey,
-              forceUpdateClient: ForceUpdateClient(
-                fetchRequiredVersion: () => Future.value(ref
-                    .read(remoteConfigProvider.notifier)
-                    .getRequiredVersion()),
-                iosAppStoreId: '6670305489',
-              ),
-              allowCancel: ref
-                  .read(remoteConfigProvider.notifier)
-                  .getAllowCancelUpdate(),
-              showForceUpdateAlert: (context, allowCancel) =>
-                  showAdaptiveDialog<bool>(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) => AlertDialog.adaptive(
-                  title: const Text('需要更新軟體'),
-                  content: const Text('請更新到最新版以繼續使用'),
-                  actions: <Widget>[
-                    if (allowCancel)
-                      AdaptiveAction(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('稍後更新'),
-                      ),
-                    AdaptiveAction(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('立即更新'),
-                    ),
-                  ],
+      child: SentryScreenshotWidget(
+        child: ToastificationWrapper(
+          child: MaterialApp(
+            navigatorKey: _rootNavigatorKey,
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            title: '共享聯絡簿',
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('zh', 'TW'),
+            ],
+            locale: const Locale('zh', 'TW'),
+            debugShowCheckedModeBanner: false,
+            builder: (context, child) {
+              return ForceUpdateWidget(
+                navigatorKey: _rootNavigatorKey,
+                forceUpdateClient: ForceUpdateClient(
+                  fetchRequiredVersion: () => Future.value(ref
+                      .read(remoteConfigProvider.notifier)
+                      .getRequiredVersion()),
+                  iosAppStoreId: '6670305489',
                 ),
-              ),
-              showStoreListing: (storeUrl) async {
-                if (await canLaunchUrl(storeUrl)) {
-                  await launchUrl(
-                    storeUrl,
-                    mode: LaunchMode.externalApplication,
+                allowCancel: ref
+                    .read(remoteConfigProvider.notifier)
+                    .getAllowCancelUpdate(),
+                showForceUpdateAlert: (context, allowCancel) =>
+                    showAdaptiveDialog<bool>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) => AlertDialog.adaptive(
+                    title: const Text('需要更新軟體'),
+                    content: const Text('請更新到最新版以繼續使用'),
+                    actions: <Widget>[
+                      if (allowCancel)
+                        AdaptiveAction(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('稍後更新'),
+                        ),
+                      AdaptiveAction(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('立即更新'),
+                      ),
+                    ],
+                  ),
+                ),
+                showStoreListing: (storeUrl) async {
+                  if (await canLaunchUrl(storeUrl)) {
+                    await launchUrl(
+                      storeUrl,
+                      mode: LaunchMode.externalApplication,
+                    );
+                  }
+                },
+                onException: (error, st) {
+                  toastification.show(
+                    type: ToastificationType.error,
+                    style: ToastificationStyle.flatColored,
+                    title: const Text("發生錯誤"),
+                    description: Text(error.toString()),
+                    alignment: Alignment.topCenter,
+                    showProgressBar: false,
+                    autoCloseDuration: const Duration(milliseconds: 1500),
                   );
-                }
-              },
-              onException: (error, st) {
-                toastification.show(
-                  type: ToastificationType.error,
-                  style: ToastificationStyle.flatColored,
-                  title: const Text("發生錯誤"),
-                  description: Text(error.toString()),
-                  alignment: Alignment.topCenter,
-                  showProgressBar: false,
-                  autoCloseDuration: const Duration(milliseconds: 1500),
-                );
-              },
-              child: child!,
-            );
-          },
-          home: Builder(builder: (context) {
-            if (!authState.init) {
-              return const LoadingPage();
-            } else if (!authState.loggedIn) {
-              return const LoginPage();
-            } else if (authState.classCode == null) {
-              return const ClassesPage();
-            } else {
-              return const HomePage();
-            }
-          }),
+                },
+                child: child!,
+              );
+            },
+            home: Builder(builder: (context) {
+              if (!authState.init) {
+                return const LoadingPage();
+              } else if (!authState.loggedIn) {
+                return const LoginPage();
+              } else if (authState.classCode == null) {
+                return const ClassesPage();
+              } else {
+                return const HomePage();
+              }
+            }),
+          ),
         ),
       ),
     );

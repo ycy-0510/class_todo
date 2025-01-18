@@ -36,6 +36,10 @@ class AdaptiveAction extends StatelessWidget {
               onPressed();
             },
             isDestructiveAction: danger,
+            textStyle: TextStyle(
+                color: danger
+                    ? CupertinoColors.systemRed
+                    : CupertinoColors.systemBlue),
             child: child);
     }
   }
