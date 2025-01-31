@@ -3,7 +3,6 @@ import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/page/draw_lots.dart';
 import 'package:class_todo_list/page/intro_page.dart';
 import 'package:class_todo_list/page/setting_page.dart';
-import 'package:class_todo_list/page/support_page.dart';
 import 'package:class_todo_list/page/users_page.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:feedback_sentry/feedback_sentry.dart';
@@ -241,10 +240,8 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const Icon(Icons.chat),
                     title: const Text('線上支援'),
-                    onTap: () => Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      return const SupportPage();
-                    })),
+                    onTap: () => openUrl(
+                        'https://tawk.to/chat/6783c71baf5bfec1dbea79fa/1ihdc3hee'),
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
                   const Divider(
