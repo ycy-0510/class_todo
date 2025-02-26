@@ -20,9 +20,12 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
     autoUpdate();
   }
 
+  SharedPreferences get _sharedPreferences =>
+      _ref.read(sharedPreferencesProvider).requireValue;
+
   void autoUpdate() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getString(tableKey) == null || prefs.getString(timeKey) == null) {
+    if (_sharedPreferences.getString(tableKey) == null ||
+        _sharedPreferences.getString(timeKey) == null) {
       updateClassTable();
     } else {
       getClassTable();
@@ -30,7 +33,6 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
   }
 
   void updateClassTable() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     final userClassCode = _ref.read(authProvider).classCode;
     bool success = true;
     final dataRef =
@@ -42,7 +44,7 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
             .map((e) => e.toString())
             .toList();
         if (originList.length == 9 * 6) {
-          prefs.setString(tableKey, jsonEncode(originList));
+          _sharedPreferences.setString(tableKey, jsonEncode(originList));
         } else {
           success = false;
           _showError('更新課表失敗');
@@ -59,7 +61,7 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
         final timeList =
             originList.map((dateTime) => dateTime.toIso8601String()).toList();
         if (timeList.length == 9 + 1) {
-          prefs.setString(timeKey, jsonEncode(timeList));
+          _sharedPreferences.setString(timeKey, jsonEncode(timeList));
         } else {
           success = false;
           _showError('更新課表時間失敗');
@@ -81,24 +83,24 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
         showProgressBar: false,
         autoCloseDuration: const Duration(milliseconds: 1500),
       );
-      prefs.setString(classTableUpdateKey, DateTime.now().toIso8601String());
+      _sharedPreferences.setString(
+          classTableUpdateKey, DateTime.now().toIso8601String());
     }
     getClassTable();
   }
 
   void clear() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove(tableKey);
-    prefs.remove(timeKey);
-    prefs.remove(classTableUpdateKey);
+    _sharedPreferences.remove(tableKey);
+    _sharedPreferences.remove(timeKey);
+    _sharedPreferences.remove(classTableUpdateKey);
   }
 
   void getClassTable() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getString(tableKey) != null && prefs.getString(timeKey) != null) {
+    if (_sharedPreferences.getString(tableKey) != null &&
+        _sharedPreferences.getString(timeKey) != null) {
       try {
         final tableList =
-            (jsonDecode(prefs.getString(tableKey) ?? "[]") as List)
+            (jsonDecode(_sharedPreferences.getString(tableKey) ?? "[]") as List)
                 .map((e) => e.toString())
                 .toList();
         state = state.copy(table: tableList);
@@ -109,7 +111,7 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
 
       try {
         final timeOriginList =
-            (jsonDecode(prefs.getString(timeKey) ?? "[]") as List)
+            (jsonDecode(_sharedPreferences.getString(timeKey) ?? "[]") as List)
                 .map((e) => e.toString())
                 .toList();
         final timeList = timeOriginList
@@ -123,7 +125,8 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
       }
       try {
         state = state.copy(
-            lastUpdate: DateTime.parse(prefs.getString(classTableUpdateKey)!));
+            lastUpdate: DateTime.parse(
+                _sharedPreferences.getString(classTableUpdateKey)!));
       } catch (e) {
         _showError(e.toString());
         return;

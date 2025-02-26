@@ -13,15 +13,16 @@ class TodoNotifier extends StateNotifier<List<String>> {
     });
   }
 
+  SharedPreferences get _sharedPreferences =>
+      _ref.read(sharedPreferencesProvider).requireValue;
+
   Future<void> getData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     String key = _ref.read(dateProvider).thisWeek.toIso8601String();
-    List<String> todos = prefs.getStringList(key) ?? [];
+    List<String> todos = _sharedPreferences.getStringList(key) ?? [];
     state = todos;
   }
 
   Future<void> changeData(String id) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     String key = _ref.read(dateProvider).thisWeek.toIso8601String();
     List<String> todos = List.generate(state.length, (index) => state[index]);
     if (todos.contains(id)) {
@@ -29,7 +30,7 @@ class TodoNotifier extends StateNotifier<List<String>> {
     } else {
       todos.add(id);
     }
-    prefs.setStringList(key, todos);
+    _sharedPreferences.setStringList(key, todos);
     state = todos;
   }
 }

@@ -30,6 +30,9 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
     init();
   }
 
+  SharedPreferences get _sharedPreferences =>
+      _ref.read(sharedPreferencesProvider).requireValue;
+
   void init() async {
     NotificationSettings settings = await messaging.getNotificationSettings();
     state = NotificationState(
@@ -161,27 +164,25 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
   }
 
   void _updateLocalStatusData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     switch (state.authorizationStatus) {
       case NotificationAuthorizationStatus.authorized:
-        prefs.setString(notificationKey, 'authorized');
+        _sharedPreferences.setString(notificationKey, 'authorized');
         break;
       case NotificationAuthorizationStatus.appDenied:
-        prefs.setString(notificationKey, 'appDenied');
+        _sharedPreferences.setString(notificationKey, 'appDenied');
         break;
       case NotificationAuthorizationStatus.systemDenied:
-        prefs.setString(notificationKey, 'systemDenied');
+        _sharedPreferences.setString(notificationKey, 'systemDenied');
         break;
       case NotificationAuthorizationStatus.notDetermined:
-        prefs.remove(notificationKey);
+        _sharedPreferences.remove(notificationKey);
         break;
     }
   }
 
   void clear() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getString(notificationKey) == 'appDenied') {
-      prefs.remove(notificationKey);
+    if (_sharedPreferences.getString(notificationKey) == 'appDenied') {
+      _sharedPreferences.remove(notificationKey);
     }
     final user = _ref.read(authProvider).user;
     try {

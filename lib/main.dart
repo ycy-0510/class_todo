@@ -67,7 +67,7 @@ Future<void> main() async {
       options.dsn =
           'https://be3ad80836734814db0aeb3bafab4eb0@o4508194045362176.ingest.de.sentry.io/4508194049163344';
       options.sampleRate = 0.5;
-      // options.debug = kDebugMode;
+      options.debug = false; //kDebugMode;
       options.profilesSampleRate = 0.5;
       options.experimental.replay.sessionSampleRate = 1.0;
       options.experimental.replay.onErrorSampleRate = 1.0;
@@ -180,7 +180,8 @@ class MainApp extends ConsumerWidget {
               );
             },
             home: Builder(builder: (context) {
-              if (!authState.init) {
+              if (!authState.init ||
+                  ref.watch(sharedPreferencesProvider).isLoading) {
                 return const LoadingPage();
               } else if (!authState.loggedIn) {
                 return const LoginPage();

@@ -15,7 +15,9 @@ final lightTheme = ThemeData(
   bottomSheetTheme: const BottomSheetThemeData(
     backgroundColor: Colors.white,
   ),
-  dialogBackgroundColor: Colors.white,
+  dialogTheme: DialogTheme(
+    backgroundColor: Colors.white,
+  ),
   scaffoldBackgroundColor: const Color.fromARGB(255, 243, 242, 247),
   appBarTheme: const AppBarTheme(
     backgroundColor: Color.fromARGB(255, 243, 242, 247),
@@ -46,7 +48,7 @@ final lightTheme = ThemeData(
       padding: const EdgeInsets.all(10),
       backgroundColor: Colors.blue,
       foregroundColor: Colors.white,
-      iconColor: Colors.blue,
+      iconColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
     ),
   ),
@@ -68,8 +70,7 @@ final lightTheme = ThemeData(
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(
-    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15), gapPadding: 5),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), gapPadding: 5),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(15),
       gapPadding: 5,
@@ -94,7 +95,9 @@ final darkTheme = ThemeData(
   bottomSheetTheme: const BottomSheetThemeData(
     backgroundColor: Color.fromARGB(255, 28, 28, 30),
   ),
-  dialogBackgroundColor: const Color.fromARGB(255, 28, 28, 30),
+  dialogTheme: DialogThemeData(
+    backgroundColor: const Color.fromARGB(255, 28, 28, 30),
+  ),
   appBarTheme: const AppBarTheme(
     color: Colors.black,
     surfaceTintColor: Colors.black,
@@ -124,6 +127,7 @@ final darkTheme = ThemeData(
       padding: const EdgeInsets.all(10),
       backgroundColor: Colors.blue,
       foregroundColor: Colors.white,
+      iconColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
     ),
   ),
@@ -143,8 +147,7 @@ final darkTheme = ThemeData(
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(
-    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15), gapPadding: 5),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), gapPadding: 5),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(15),
       gapPadding: 5,
@@ -157,36 +160,22 @@ final darkTheme = ThemeData(
 
 final feedBackLightTheme = FeedbackThemeData(
   colorScheme: lightTheme.colorScheme,
-  feedbackSheetColor:
-      lightTheme.bottomSheetTheme.backgroundColor ?? Colors.white,
+  feedbackSheetColor: lightTheme.bottomSheetTheme.backgroundColor ?? Colors.white,
   bottomSheetDescriptionStyle:
       lightTheme.textTheme.titleMedium ?? const TextStyle(color: Colors.black),
   bottomSheetTextInputStyle:
       lightTheme.textTheme.titleMedium ?? const TextStyle(color: Colors.black),
-  drawColors: [
-    Colors.black,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-    Colors.red
-  ],
+  drawColors: [Colors.black, Colors.blue, Colors.green, Colors.yellow, Colors.red],
   brightness: Brightness.light,
 );
 
 final feedBackDarkTheme = FeedbackThemeData(
   colorScheme: darkTheme.colorScheme,
-  feedbackSheetColor:
-      darkTheme.bottomSheetTheme.backgroundColor ?? Colors.black,
+  feedbackSheetColor: darkTheme.bottomSheetTheme.backgroundColor ?? Colors.black,
   bottomSheetDescriptionStyle:
       darkTheme.textTheme.titleMedium ?? const TextStyle(color: Colors.white),
   bottomSheetTextInputStyle:
       darkTheme.textTheme.titleMedium ?? const TextStyle(color: Colors.white),
-  drawColors: [
-    Colors.white,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-    Colors.red
-  ],
+  drawColors: [Colors.white, Colors.blue, Colors.green, Colors.yellow, Colors.red],
   brightness: Brightness.dark,
 );

@@ -15,19 +15,20 @@ class RssReadNotifier extends StateNotifier<List<String>> {
     });
   }
 
+  SharedPreferences get _sharedPreferences =>
+      _ref.read(sharedPreferencesProvider).requireValue;
+
   Future<void> getData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     int rssIndex = _ref.read(schoolAnnouncementProvider).rssEndPointIdx;
     String key = sha256
         .convert(utf8.encode(
             _ref.read(rssUrlProvider).rssEndpoints[rssIndex].url.origin))
         .toString();
-    List<String> rssReadList = prefs.getStringList(key) ?? [];
+    List<String> rssReadList = _sharedPreferences.getStringList(key) ?? [];
     state = rssReadList;
   }
 
   Future<void> markRead(String id) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     int rssIndex = _ref.read(schoolAnnouncementProvider).rssEndPointIdx;
     String key = sha256
         .convert(utf8.encode(
@@ -40,12 +41,11 @@ class RssReadNotifier extends StateNotifier<List<String>> {
     } else {
       rssReadList.add(id);
     }
-    prefs.setStringList(key, rssReadList);
+    _sharedPreferences.setStringList(key, rssReadList);
     state = rssReadList;
   }
 
   Future<void> markUnread(String id) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     int rssIndex = _ref.read(schoolAnnouncementProvider).rssEndPointIdx;
     String key = sha256
         .convert(utf8.encode(
@@ -58,12 +58,11 @@ class RssReadNotifier extends StateNotifier<List<String>> {
     } else {
       return;
     }
-    prefs.setStringList(key, rssReadList);
+    _sharedPreferences.setStringList(key, rssReadList);
     state = rssReadList;
   }
 
   Future<void> readAll() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     int rssIndex = _ref.read(schoolAnnouncementProvider).rssEndPointIdx;
     String key = sha256
         .convert(utf8.encode(
@@ -79,7 +78,7 @@ class RssReadNotifier extends StateNotifier<List<String>> {
         rssReadList.add(id);
       }
     }
-    prefs.setStringList(key, rssReadList);
+    _sharedPreferences.setStringList(key, rssReadList);
     state = rssReadList;
   }
 }

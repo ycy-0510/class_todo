@@ -24,8 +24,25 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey<_HomePageState> homeKey = GlobalKey();
+
+  void handleDeepLink(Uri uri) {
+    if (uri.host == 'app.classtodo.ycydev.org' &&
+        uri.pathSegments.length == 2 &&
+        uri.pathSegments[0] == 'exam') {
+      String examId = uri.pathSegments[1];
+      if (examId.length >= 5) {
+        ref.read(bottomTabProvider.notifier).state = 2;
+      }
+      ref.read(deepLinkProvider.notifier).reset();
+    }
+  }
+
   @override
   void initState() {
+    Uri? uri = ref.read(deepLinkProvider);
+    if (uri != null) {
+      Future.delayed(const Duration(milliseconds: 1000)).then((_) => handleDeepLink(uri));
+    }
     super.initState();
     Future.delayed(const Duration(seconds: 5)).then((_) {
       ref
@@ -49,9 +66,13 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(deepLinkProvider, (prev, next) {
+      if (next != null) {
+        handleDeepLink(next);
+      }
+    });
     ref.listen(notificationProvider, (prev, next) {
-      if (prev?.openBottomSheet != next.openBottomSheet &&
-          next.openBottomSheet) {
+      if (prev?.openBottomSheet != next.openBottomSheet && next.openBottomSheet) {
         showModalBottomSheet(
           context: context,
           isDismissible: false,
@@ -66,20 +87,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.notifications,
-                            size: 30,
-                          ),
-                          Text(
-                            '接收通知',
-                            style: TextStyle(
-                                fontSize: 30, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ]),
+                    const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Icon(
+                        Icons.notifications,
+                        size: 30,
+                      ),
+                      Text(
+                        '接收通知',
+                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ]),
                     const SizedBox(
                       height: 10,
                     ),
@@ -97,9 +115,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                     ElevatedButton(
                         onPressed: () async {
-                          await ref
-                              .read(notificationProvider.notifier)
-                              .requestPermission();
+                          await ref.read(notificationProvider.notifier).requestPermission();
                           if (context.mounted) {
                             Navigator.of(context).pop();
                           }
@@ -114,9 +130,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     OutlinedButton(
                         onPressed: () {
                           Navigator.of(context).pop();
-                          ref
-                              .read(notificationProvider.notifier)
-                              .closeBottomSheet();
+                          ref.read(notificationProvider.notifier).closeBottomSheet();
                         },
                         child: const Text(
                           '稍後設定',
@@ -136,8 +150,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.watch(calendarTaskProvider);
     RssUrlState rssUrlState = ref.watch(rssUrlProvider);
     TaskViewType taskViewTypeState = ref.watch(taskViewTypeProvider);
-    int schoolAnnouncementSource =
-        ref.watch(schoolAnnouncementProvider).rssEndPointIdx;
+    int schoolAnnouncementSource = ref.watch(schoolAnnouncementProvider).rssEndPointIdx;
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -224,17 +237,14 @@ class _HomePageState extends ConsumerState<HomePage> {
               tooltip: '標示已讀',
             ),
             IconButton(
-              onPressed: () => ref
-                  .read(rssReadFilterProvider.notifier)
-                  .update((state) => !state),
+              onPressed: () => ref.read(rssReadFilterProvider.notifier).update((state) => !state),
               icon: Container(
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(100),
                     border: Border.all(
                       color: Colors.blue,
                     ),
-                    color:
-                        ref.watch(rssReadFilterProvider) ? Colors.blue : null),
+                    color: ref.watch(rssReadFilterProvider) ? Colors.blue : null),
                 padding: const EdgeInsets.all(1.5),
                 child: Icon(
                   Icons.filter_list,
@@ -248,8 +258,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             IconButton(
               onPressed: () => showSearch(
                   context: context,
-                  delegate: AnnounceSearchDelegate(
-                      ref.read(schoolAnnouncementProvider).announcements)),
+                  delegate:
+                      AnnounceSearchDelegate(ref.read(schoolAnnouncementProvider).announcements)),
               icon: const Icon(Icons.search),
               color: Colors.blue,
               tooltip: '搜尋公告',
@@ -258,14 +268,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         ],
         bottom: ref.watch(bottomTabProvider) == 0
             ? MediaQuery.of(context).size.width > 800 &&
-                    MediaQuery.of(context).size.width >
-                        MediaQuery.of(context).size.height
+                    MediaQuery.of(context).size.width > MediaQuery.of(context).size.height
                 ? null
                 : PreferredSize(
                     preferredSize: const Size.fromHeight(60),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       child: Row(
                         children: [
                           Expanded(
@@ -289,8 +297,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 selected: <TaskViewType>{
                                   taskViewTypeState
                                 },
-                                onSelectionChanged:
-                                    (Set<TaskViewType> newSelection) {
+                                onSelectionChanged: (Set<TaskViewType> newSelection) {
                                   HapticFeedback.lightImpact();
                                   ref
                                       .read(taskViewTypeProvider.notifier)
@@ -305,20 +312,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ? PreferredSize(
                     preferredSize: const Size.fromHeight(60),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       child: Row(
                         children: [
                           Expanded(
                             child: SegmentedButton<int>(
                                 segments: <ButtonSegment<int>>[
-                                  for (int idx = 0;
-                                      idx < rssUrlState.rssEndpoints.length;
-                                      idx++)
+                                  for (int idx = 0; idx < rssUrlState.rssEndpoints.length; idx++)
                                     ButtonSegment<int>(
                                       value: idx,
-                                      label: Text(
-                                          rssUrlState.rssEndpoints[idx].name),
+                                      label: Text(rssUrlState.rssEndpoints[idx].name),
                                     ),
                                 ],
                                 selected: <int>{
@@ -349,14 +352,11 @@ class _HomePageState extends ConsumerState<HomePage> {
         type: BottomNavigationBarType.fixed,
         currentIndex: ref.watch(bottomTabProvider),
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.task_alt_outlined), label: '所有項目'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.text_snippet_outlined), label: '繳交列表'),
+          BottomNavigationBarItem(icon: Icon(Icons.task_alt_outlined), label: '所有項目'),
+          BottomNavigationBarItem(icon: Icon(Icons.text_snippet_outlined), label: '繳交列表'),
           BottomNavigationBarItem(icon: Icon(Icons.assignment), label: '分數登記'),
           BottomNavigationBarItem(icon: Icon(Icons.school), label: '學校公告'),
-          BottomNavigationBarItem(
-              icon: FaIcon(FontAwesomeIcons.shapes), label: '更多'),
+          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.shapes), label: '更多'),
         ],
         onTap: (value) => ref.read(bottomTabProvider.notifier).state = value,
       ),
@@ -372,8 +372,7 @@ class LoadingView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (ref.watch(connectivityStatusProvider) ==
-        ConnectivityStatus.isConnected) {
+    if (ref.watch(connectivityStatusProvider) == ConnectivityStatus.isConnected) {
       if (!loading) {
         return child;
       } else {
@@ -431,20 +430,16 @@ class _PopupMenuState<T> extends ConsumerState<PopupMenu<T>> {
   GlobalKey key = GlobalKey();
 
   void _showPopupMenu(BuildContext context) async {
-    final RenderObject? overlay =
-        Overlay.of(context).context.findRenderObject();
-    final RenderBox renderBox =
-        key.currentContext?.findRenderObject() as RenderBox;
+    final RenderObject? overlay = Overlay.of(context).context.findRenderObject();
+    final RenderBox renderBox = key.currentContext?.findRenderObject() as RenderBox;
     final Offset tapDownPosition = renderBox.localToGlobal(Offset.zero);
     final result = await showMenu<T>(
         context: context,
         position: RelativeRect.fromRect(
           Rect.fromLTWH(tapDownPosition.dx, tapDownPosition.dy + 40, 30, 30),
-          Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
-              overlay.paintBounds.size.height),
+          Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width, overlay.paintBounds.size.height),
         ),
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(15))),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
         items: widget.item);
     if (result != null) {
       widget.onSelected(result);

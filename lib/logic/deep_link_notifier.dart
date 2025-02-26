@@ -11,6 +11,10 @@ class DeepLinkNotifier extends Notifier<Uri?> {
     return null;
   }
 
+  void reset() {
+    state = null;
+  }
+
   void init() {
     _appLinks.uriLinkStream.listen((uri) {
       log(uri.toString());

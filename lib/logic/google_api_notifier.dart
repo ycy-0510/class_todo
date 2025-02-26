@@ -19,6 +19,10 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
   GoogleApiNotifier(this._ref) : super(GoogleApiState()) {
     init();
   }
+
+  SharedPreferences get _sharedPreferences =>
+      _ref.read(sharedPreferencesProvider).requireValue;
+
   Future<void> init() async {
     final db = FirebaseFirestore.instance;
     try {
@@ -87,8 +91,7 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
 
   void unlink() async {
     if (state.connected) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setBool(key, false);
+      _sharedPreferences.setBool(key, false);
       state = GoogleApiState();
       autoRenew?.cancel();
     }

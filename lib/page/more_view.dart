@@ -28,14 +28,12 @@ class HomeMoreBody extends ConsumerWidget {
           Card(
             clipBehavior: Clip.hardEdge,
             margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
             child: InkWell(
-              onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const SettingPage())),
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => const SettingPage())),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -52,14 +50,9 @@ class HomeMoreBody extends ConsumerWidget {
                               width: 60,
                               child: Center(
                                 child: Text(
-                                  (ref
-                                          .watch(authProvider)
-                                          .user
-                                          ?.displayName
-                                          ?.toUpperCase() ??
+                                  (ref.watch(authProvider).user?.displayName?.toUpperCase() ??
                                       '訪客')[0],
-                                  style: const TextStyle(
-                                      fontSize: 30, color: Colors.white),
+                                  style: const TextStyle(fontSize: 30, color: Colors.white),
                                 ),
                               ),
                             ),
@@ -78,8 +71,7 @@ class HomeMoreBody extends ConsumerWidget {
                             ref.watch(authProvider).user?.displayName ?? '訪客',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           const Text(
                             '查看及設定個人資料',
@@ -103,8 +95,7 @@ class HomeMoreBody extends ConsumerWidget {
           Card(
               clipBehavior: Clip.hardEdge,
               margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
               child: Column(
                 children: [
                   ListTile(
@@ -125,8 +116,8 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const Icon(Icons.people),
                     title: const Text('班級成員'),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const UsersPage())),
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) => const UsersPage())),
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
                   const Divider(
@@ -138,11 +129,8 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const FaIcon(FontAwesomeIcons.dice),
                     title: const Text('抽籤分組'),
-                    onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                const DrawLotsPage())),
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (BuildContext context) => const DrawLotsPage())),
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
                 ],
@@ -153,8 +141,7 @@ class HomeMoreBody extends ConsumerWidget {
           Card(
               clipBehavior: Clip.hardEdge,
               margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
               child: Column(
                 children: [
                   ListTile(
@@ -162,15 +149,18 @@ class HomeMoreBody extends ConsumerWidget {
                     leading: const Icon(Icons.info),
                     title: const Text('關於這個app'),
                     onTap: () {
-                      showAboutDialog(
+                      showAdaptiveAboutDialog(
                           context: context,
                           applicationName: '共享聯絡簿',
-                          applicationIcon: Image.asset(
-                            'assets/img/icon.png',
-                            height: 70,
+                          applicationIcon: SizedBox(
+                            height: Theme.of(context).platform == TargetPlatform.iOS ? 150 : 120,
+                            child: Image.asset(
+                              'assets/img/icon.png',
+                              width: 60,
+                            ),
                           ),
                           applicationLegalese:
-                              'Copyright © 2024 YCY, Licensed under the Apache License, Version 2.0.');
+                              'Copyright © 2025 YCY, Licensed under the Apache License, Version 2.0.');
                     },
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
@@ -183,11 +173,8 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const Icon(Icons.app_shortcut),
                     title: const Text('app介紹'),
-                    onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                const IntroPage())),
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (BuildContext context) => const IntroPage())),
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
                   const Divider(
@@ -199,8 +186,7 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const Icon(Icons.feedback),
                     title: const Text('回饋意見'),
-                    onTap: () =>
-                        BetterFeedback.of(context).showAndUploadToSentry(
+                    onTap: () => BetterFeedback.of(context).showAndUploadToSentry(
                       name: ref.read(authProvider).user?.displayName,
                       email: ref.read(authProvider).user?.email,
                     ),
@@ -227,8 +213,7 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const FaIcon(FontAwesomeIcons.dev),
                     title: const Text('開發者網頁'),
-                    onTap: () =>
-                        openUrl('https://sites.google.com/view/ycyprogram'),
+                    onTap: () => openUrl('https://sites.google.com/view/ycyprogram'),
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
                   const Divider(
@@ -240,8 +225,7 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const Icon(Icons.chat),
                     title: const Text('線上支援'),
-                    onTap: () => openUrl(
-                        'https://tawk.to/chat/6783c71baf5bfec1dbea79fa/1ihdc3hee'),
+                    onTap: () => openUrl('https://tawk.to/chat/6783c71baf5bfec1dbea79fa/1ihdc3hee'),
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
                   const Divider(
@@ -253,8 +237,7 @@ class HomeMoreBody extends ConsumerWidget {
                     minLeadingWidth: 30,
                     leading: const Icon(Icons.code),
                     title: const Text('開放原始碼'),
-                    onTap: () =>
-                        openUrl('https://github.com/ycy-0510/class_todo'),
+                    onTap: () => openUrl('https://github.com/ycy-0510/class_todo'),
                     trailing: const Icon(Icons.arrow_forward_ios),
                   ),
                   const Divider(
@@ -267,11 +250,10 @@ class HomeMoreBody extends ConsumerWidget {
                     leading: const Icon(Icons.notifications),
                     title: const Text('推播通知'),
                     onTap: () async {
-                      switch (
-                          ref.read(notificationProvider).authorizationStatus) {
+                      switch (ref.read(notificationProvider).authorizationStatus) {
                         case NotificationAuthorizationStatus.authorized:
-                          await Clipboard.setData(ClipboardData(
-                              text: ref.read(notificationProvider).fcmToken));
+                          await Clipboard.setData(
+                              ClipboardData(text: ref.read(notificationProvider).fcmToken));
                           toastification.show(
                             type: ToastificationType.info,
                             style: ToastificationStyle.flatColored,
@@ -279,15 +261,12 @@ class HomeMoreBody extends ConsumerWidget {
                             description: const Text('請勿隨意分享給他人'),
                             alignment: Alignment.topCenter,
                             showProgressBar: false,
-                            autoCloseDuration:
-                                const Duration(milliseconds: 1500),
+                            autoCloseDuration: const Duration(milliseconds: 1500),
                           );
                           break;
                         case NotificationAuthorizationStatus.appDenied:
                         case NotificationAuthorizationStatus.notDetermined:
-                          ref
-                              .read(notificationProvider.notifier)
-                              .openBottomSheet();
+                          ref.read(notificationProvider.notifier).openBottomSheet();
                           break;
                         case NotificationAuthorizationStatus.systemDenied:
                           openAppSettings();
@@ -296,8 +275,7 @@ class HomeMoreBody extends ConsumerWidget {
                     },
                     trailing: Builder(builder: (context) {
                       String status = '';
-                      switch (
-                          ref.watch(notificationProvider).authorizationStatus) {
+                      switch (ref.watch(notificationProvider).authorizationStatus) {
                         case NotificationAuthorizationStatus.authorized:
                           status = '已啟用';
                           break;

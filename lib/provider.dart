@@ -5,6 +5,8 @@ import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/date_notifier.dart';
 import 'package:class_todo_list/logic/deep_link_notifier.dart';
 import 'package:class_todo_list/logic/exam_activate_notifier.dart';
+import 'package:class_todo_list/logic/exam_score_data_notifier.dart';
+import 'package:class_todo_list/logic/exam_score_review_notifier.dart';
 import 'package:class_todo_list/logic/examlist_notifier.dart';
 import 'package:class_todo_list/logic/form_notifier.dart';
 import 'package:class_todo_list/logic/google_api_notifier.dart';
@@ -22,6 +24,7 @@ import 'package:class_todo_list/logic/todo_notifier.dart';
 import 'package:class_todo_list/logic/users_notifier.dart';
 import 'package:class_todo_list/logic/users_number_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   (ref) {
@@ -29,8 +32,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   },
 );
 
-final googleApiProvider =
-    StateNotifierProvider<GoogleApiNotifier, GoogleApiState>(
+final googleApiProvider = StateNotifierProvider<GoogleApiNotifier, GoogleApiState>(
   (ref) {
     return GoogleApiNotifier(ref);
   },
@@ -43,8 +45,7 @@ final notificationProvider =
   },
 );
 
-final formProvider =
-    StateNotifierProvider<TaskFormNotifier, TaskFormState>((ref) {
+final formProvider = StateNotifierProvider<TaskFormNotifier, TaskFormState>((ref) {
   return TaskFormNotifier(ref);
 });
 
@@ -52,47 +53,40 @@ final dateProvider = StateNotifierProvider<DateNotifier, DateState>((ref) {
   return DateNotifier();
 });
 
-final taskProvider =
-    StateNotifierProvider.autoDispose<TaskNotifier, TaskState>((ref) {
+final taskProvider = StateNotifierProvider.autoDispose<TaskNotifier, TaskState>((ref) {
   return TaskNotifier(ref);
 });
 
 final calendarTaskProvider =
-    StateNotifierProvider.autoDispose<CalendarTaskNotifier, CalendarTaskState>(
-        (ref) {
+    StateNotifierProvider.autoDispose<CalendarTaskNotifier, CalendarTaskState>((ref) {
   return CalendarTaskNotifier(ref);
 });
 
 final classTableProvider =
-    StateNotifierProvider<ClassTableNotifier, ClassTableState>(
-        (ref) => ClassTableNotifier(ref));
+    StateNotifierProvider<ClassTableNotifier, ClassTableState>((ref) => ClassTableNotifier(ref));
 
 final submittedProvider =
     StateNotifierProvider.autoDispose<SubmittedNotifier, SubmittedState>((ref) {
   return SubmittedNotifier(ref);
 });
 
-final usersProvider =
-    StateNotifierProvider.autoDispose<UsersNotifier, Map<String, String>>(
-        (ref) {
+final usersProvider = StateNotifierProvider.autoDispose<UsersNotifier, Map<String, String>>((ref) {
   return UsersNotifier(ref);
 });
 
 final usersNumberProvider =
-    StateNotifierProvider.autoDispose<UsersNumberNotifier, Map<String, String>>(
-        (ref) {
+    StateNotifierProvider.autoDispose<UsersNumberNotifier, Map<String, String>>((ref) {
   return UsersNumberNotifier(ref);
 });
 
-final connectivityStatusProvider = StateNotifierProvider.autoDispose<
-    ConnectivityStatusNotifier, ConnectivityStatus>((ref) {
+final connectivityStatusProvider =
+    StateNotifierProvider.autoDispose<ConnectivityStatusNotifier, ConnectivityStatus>((ref) {
   return ConnectivityStatusNotifier();
 });
 
 enum TaskViewType { table, list, calendar }
 
-final taskViewTypeProvider =
-    StateProvider<TaskViewType>((ref) => TaskViewType.table);
+final taskViewTypeProvider = StateProvider<TaskViewType>((ref) => TaskViewType.table);
 
 enum UsersType { users, students }
 
@@ -100,24 +94,23 @@ final usersTypeProvider = StateProvider<UsersType>((ref) => UsersType.users);
 
 final pastSwitchProvider = StateProvider.autoDispose<bool>((ref) => false);
 
-final nowTimeProvider = StateNotifierProvider<NowTimeNotifier, DateTime>(
-    (ref) => NowTimeNotifier());
+final nowTimeProvider =
+    StateNotifierProvider<NowTimeNotifier, DateTime>((ref) => NowTimeNotifier());
 
-final todoProvider = StateNotifierProvider<TodoNotifier, List<String>>(
-    (ref) => TodoNotifier(ref));
+final todoProvider = StateNotifierProvider<TodoNotifier, List<String>>((ref) => TodoNotifier(ref));
 
-final selfNumberProvider = StateNotifierProvider<SelfNumberNotifier, String>(
-    (ref) => SelfNumberNotifier());
+final selfNumberProvider =
+    StateNotifierProvider<SelfNumberNotifier, String>((ref) => SelfNumberNotifier(ref));
 
-final rssUrlProvider = StateNotifierProvider<RssUrlNotifier, RssUrlState>(
-    (ref) => RssUrlNotifier(ref));
+final rssUrlProvider =
+    StateNotifierProvider<RssUrlNotifier, RssUrlState>((ref) => RssUrlNotifier(ref));
 
 final schoolAnnouncementProvider =
     StateNotifierProvider<SchoolAnnouncementNotifier, SchoolAnnouncementState>(
         (ref) => SchoolAnnouncementNotifier(ref));
 
-final rssReadProvider = StateNotifierProvider<RssReadNotifier, List<String>>(
-    (ref) => RssReadNotifier(ref));
+final rssReadProvider =
+    StateNotifierProvider<RssReadNotifier, List<String>>((ref) => RssReadNotifier(ref));
 
 final rssReadFilterProvider = StateProvider<bool>((ref) => false);
 
@@ -135,12 +128,24 @@ final mixPanelProvider = NotifierProvider<MixPanelNotifier, bool>(() {
   return MixPanelNotifier();
 });
 
-final examActivateProvider =
-    StateNotifierProvider<ExamActivateNotifier, bool>((ref) {
+final examActivateProvider = StateNotifierProvider<ExamActivateNotifier, bool>((ref) {
   return ExamActivateNotifier(ref);
 });
 
-final examlistProvider =
-    StateNotifierProvider<ExamlistNotifier, ExamlistState>((ref) {
+final examlistProvider = StateNotifierProvider<ExamlistNotifier, ExamlistState>((ref) {
   return ExamlistNotifier(ref);
 });
+
+final examScoreDataProvider =
+    StateNotifierProvider<ExamScoreDataNotifier, ExamScoreDataState>((ref) {
+  return ExamScoreDataNotifier(ref);
+});
+
+final examScoreReviewProvider =
+    StateNotifierProvider<ExamScoreReviewNotifier, ExamScoreReviewState>((ref) {
+  return ExamScoreReviewNotifier(ref);
+});
+
+final sharedPreferencesProvider = FutureProvider<SharedPreferences>(
+  (ref) async => await SharedPreferences.getInstance(),
+);

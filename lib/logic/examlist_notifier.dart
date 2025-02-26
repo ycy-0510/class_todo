@@ -31,8 +31,7 @@ class ExamlistNotifier extends StateNotifier<ExamlistState> {
     final dataRef = db
         .collection('class/$userClassCode/exam')
         .where("startTime",
-            isGreaterThanOrEqualTo:
-                _ref.read(dateProvider).now.subtract(const Duration(days: 30)))
+            isGreaterThanOrEqualTo: _ref.read(dateProvider).now.subtract(const Duration(days: 30)))
         .orderBy('startTime', descending: true);
     listener?.cancel();
     listener = dataRef.snapshots().listen(
@@ -81,8 +80,7 @@ class ExamlistState {
   bool loading;
   ExamlistState(this.examItems, {this.loading = false});
 
-  ExamlistState copy({bool loading = false}) =>
-      ExamlistState(examItems, loading: loading);
+  ExamlistState copy({bool loading = false}) => ExamlistState(examItems, loading: loading);
 }
 
 enum ExamStatus { ongoing, processing, done, archived }
@@ -106,11 +104,9 @@ class ExamData {
   }
 
   void updateStatus() {
-    if (DateTime.now().isBefore(startTime.add(const Duration(hours: 2)))) {
+    if (DateTime.now().isBefore(startTime.add(const Duration(hours: 3)))) {
       examStatus = ExamStatus.ongoing;
-    } else if (DateTime.now()
-            .isBefore(startTime.add(const Duration(hours: 24))) &&
-        !done) {
+    } else if (DateTime.now().isBefore(startTime.add(const Duration(hours: 24))) && !done) {
       examStatus = ExamStatus.processing;
     } else if (done) {
       examStatus = ExamStatus.done;

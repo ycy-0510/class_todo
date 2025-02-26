@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <!-- Required if skipIfExists is set to true -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -39,8 +40,17 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="app.classtodo.ycydev.org" android:pathPattern="/join/" />
-                <data android:pathPattern="/join/..*"/>
+                <data android:scheme="https" android:host="app.classtodo.ycydev.org"
+                    android:pathPattern="/join/" />
+                <data android:pathPattern="/join/..*" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="app.classtodo.ycydev.org"
+                    android:pathPattern="/exam/" />
+                <data android:pathPattern="/exam/..*" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
