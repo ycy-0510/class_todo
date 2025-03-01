@@ -46,14 +46,20 @@ class ExamlistNotifier extends StateNotifier<ExamlistState> {
     );
   }
 
-  void newExam(String name) {
+  Future<String?> newExam(String name) async {
     final userClassCode = _ref.read(authProvider).classCode;
-    db.collection('class/$userClassCode/exam').add({
-      'name': name,
-      'startTime': FieldValue.serverTimestamp(),
-      'userId': _ref.read(authProvider).user!.uid,
-      'done': false,
-    });
+    try {
+      final docRef = await db.collection('class/$userClassCode/exam').add({
+        'name': name,
+        'startTime': FieldValue.serverTimestamp(),
+        'userId': _ref.read(authProvider).user!.uid,
+        'done': false,
+      });
+      return docRef.id;
+    } catch (e) {
+      _showError(e.toString());
+      return null;
+    }
   }
 
   void _showError(String error) {

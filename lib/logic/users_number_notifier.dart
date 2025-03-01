@@ -16,16 +16,13 @@ class UsersNumberNotifier extends StateNotifier<Map<String, String>> {
     final userClassCode = _ref.read(authProvider).classCode;
     state = {};
     if (!_ref.read(authProvider).user!.isAnonymous) {
-      final dataRef =
-          db.collection("class/$userClassCode/config").doc('student');
+      final dataRef = db.collection("class/$userClassCode/config").doc('student');
       try {
         final usersData = await dataRef.get();
         Map<String, String> usersMap = {};
         if (usersData.exists && usersData.data()?['students'] is Map) {
-          final originMap =
-              usersData.data()?['students'] as Map<String, dynamic>;
-          final keys = originMap.keys.toList()
-            ..sort((a, b) => int.parse(a) - int.parse(b));
+          final originMap = usersData.data()?['students'] as Map<String, dynamic>;
+          final keys = originMap.keys.toList()..sort((a, b) => int.parse(a) - int.parse(b));
           for (var key in keys) {
             usersMap.addAll({key: originMap[key].toString()});
           }
@@ -33,10 +30,24 @@ class UsersNumberNotifier extends StateNotifier<Map<String, String>> {
           _showError('Students not found');
         }
         state = usersMap;
+      } on FirebaseException catch (e) {
+        _showFirebaseError(e);
       } catch (e) {
         _showError(e.toString());
       }
     }
+  }
+
+  void _showFirebaseError(FirebaseException error) {
+    toastification.show(
+      type: ToastificationType.error,
+      style: ToastificationStyle.flatColored,
+      title: Text("發生錯誤 ${error.code}"),
+      description: Text(error.message ?? ''),
+      alignment: Alignment.topCenter,
+      showProgressBar: false,
+      autoCloseDuration: const Duration(milliseconds: 1500),
+    );
   }
 
   void _showError(String error) {
@@ -44,7 +55,7 @@ class UsersNumberNotifier extends StateNotifier<Map<String, String>> {
       type: ToastificationType.error,
       style: ToastificationStyle.flatColored,
       title: const Text("發生錯誤"),
-      description: Text(error),
+      description: Text(error.toString()),
       alignment: Alignment.topCenter,
       showProgressBar: false,
       autoCloseDuration: const Duration(milliseconds: 1500),

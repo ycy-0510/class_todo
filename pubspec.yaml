@@ -1,7 +1,7 @@
 name: class_todo_list
 description: "A fully shared online contact book"
 publish_to: "none"
-version: 2.3.0+42
+version: 2.3.0+43
 
 environment:
   sdk: ">=3.1.2 <4.0.0"
@@ -71,7 +71,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  flutter_launcher_icons: ^0.14.1
+  flutter_launcher_icons: ^0.14.3
   sentry_dart_plugin: ^2.2.1
 
 flutter:
@@ -98,6 +98,10 @@ flutter_launcher_icons:
   image_path_ios_tinted_grayscale: assets/img/ios_tinted_icon.png
   image_path: "assets/img/appicon.png"
   color: "#f3f2f7"
+  image_path_android: "assets/img/icon.png"
+  adaptive_icon_foreground: "assets/img/icon.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground_inset: 25
   # branding: assets/branding-production.png
   # branding_bottom_padding: 24
   color_dark: "#000000"

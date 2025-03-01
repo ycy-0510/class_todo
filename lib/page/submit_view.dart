@@ -39,8 +39,7 @@ class HomeSubmittedBody extends ConsumerWidget {
               itemCount: submittedState.submittedItems.length,
               itemBuilder: (context, idx) {
                 Submitted submitted = submittedState.submittedItems[idx];
-                bool done =
-                    submitted.done.contains(ref.watch(selfNumberProvider));
+                bool done = submitted.done.contains(ref.watch(selfNumberProvider));
                 return Card(
                   clipBehavior: Clip.hardEdge,
                   margin: submittedState.submittedItems.length == 1
@@ -51,33 +50,26 @@ class HomeSubmittedBody extends ConsumerWidget {
                               ? const EdgeInsets.fromLTRB(20, 0, 20, 10)
                               : const EdgeInsets.symmetric(horizontal: 20),
                   shape: submittedState.submittedItems.length == 1
-                      ? RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25))
+                      ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))
                       : idx == 0
                           ? const RoundedRectangleBorder(
                               borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(25),
-                                  topRight: Radius.circular(25)))
+                                  topLeft: Radius.circular(25), topRight: Radius.circular(25)))
                           : idx == submittedState.submittedItems.length - 1
                               ? const RoundedRectangleBorder(
                                   borderRadius: BorderRadius.only(
                                       bottomLeft: Radius.circular(25),
                                       bottomRight: Radius.circular(25)))
-                              : const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.zero),
+                              : const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                   child: ListTile(
                     leading: Icon(Icons.text_snippet_outlined,
-                        color: done ||
-                                !usersNumber.values
-                                    .contains(ref.watch(selfNumberProvider))
+                        color: done || !usersNumber.values.contains(ref.watch(selfNumberProvider))
                             ? null
                             : Colors.red),
                     title: Text(
                       '${submitted.name} ${submitted.done.length}/${usersNumber.keys.length}',
                       style: TextStyle(
-                          color: done ||
-                                  !usersNumber.values
-                                      .contains(ref.watch(selfNumberProvider))
+                          color: done || !usersNumber.values.contains(ref.watch(selfNumberProvider))
                               ? null
                               : Colors.red),
                     ),
@@ -89,23 +81,18 @@ class HomeSubmittedBody extends ConsumerWidget {
                             '截止日期：${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(submitted.date)}'),
                       ],
                     ),
-                    trailing: !usersNumber.keys
-                            .contains(ref.watch(selfNumberProvider))
+                    trailing: !usersNumber.keys.contains(ref.watch(selfNumberProvider))
                         ? null
                         : Text(
                             done ? '已繳交' : '缺交',
-                            style: TextStyle(
-                                fontSize: 15,
-                                color: done ? Colors.green : Colors.red),
+                            style: TextStyle(fontSize: 15, color: done ? Colors.green : Colors.red),
                           ),
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) =>
-                            SubmittedDone(submitted.submittedId))),
+                        builder: (context) => SubmittedDone(submitted.submittedId))),
                   ),
                 );
               },
-              separatorBuilder: (BuildContext context, int index) =>
-                  const Divider(
+              separatorBuilder: (BuildContext context, int index) => const Divider(
                 height: 0,
                 indent: 70,
                 endIndent: 20,
@@ -130,11 +117,7 @@ class SubmittedDone extends ConsumerWidget {
       orElse: () {
         available = false;
         return Submitted(
-            name: '',
-            date: DateTime.now(),
-            userId: '',
-            submittedId: submittedId,
-            done: []);
+            name: '', date: DateTime.now(), userId: '', submittedId: submittedId, done: []);
       },
     );
     Map<String, String> usersNumber = ref.watch(usersNumberProvider);
@@ -180,32 +163,35 @@ class SubmittedDone extends ConsumerWidget {
                             maxLines: 2,
                             minLines: 1,
                             decoration: const InputDecoration(
-                                hintText: '如：請繳交給班長',
-                                hintStyle: TextStyle(height: 2),
-                                labelText: '其他提醒內容(選填)',
-                                helperText: '通知已包含名單，不需要手動輸入！',
-                                helperStyle: TextStyle(color: Colors.red)),
+                              hintText: '如：請繳交給班長',
+                              hintStyle: TextStyle(height: 2),
+                              labelText: '其他提醒內容(選填)',
+                              helperText: '通知已包含名單，不需要手動輸入！',
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
-                        OutlinedButton(
-                          onPressed: () {
-                            Share.share(
-                              '''${submitted.name}請於${DateFormat('yyyy/MM/dd EEEE HH:mm', 'zh-TW').format(submitted.date)}前繳交，缺交名單：
-${usersNumber.keys.where((e) => !submitted.done.contains(e)).toList().join('、')}
-${controller.text}''',
-                            ).then((v) {
-                              if (v.status == ShareResultStatus.success &&
-                                  context.mounted) {
-                                Navigator.of(context).pop();
-                              }
-                            });
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.blue,
-                          ),
-                          child: const Text('分享'),
-                        ),
+                        Builder(builder: (context) {
+                          return OutlinedButton(
+                            onPressed: () {
+                              final box = context.findRenderObject() as RenderBox?;
+                              Share.share(
+                                '''${submitted.name}請於${DateFormat('yyyy/MM/dd EEEE HH:mm', 'zh-TW').format(submitted.date)}前繳交，缺交名單：
+                            ${usersNumber.keys.where((e) => !submitted.done.contains(e)).toList().join('、')}
+                            ${controller.text}''',
+                                sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+                              ).then((v) {
+                                if (v.status == ShareResultStatus.success && context.mounted) {
+                                  Navigator.of(context).pop();
+                                }
+                              });
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.blue,
+                            ),
+                            child: const Text('分享'),
+                          );
+                        }),
                       ],
                     );
                   },
@@ -233,8 +219,7 @@ ${controller.text}''',
                     ),
                     value: checked,
                     onChanged: (value) {
-                      if (submitted.userId ==
-                          ref.watch(authProvider).user!.uid) {
+                      if (submitted.userId == ref.watch(authProvider).user!.uid) {
                         HapticFeedback.lightImpact();
                         submitted.update(key, ref);
                       }

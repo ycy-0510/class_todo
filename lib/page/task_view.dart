@@ -41,28 +41,24 @@ class HomeTaskBody extends ConsumerWidget {
             List<Task> importantTasks = [];
             bool showPast = ref.watch(pastSwitchProvider);
             for (int i = 0; i < tasks.length; i++) {
-              if (tasks[i].date.isAfter(ref.watch(nowTimeProvider)) ||
-                  showPast) {
+              if (tasks[i].date.isAfter(ref.watch(nowTimeProvider)) || showPast) {
                 showTasks.add(tasks[i]);
               }
             }
             for (int i = 0; i < tasks.length; i++) {
-              if (tasks[i].date.isAfter(ref.watch(nowTimeProvider)) &&
-                  tasks[i].top) {
+              if (tasks[i].date.isAfter(ref.watch(nowTimeProvider)) && tasks[i].top) {
                 importantTasks.add(tasks[i]);
               }
             }
             int week = idx - 1000;
-            DateTime dateStart =
-                ref.watch(dateProvider).thisWeek.add(Duration(days: 7 * week));
+            DateTime dateStart = ref.watch(dateProvider).thisWeek.add(Duration(days: 7 * week));
             DateTime dateEnd = ref
                 .watch(dateProvider)
                 .thisWeek
                 .add(Duration(days: 7 * week))
                 .add(const Duration(days: 6));
             if (MediaQuery.of(context).size.width > 800 &&
-                MediaQuery.of(context).size.width >
-                    MediaQuery.of(context).size.height) {
+                MediaQuery.of(context).size.width > MediaQuery.of(context).size.height) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -77,8 +73,7 @@ class HomeTaskBody extends ConsumerWidget {
                       ),
                       const Expanded(child: SizedBox()),
                       Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 5, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -93,9 +88,7 @@ class HomeTaskBody extends ConsumerWidget {
                                 value: showPast,
                                 onChanged: (value) {
                                   HapticFeedback.mediumImpact();
-                                  ref
-                                      .read(pastSwitchProvider.notifier)
-                                      .update((state) => value);
+                                  ref.read(pastSwitchProvider.notifier).update((state) => value);
                                 },
                               ),
                             ],
@@ -126,8 +119,7 @@ class HomeTaskBody extends ConsumerWidget {
                   return Column(
                     children: [
                       Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 5, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
                           child: Row(
                             children: [
                               Text(
@@ -146,9 +138,7 @@ class HomeTaskBody extends ConsumerWidget {
                                 value: showPast,
                                 onChanged: (value) {
                                   HapticFeedback.mediumImpact();
-                                  ref
-                                      .read(pastSwitchProvider.notifier)
-                                      .update((state) => value);
+                                  ref.read(pastSwitchProvider.notifier).update((state) => value);
                                 },
                               ),
                             ],
@@ -174,8 +164,7 @@ class HomeTaskBody extends ConsumerWidget {
                   } else {
                     return Center(
                       child: OutlinedButton.icon(
-                          onPressed: () =>
-                              Navigator.of(context).push(MaterialPageRoute(
+                          onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => const SettingPage(),
                               )),
                           icon: const Icon(Icons.open_in_new),
@@ -235,9 +224,7 @@ class _RetryGoogleApiState extends ConsumerState<RetryGoogleApi> {
                     setState(() {
                       disabled = true;
                     });
-                    await ref
-                        .watch(googleApiProvider.notifier)
-                        .renewHttpClient();
+                    await ref.watch(googleApiProvider.notifier).renewHttpClient();
                     countDown = Timer.periodic(const Duration(seconds: 1), (t) {
                       setState(() {});
                       if (t.tick == duration.inSeconds) {
@@ -248,9 +235,8 @@ class _RetryGoogleApiState extends ConsumerState<RetryGoogleApi> {
                     });
                   },
             icon: const Icon(Icons.refresh),
-            label: Text(countDown != null
-                ? '${duration.inSeconds - countDown!.tick}秒後再試一次'
-                : '再試一次')),
+            label:
+                Text(countDown != null ? '${duration.inSeconds - countDown!.tick}秒後再試一次' : '再試一次')),
       ],
     );
   }
@@ -271,9 +257,7 @@ class TaskTableView extends ConsumerWidget {
         padding: const EdgeInsets.all(8),
         child: Table(
             border: TableBorder.all(
-                color: Colors.grey,
-                width: 2,
-                borderRadius: BorderRadius.circular(20)),
+                color: Colors.grey, width: 2, borderRadius: BorderRadius.circular(20)),
             children: [
               TableRow(children: [
                 for (int d = 0; d < 6; d++)
@@ -285,23 +269,19 @@ class TaskTableView extends ConsumerWidget {
                         .add(Duration(days: 7 * week))
                         .add(Duration(days: d + 1));
                     bool isToday = false;
-                    if (date.isBefore(today) &&
-                        date.add(const Duration(days: 1)).isAfter(today)) {
+                    if (date.isBefore(today) && date.add(const Duration(days: 1)).isAfter(today)) {
                       isToday = true;
                     }
                     int month = date.month;
                     int day = date.day;
-                    String weekday =
-                        ['日', '一', '二', '三', '四', '五', '六'][date.weekday % 7];
+                    String weekday = ['日', '一', '二', '三', '四', '五', '六'][date.weekday % 7];
                     return Container(
                       decoration: BoxDecoration(
                           color: Theme.of(context).cardTheme.color,
                           borderRadius: d == 0
-                              ? const BorderRadius.only(
-                                  topLeft: Radius.circular(25))
+                              ? const BorderRadius.only(topLeft: Radius.circular(25))
                               : d == 6 - 1
-                                  ? const BorderRadius.only(
-                                      topRight: Radius.circular(25))
+                                  ? const BorderRadius.only(topRight: Radius.circular(25))
                                   : null),
                       height: 50,
                       alignment: Alignment.center,
@@ -337,9 +317,7 @@ class TaskTableView extends ConsumerWidget {
                                 showDragHandle: true,
                                 context: context,
                                 builder: (context) => BottomSheet(
-                                    className: lesson[d * 9 + l],
-                                    weekDay: d + 1,
-                                    lessonIdx: l));
+                                    className: lesson[d * 9 + l], weekDay: d + 1, lessonIdx: l));
                           },
                           onLongPress: () {
                             final DateTime date = ref
@@ -367,8 +345,7 @@ class TaskTableView extends ConsumerWidget {
                               showDialog(
                                   context: context,
                                   barrierDismissible: false,
-                                  builder: (BuildContext context) =>
-                                      const TaskForm());
+                                  builder: (BuildContext context) => const TaskForm());
                             }
                           },
                           child: DragTarget<Task>(
@@ -379,12 +356,10 @@ class TaskTableView extends ConsumerWidget {
                                   .thisWeek
                                   .add(Duration(days: 7 * week))
                                   .add(Duration(days: d + 1))
-                                  .add(Duration(
-                                      hours: time.hour, minutes: time.minute));
+                                  .add(Duration(hours: time.hour, minutes: time.minute));
                               details.data.modifyDate(ref, date);
                             },
-                            builder: (BuildContext context,
-                                List<Task?> candidateData,
+                            builder: (BuildContext context, List<Task?> candidateData,
                                 List<dynamic> rejectedData) {
                               final highLighted = candidateData.isNotEmpty;
                               return Container(
@@ -398,8 +373,7 @@ class TaskTableView extends ConsumerWidget {
                                                 bottomLeft: Radius.circular(25))
                                             : d == 6 - 1
                                                 ? const BorderRadius.only(
-                                                    bottomRight:
-                                                        Radius.circular(25))
+                                                    bottomRight: Radius.circular(25))
                                                 : null
                                         : null),
                                 margin: l == 0 || l == 4 || l == 7
@@ -411,36 +385,28 @@ class TaskTableView extends ConsumerWidget {
                                   final int weekDay = d + 1;
                                   List<Task> subTasks = tasks
                                       .where((task) =>
-                                          task.classTime == l &&
-                                          task.date.weekday == weekDay)
+                                          task.classTime == l && task.date.weekday == weekDay)
                                       .toList();
                                   if (subTasks.isEmpty && !highLighted) {
                                     return Text(
                                       lesson[d * 9 + l],
                                       style: TextStyle(
-                                          fontSize:
-                                              subTasks.isNotEmpty ? 25 : 18,
-                                          fontWeight: subTasks.isNotEmpty
-                                              ? FontWeight.w900
-                                              : null,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary),
+                                          fontSize: subTasks.isNotEmpty ? 25 : 18,
+                                          fontWeight: subTasks.isNotEmpty ? FontWeight.w900 : null,
+                                          color: Theme.of(context).colorScheme.primary),
                                     );
                                   } else {
                                     return Padding(
                                       padding: const EdgeInsets.all(5),
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: [
                                           Text(lesson[d * 9 + l],
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                fontWeight: subTasks.isNotEmpty
-                                                    ? FontWeight.w900
-                                                    : null,
+                                                fontWeight:
+                                                    subTasks.isNotEmpty ? FontWeight.w900 : null,
                                                 color: subTasks.isNotEmpty
                                                     ? Colors.red
                                                     : (Theme.of(context)
@@ -450,99 +416,67 @@ class TaskTableView extends ConsumerWidget {
                                                         ?.resolve({})),
                                               )),
                                           for (int i = 0;
-                                              i <
-                                                  (subTasks.length <= 2
-                                                      ? subTasks.length
-                                                      : 1);
+                                              i < (subTasks.length <= 2 ? subTasks.length : 1);
                                               i++)
                                             Draggable<Task>(
                                               data: subTasks[i],
-                                              childWhenDragging:
-                                                  const SizedBox.shrink(),
+                                              childWhenDragging: const SizedBox.shrink(),
                                               feedback: Material(
+                                                color: Colors.transparent,
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: Theme.of(context)
-                                                                .brightness ==
+                                                    color: Theme.of(context).brightness ==
                                                             Brightness.light
-                                                        ? const Color.fromARGB(
-                                                            255, 214, 237, 250)
-                                                        : const Color.fromARGB(
-                                                            255, 20, 47, 68),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
+                                                        ? const Color.fromARGB(255, 214, 237, 250)
+                                                        : const Color.fromARGB(255, 20, 47, 68),
+                                                    borderRadius: BorderRadius.circular(5),
                                                   ),
-                                                  padding:
-                                                      const EdgeInsets.all(5),
+                                                  padding: const EdgeInsets.all(5),
                                                   child: Text(
                                                     subTasks[i].name,
                                                     textAlign: TextAlign.center,
                                                     style: TextStyle(
-                                                        color: Theme.of(context)
-                                                                    .brightness ==
+                                                        color: Theme.of(context).brightness ==
                                                                 Brightness.light
-                                                            ? const Color
-                                                                .fromARGB(255,
-                                                                39, 86, 120)
-                                                            : const Color
-                                                                .fromARGB(255,
-                                                                81, 170, 242),
+                                                            ? const Color.fromARGB(255, 39, 86, 120)
+                                                            : const Color.fromARGB(
+                                                                255, 81, 170, 242),
                                                         fontSize: 15,
-                                                        overflow: TextOverflow
-                                                            .ellipsis),
+                                                        overflow: TextOverflow.ellipsis),
                                                   ),
                                                 ),
                                               ),
                                               child: Container(
-                                                margin:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 1),
+                                                margin: const EdgeInsets.symmetric(vertical: 1),
                                                 decoration: BoxDecoration(
-                                                  color: Theme.of(context)
-                                                              .brightness ==
+                                                  color: Theme.of(context).brightness ==
                                                           Brightness.light
-                                                      ? const Color.fromARGB(
-                                                          255, 214, 237, 250)
-                                                      : const Color.fromARGB(
-                                                          255, 20, 47, 68),
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
+                                                      ? const Color.fromARGB(255, 214, 237, 250)
+                                                      : const Color.fromARGB(255, 20, 47, 68),
+                                                  borderRadius: BorderRadius.circular(5),
                                                 ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 1),
+                                                padding: const EdgeInsets.symmetric(horizontal: 1),
                                                 child: Text(
                                                   subTasks[i].name,
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
-                                                      color: Theme.of(context)
-                                                                  .brightness ==
+                                                      color: Theme.of(context).brightness ==
                                                               Brightness.light
-                                                          ? const Color
-                                                              .fromARGB(
-                                                              255, 39, 86, 120)
-                                                          : const Color
-                                                              .fromARGB(255, 81,
-                                                              170, 242),
+                                                          ? const Color.fromARGB(255, 39, 86, 120)
+                                                          : const Color.fromARGB(255, 81, 170, 242),
                                                       fontSize: 12,
-                                                      overflow: TextOverflow
-                                                          .ellipsis),
+                                                      overflow: TextOverflow.ellipsis),
                                                 ),
                                               ),
                                             ),
                                           if (subTasks.length > 2)
                                             Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 1),
+                                              padding: const EdgeInsets.symmetric(vertical: 1),
                                               child: Text(
                                                 '+${subTasks.length - 1}',
                                                 textAlign: TextAlign.center,
                                                 style: const TextStyle(
-                                                    fontSize: 12,
-                                                    overflow:
-                                                        TextOverflow.ellipsis),
+                                                    fontSize: 12, overflow: TextOverflow.ellipsis),
                                               ),
                                             ),
                                         ],
@@ -562,8 +496,7 @@ class TaskTableView extends ConsumerWidget {
 }
 
 class TaskListView extends ConsumerWidget {
-  const TaskListView(this.tasks,
-      {this.showDateTitle = false, this.short = false, super.key});
+  const TaskListView(this.tasks, {this.showDateTitle = false, this.short = false, super.key});
 
   final bool showDateTitle;
   final bool short;
@@ -607,13 +540,9 @@ class TaskListView extends ConsumerWidget {
                   ? ColoredBox(
                       color: headerColor,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         child: Text(
-                          task.top
-                              ? '置頂'
-                              : DateFormat('yyyy/MM/dd EE', 'zh-TW')
-                                  .format(task.date),
+                          task.top ? '置頂' : DateFormat('yyyy/MM/dd EE', 'zh-TW').format(task.date),
                           textAlign: TextAlign.center,
                           style: const TextStyle(fontSize: 15),
                         ),
@@ -628,10 +557,9 @@ class TaskListView extends ConsumerWidget {
                 height: 0,
               ),
               itemBuilder: (context, Task task) {
-                String lessonName = ([-1, 0, 8].contains(task.classTime)
-                        ? ''
-                        : '第${task.classTime}節 ') +
-                    DateFormat('HH:mm', 'zh-TW').format(task.date);
+                String lessonName =
+                    ([-1, 0, 8].contains(task.classTime) ? '' : '第${task.classTime}節 ') +
+                        DateFormat('HH:mm', 'zh-TW').format(task.date);
                 return InkWell(
                   onLongPress: () {
                     showDialog(
@@ -648,13 +576,10 @@ class TaskListView extends ConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           child: Checkbox(
-                            value:
-                                ref.watch(todoProvider).contains(task.taskId),
+                            value: ref.watch(todoProvider).contains(task.taskId),
                             onChanged: (value) {
                               HapticFeedback.mediumImpact();
-                              ref
-                                  .read(todoProvider.notifier)
-                                  .changeData(task.taskId);
+                              ref.read(todoProvider.notifier).changeData(task.taskId);
                             },
                           ),
                         ),
@@ -709,9 +634,7 @@ class TaskListView extends ConsumerWidget {
                                   value: 'top',
                                   child: Row(
                                     children: [
-                                      Icon(task.top
-                                          ? Icons.push_pin_outlined
-                                          : Icons.push_pin),
+                                      Icon(task.top ? Icons.push_pin_outlined : Icons.push_pin),
                                       const SizedBox(
                                         width: 10,
                                       ),
@@ -760,9 +683,7 @@ class TaskListView extends ConsumerWidget {
                                   task.pinTop(ref);
                                   break;
                                 case 'edit':
-                                  ref
-                                      .read(formProvider.notifier)
-                                      .startUpdate(task);
+                                  ref.read(formProvider.notifier).startUpdate(task);
                                   showDialog(
                                     context: context,
                                     builder: (context) => const TaskForm(),
@@ -771,8 +692,7 @@ class TaskListView extends ConsumerWidget {
                                 case 'star':
                                   break;
                                 case 'copy':
-                                  await Clipboard.setData(
-                                      ClipboardData(text: task.name));
+                                  await Clipboard.setData(ClipboardData(text: task.name));
                                   toastification.show(
                                     type: ToastificationType.info,
                                     style: ToastificationStyle.flatColored,
@@ -780,8 +700,7 @@ class TaskListView extends ConsumerWidget {
                                     description: Text(task.name),
                                     alignment: Alignment.topCenter,
                                     showProgressBar: false,
-                                    autoCloseDuration:
-                                        const Duration(milliseconds: 1500),
+                                    autoCloseDuration: const Duration(milliseconds: 1500),
                                   );
                                   break;
                               }
@@ -860,8 +779,7 @@ class CalendarTaskListView extends ConsumerWidget {
                 ? ColoredBox(
                     color: headerColor,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       child: Text(
                         DateFormat('yyyy/MM/dd EE', 'zh-TW').format(task.date),
                         textAlign: TextAlign.center,
@@ -878,10 +796,9 @@ class CalendarTaskListView extends ConsumerWidget {
               height: 0,
             ),
             itemBuilder: (context, CalendarTask task) {
-              String lessonName = ([-1, 0, 8].contains(task.classTime)
-                      ? ''
-                      : '第${task.classTime}節 ') +
-                  DateFormat('HH:mm', 'zh-TW').format(task.date);
+              String lessonName =
+                  ([-1, 0, 8].contains(task.classTime) ? '' : '第${task.classTime}節 ') +
+                      DateFormat('HH:mm', 'zh-TW').format(task.date);
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Row(
@@ -892,9 +809,7 @@ class CalendarTaskListView extends ConsumerWidget {
                         value: ref.watch(todoProvider).contains(task.taskId),
                         onChanged: (value) {
                           HapticFeedback.mediumImpact();
-                          ref
-                              .read(todoProvider.notifier)
-                              .changeData(task.taskId);
+                          ref.read(todoProvider.notifier).changeData(task.taskId);
                         },
                       ),
                     ),
@@ -950,16 +865,14 @@ class CalendarTaskListView extends ConsumerWidget {
                           HapticFeedback.selectionClick();
                           switch (value) {
                             case 'copy':
-                              await Clipboard.setData(
-                                  ClipboardData(text: task.name));
+                              await Clipboard.setData(ClipboardData(text: task.name));
                               toastification.show(
                                 type: ToastificationType.info,
                                 style: ToastificationStyle.flatColored,
                                 title: const Text("已複製到剪貼簿"),
                                 alignment: Alignment.topCenter,
                                 showProgressBar: false,
-                                autoCloseDuration:
-                                    const Duration(milliseconds: 1500),
+                                autoCloseDuration: const Duration(milliseconds: 1500),
                               );
                               break;
                           }
@@ -1004,9 +917,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(ref.watch(formProvider).formStatus == TaskFormStatus.create
-              ? '新增項目'
-              : '修改項目'),
+          Text(ref.watch(formProvider).formStatus == TaskFormStatus.create ? '新增項目' : '修改項目'),
           IconButton(
               onPressed: () {
                 Navigator.of(context).pop();
@@ -1060,8 +971,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<int>(
                         borderRadius: BorderRadius.circular(15),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 15, vertical: 7),
+                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
                         value: ref.watch(formProvider).type,
                         onChanged: (int? value) {
                           willRemove = false;
@@ -1101,8 +1011,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     padding: const EdgeInsets.only(top: 4, left: 12),
                     child: Text(
                       '請選擇類別',
-                      style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
+                      style: TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ),
                 const Padding(
@@ -1116,9 +1025,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                        color: Colors.grey.shade600,
-                        style: BorderStyle.solid,
-                        width: 0.80),
+                        color: Colors.grey.shade600, style: BorderStyle.solid, width: 0.80),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -1128,26 +1035,19 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                           willRemove = false;
                           showDatePicker(
                                   context: context,
-                                  initialDate: ref
-                                          .read(formProvider)
-                                          .date
-                                          .isBefore(DateTime.now())
+                                  initialDate: ref.read(formProvider).date.isBefore(DateTime.now())
                                       ? DateTime.now()
                                       : ref.read(formProvider).date,
                                   firstDate: DateTime.now(),
-                                  lastDate: DateTime.now()
-                                      .add(const Duration(days: 150)))
+                                  lastDate: DateTime.now().add(const Duration(days: 150)))
                               .then((DateTime? dateTime) {
                             if (dateTime == null) return;
-                            ref
-                                .read(formProvider.notifier)
-                                .dateChange(dateTime);
+                            ref.read(formProvider.notifier).dateChange(dateTime);
                           });
                         },
                         style: TextButton.styleFrom(),
                         child: Text(
-                          DateFormat('yyyy/MM/dd EE', 'zh-TW')
-                              .format(ref.watch(formProvider).date),
+                          DateFormat('yyyy/MM/dd EE', 'zh-TW').format(ref.watch(formProvider).date),
                           style: const TextStyle(fontSize: 18),
                         ),
                       ),
@@ -1156,8 +1056,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                           willRemove = false;
                           showTimePicker(
                             context: context,
-                            initialTime: TimeOfDay.fromDateTime(
-                                ref.read(formProvider).date),
+                            initialTime: TimeOfDay.fromDateTime(ref.read(formProvider).date),
                           ).then((TimeOfDay? time) {
                             if (time == null) return;
                             ref.read(formProvider.notifier).timeChange(time);
@@ -1165,8 +1064,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                         },
                         style: TextButton.styleFrom(),
                         child: Text(
-                          DateFormat('HH:mm', 'zh-TW')
-                              .format(ref.watch(formProvider).date),
+                          DateFormat('HH:mm', 'zh-TW').format(ref.watch(formProvider).date),
                           style: const TextStyle(fontSize: 18),
                         ),
                       ),
@@ -1181,8 +1079,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
         if (ref.watch(formProvider).formStatus == TaskFormStatus.create)
           ElevatedButton(
             onPressed: () {
-              if (_formKey.currentState!.validate() &&
-                  ref.watch(formProvider).type != -1) {
+              if (_formKey.currentState!.validate() && ref.watch(formProvider).type != -1) {
                 HapticFeedback.lightImpact();
                 toastification.show(
                   type: ToastificationType.info,
@@ -1209,8 +1106,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate() &&
-                      ref.watch(formProvider).type != -1) {
+                  if (_formKey.currentState!.validate() && ref.watch(formProvider).type != -1) {
                     HapticFeedback.lightImpact();
                     toastification.show(
                       type: ToastificationType.info,
@@ -1323,10 +1219,7 @@ class TaskDetail extends ConsumerWidget {
 
 class BottomSheet extends ConsumerWidget {
   const BottomSheet(
-      {required this.className,
-      required this.weekDay,
-      required this.lessonIdx,
-      super.key});
+      {required this.className, required this.weekDay, required this.lessonIdx, super.key});
   final String className;
   final int weekDay;
   final int lessonIdx;
@@ -1376,8 +1269,7 @@ class BottomSheet extends ConsumerWidget {
                           showDialog(
                               context: context,
                               barrierDismissible: false,
-                              builder: (BuildContext context) =>
-                                  const TaskForm());
+                              builder: (BuildContext context) => const TaskForm());
                         }
                       : null,
                   icon: const Icon(Icons.add_task),

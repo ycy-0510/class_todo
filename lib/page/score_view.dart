@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
@@ -58,6 +59,7 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
         return LoadingView(
             loading: examlistState.loading,
             child: Builder(builder: (context) {
+              final box = context.findRenderObject() as RenderBox?;
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Column(
@@ -92,101 +94,113 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                                               bottomRight: Radius.circular(25)))
                                       : const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.zero),
-                          child: ListTile(
-                            leading: Builder(builder: (context) {
-                              switch (examData.examStatus) {
-                                case ExamStatus.ongoing:
-                                  return Blink(
-                                      vsync: this,
-                                      child: const Icon(Icons.circle, color: Colors.blue));
-                                case ExamStatus.processing:
-                                  if (examData.userId == userData?.uid) {
-                                    return const Icon(Icons.watch_later_outlined,
-                                        color: Colors.blue);
-                                  } else {
-                                    return const Icon(Icons.watch_later_outlined,
-                                        color: Colors.orangeAccent);
-                                  }
-                                case ExamStatus.done:
-                                  return const Icon(Icons.check_circle_outline,
-                                      color: Colors.green);
-                                case ExamStatus.archived:
-                                  return const Icon(Icons.archive_outlined, color: Colors.grey);
-                              }
-                            }),
-                            title: Text(
-                              examData.name,
-                            ),
-                            subtitle: Wrap(
-                              spacing: 5,
-                              children: [
-                                Text(usersData[examData.userId] ?? '未知使用者'),
-                                Text(
-                                    '上傳截止時間：${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(examData.startTime.add(const Duration(hours: 2)))}'),
-                              ],
-                            ),
-                            onTap: examData.examStatus == ExamStatus.processing &&
-                                    examData.userId == userData?.uid
-                                ? () {
-                                    ref
-                                        .read(examScoreReviewProvider.notifier)
-                                        .getScoreData(examData.examId);
-                                    if (context.mounted) {
-                                      Navigator.of(context).push(MaterialPageRoute(
-                                        builder: (context) {
-                                          return ScoreCheckPage(examData.examId, examData.name);
-                                        },
-                                      ));
+                          child: Builder(builder: (context) {
+                            return ListTile(
+                              leading: Builder(builder: (context) {
+                                switch (examData.examStatus) {
+                                  case ExamStatus.ongoing:
+                                    return Blink(
+                                        vsync: this,
+                                        child: const Icon(Icons.circle, color: Colors.blue));
+                                  case ExamStatus.processing:
+                                    if (examData.userId == userData?.uid) {
+                                      return const Icon(Icons.watch_later_outlined,
+                                          color: Colors.blue);
+                                    } else {
+                                      return const Icon(Icons.watch_later_outlined,
+                                          color: Colors.orangeAccent);
                                     }
-                                  }
-                                : () async {
-                                    while (ref.read(selfNumberProvider).isEmpty ||
-                                        int.tryParse(ref.read(selfNumberProvider)) == null ||
-                                        int.parse(ref.read(selfNumberProvider)) < 1) {
+                                  case ExamStatus.done:
+                                    return const Icon(Icons.check_circle_outline,
+                                        color: Colors.green);
+                                  case ExamStatus.archived:
+                                    return const Icon(Icons.archive_outlined, color: Colors.grey);
+                                }
+                              }),
+                              title: Text(
+                                examData.name,
+                              ),
+                              subtitle: Wrap(
+                                spacing: 5,
+                                children: [
+                                  Text(usersData[examData.userId] ?? '未知使用者'),
+                                  Text(
+                                      '上傳截止時間：${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(examData.startTime.add(const Duration(hours: 3)))}'),
+                                ],
+                              ),
+                              onLongPress: examData.examStatus == ExamStatus.ongoing
+                                  ? () {
+                                      final box = context.findRenderObject() as RenderBox?;
+                                      Share.share(
+                                        '請在${DateFormat('MM/dd HH:mm', 'zh-TW').format(examData.startTime.add(const Duration(hours: 3)))}前提交${examData.name}成績：\nhttps://app.classtodo.ycydev.org/exam/${examData.examId}',
+                                        sharePositionOrigin:
+                                            box!.localToGlobal(Offset.zero) & box.size,
+                                      );
+                                    }
+                                  : null,
+                              onTap: examData.examStatus == ExamStatus.processing &&
+                                      examData.userId == userData?.uid
+                                  ? () {
+                                      ref
+                                          .read(examScoreReviewProvider.notifier)
+                                          .getScoreData(examData.examId);
                                       if (context.mounted) {
-                                        bool? result = await showAdaptiveDialog<bool>(
-                                          context: context,
+                                        Navigator.of(context).push(MaterialPageRoute(
                                           builder: (context) {
-                                            return AlertDialog.adaptive(
-                                              title: Text('請先設定座號'),
-                                              content: Text('您的座號無效 '),
-                                              actions: [
-                                                AdaptiveAction(
-                                                    onPressed: () =>
-                                                        Navigator.of(context).pop(false),
-                                                    child: Text('取消')),
-                                                AdaptiveAction(
-                                                    onPressed: () =>
-                                                        Navigator.of(context).pop(true),
-                                                    child: Text('前往設定')),
-                                              ],
-                                            );
+                                            return ScoreCheckPage(examData.examId, examData.name);
                                           },
-                                        );
-                                        if (result == true) {
-                                          if (context.mounted) {
-                                            await Navigator.of(context).push(MaterialPageRoute(
-                                              builder: (context) => SettingPage(),
-                                            ));
-                                          }
-                                        } else {
-                                          return;
-                                        }
+                                        ));
                                       }
                                     }
-                                    ref.read(examScoreDataProvider.notifier).getScoreData(
-                                        examData.examId,
-                                        examData.userId,
-                                        examData.examStatus != ExamStatus.ongoing);
-                                    if (context.mounted) {
-                                      Navigator.of(context).push(MaterialPageRoute(
-                                        builder: (context) {
-                                          return SubmitScorePage(examData.examId);
-                                        },
-                                      ));
-                                    }
-                                  },
-                          ),
+                                  : () async {
+                                      while (ref.read(selfNumberProvider).isEmpty ||
+                                          int.tryParse(ref.read(selfNumberProvider)) == null ||
+                                          int.parse(ref.read(selfNumberProvider)) < 1) {
+                                        if (context.mounted) {
+                                          bool? result = await showAdaptiveDialog<bool>(
+                                            context: context,
+                                            builder: (context) {
+                                              return AlertDialog.adaptive(
+                                                title: Text('請先設定座號'),
+                                                content: Text('您的座號無效 '),
+                                                actions: [
+                                                  AdaptiveAction(
+                                                      onPressed: () =>
+                                                          Navigator.of(context).pop(false),
+                                                      child: Text('取消')),
+                                                  AdaptiveAction(
+                                                      onPressed: () =>
+                                                          Navigator.of(context).pop(true),
+                                                      child: Text('前往設定')),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                          if (result == true) {
+                                            if (context.mounted) {
+                                              await Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => SettingPage(),
+                                              ));
+                                            }
+                                          } else {
+                                            return;
+                                          }
+                                        }
+                                      }
+                                      ref.read(examScoreDataProvider.notifier).getScoreData(
+                                          examData.examId,
+                                          examData.userId,
+                                          examData.examStatus != ExamStatus.ongoing);
+                                      if (context.mounted) {
+                                        Navigator.of(context).push(MaterialPageRoute(
+                                          builder: (context) {
+                                            return SubmitScorePage(examData.examId);
+                                          },
+                                        ));
+                                      }
+                                    },
+                            );
+                          }),
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) => const Divider(
@@ -214,7 +228,6 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                                   builder: (context) => const NewExamForm(),
                                 ).then((String? name) {
                                   if (name is String) {
-                                    ref.read(examlistProvider.notifier).newExam(name);
                                     toastification.show(
                                       type: ToastificationType.info,
                                       style: ToastificationStyle.flatColored,
@@ -223,6 +236,14 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                                       showProgressBar: false,
                                       autoCloseDuration: const Duration(milliseconds: 1500),
                                     );
+                                    ref.read(examlistProvider.notifier).newExam(name).then((id) {
+                                      if (id != null) {
+                                        Share.share(
+                                            '請在3個小時內提交$name成績：\nhttps://app.classtodo.ycydev.org/exam/$id',
+                                            sharePositionOrigin: Rect.fromLTRB(
+                                                box!.size.width - 100, 0, box.size.width, 50));
+                                      }
+                                    });
                                   }
                                 });
                               },
@@ -330,6 +351,13 @@ class _ScoreTermsDialogState extends ConsumerState<ScoreTermsDialog> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
+    Future.delayed(Duration.zero).then((_) {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.95) {
+        setState(() {
+          _isButtonEnabled = true;
+        });
+      }
+    });
   }
 
   void _scrollListener() {

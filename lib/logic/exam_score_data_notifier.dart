@@ -41,10 +41,12 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
             examId: examId,
             ownerUserId: ownerUserId,
             score: dataSnap.data()?['score']?.toString() ?? '',
-            imagePath: '${folder.path}/${state.examId}.jpg',
             readOnly: true,
             loading: false,
             submittedTime: dataSnap.data()?['timestamp'].toDate());
+        Future.delayed(Duration(milliseconds: 100)).then((_) {
+          state = state.copy(updateImage: true, imagePath: '${folder.path}/${state.examId}.jpg');
+        });
       }
     } catch (e) {
       _showError(e.toString());
