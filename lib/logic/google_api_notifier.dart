@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -20,8 +21,7 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
     init();
   }
 
-  SharedPreferences get _sharedPreferences =>
-      _ref.read(sharedPreferencesProvider).requireValue;
+  SharedPreferences get _sharedPreferences => _ref.read(sharedPreferencesProvider).requireValue;
 
   Future<void> init() async {
     final db = FirebaseFirestore.instance;
@@ -29,16 +29,16 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
       final user = _ref.read(authProvider).user;
       state = GoogleApiState(connected: false);
       if (user != null) {
-        final doc =
-            await db.collection('user/${user.uid}/private').doc('google').get();
-        bool connected =
-            doc.exists && doc.data()?['googleRefreshToken'] != null;
+        final doc = await db.collection('user/${user.uid}/private').doc('google').get();
+        bool connected = doc.exists && doc.data()?['googleRefreshToken'] != null;
         if (connected) {
           renewHttpClient();
         }
       }
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
     }
   }
 
@@ -80,11 +80,13 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
             );
             renewHttpClient();
           } else {
-            _showError('連接失敗：${res.body}');
+            ErrorHelper.handleError('連接失敗：${res.body}');
           }
         }
-      } catch (err) {
-        _showError(err.toString());
+      } on FirebaseException catch (e) {
+        ErrorHelper.handleFirebaseError(e);
+      } catch (e) {
+        ErrorHelper.handleError(e);
       }
     }
   }
@@ -112,15 +114,15 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
         throw Exception('Failed to get access token');
       }
     } catch (error) {
-      _showError(error.toString());
+      ErrorHelper.handleError(error.toString());
     }
     return null;
   }
 
   Future<int?> getAccessTokenExpiredTime(String accessToken) async {
     try {
-      final res = await http.get(Uri.parse(
-          'https://www.googleapis.com/oauth2/v1/tokeninfo/?access_token=$accessToken'));
+      final res = await http.get(
+          Uri.parse('https://www.googleapis.com/oauth2/v1/tokeninfo/?access_token=$accessToken'));
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
         return data['expires_in'];
@@ -128,7 +130,7 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
         throw Exception('Failed to get token info');
       }
     } catch (error) {
-      _showError(error.toString());
+      ErrorHelper.handleError(error.toString());
       return null;
     }
   }
@@ -142,31 +144,16 @@ class GoogleApiNotifier extends StateNotifier<GoogleApiState> {
         return;
       }
       int? expiredTime = await getAccessTokenExpiredTime(accessToken);
-      state = state.updateClient(
-          GoogleHttpClient({'Authorization': 'Bearer $accessToken'}));
-      autoRenew =
-          Timer(Duration(seconds: (expiredTime ?? 3600) - 30), renewHttpClient);
+      state = state.updateClient(GoogleHttpClient({'Authorization': 'Bearer $accessToken'}));
+      autoRenew = Timer(Duration(seconds: (expiredTime ?? 3600) - 30), renewHttpClient);
     } catch (error) {
-      _showError(error.toString());
+      ErrorHelper.handleError(error.toString());
     }
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 }
 
 class GoogleApiState {
-  GoogleApiState(
-      {this.connected = false, this.googleHttpClient, this.hasError = false});
+  GoogleApiState({this.connected = false, this.googleHttpClient, this.hasError = false});
   final bool connected;
   final GoogleHttpClient? googleHttpClient;
   final bool hasError;

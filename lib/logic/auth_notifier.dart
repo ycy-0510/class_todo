@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,8 +39,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
             await db.collection("user").doc(user.uid).set({
               "name": user.displayName,
             });
+          } on FirebaseException catch (e) {
+            ErrorHelper.handleFirebaseError(e);
           } catch (e) {
-            _showError(e.toString());
+            ErrorHelper.handleError(e);
           }
         }
         if (userData.data()?['notificationTime'] is! Timestamp) {
@@ -48,13 +51,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
               .doc(user.uid)
               .update({"notificationTime": DateTime(2024, 1, 1, 20)});
         }
-        final fcmData =
-            await db.collection("user/${user.uid}/private").doc('fcm').get();
+        final fcmData = await db.collection("user/${user.uid}/private").doc('fcm').get();
         if (!fcmData.exists || fcmData.data()?['tokens'] is! List) {
-          await db
-              .collection("user/${user.uid}/private")
-              .doc('fcm')
-              .set({"tokens": []});
+          await db.collection("user/${user.uid}/private").doc('fcm').set({"tokens": []});
         }
       }
     });
@@ -70,8 +69,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         } else {
           final GoogleSignInAccount? googleUser =
               await GoogleSignIn().signIn().catchError((onError) => null);
-          final GoogleSignInAuthentication? googleAuth =
-              await googleUser?.authentication;
+          final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
           final credential = GoogleAuthProvider.credential(
             accessToken: googleAuth?.accessToken,
             idToken: googleAuth?.idToken,
@@ -79,9 +77,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
           await FirebaseAuth.instance.signInWithCredential(credential);
         }
-      } catch (err) {
+      } on FirebaseException catch (e) {
         state = state.load(false);
-        _showError(err.toString());
+        ErrorHelper.handleFirebaseError(e);
+      } catch (e) {
+        state = state.load(false);
+        ErrorHelper.handleError(e);
       }
     }
   }
@@ -98,9 +99,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         } else {
           await FirebaseAuth.instance.signInWithProvider(appleProvider);
         }
-      } catch (err) {
+      } on FirebaseException catch (e) {
         state = state.load(false);
-        _showError(err.toString());
+        ErrorHelper.handleFirebaseError(e);
+      } catch (e) {
+        state = state.load(false);
+        ErrorHelper.handleError(e);
       }
     }
   }
@@ -114,9 +118,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         await _auth.signOut();
         GoogleSignIn().signOut();
         _ref.read(bottomTabProvider.notifier).state = 0;
-      } catch (err) {
+      } on FirebaseException catch (e) {
         state = AuthState();
-        _showError(err.toString());
+        ErrorHelper.handleFirebaseError(e);
+      } catch (e) {
+        state = AuthState();
+        ErrorHelper.handleError(e);
       }
     }
   }
@@ -129,29 +136,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.read(classTableProvider.notifier).clear();
         _ref.read(classTableProvider.notifier).dispose();
         await db.collection("user").doc(_auth.currentUser!.uid).delete();
-        await db
-            .collection("user/${_auth.currentUser!.uid}/private")
-            .doc('fcm')
-            .delete();
+        await db.collection("user/${_auth.currentUser!.uid}/private").doc('fcm').delete();
         await _auth.currentUser!.delete();
         _ref.read(bottomTabProvider.notifier).state = 0;
-      } catch (err) {
+      } on FirebaseException catch (e) {
         state = AuthState();
-        _showError(err.toString());
+        ErrorHelper.handleFirebaseError(e);
+      } catch (e) {
+        state = AuthState();
+        ErrorHelper.handleError(e);
       }
     }
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 
   void joinClass(String classCode, String serialCode) async {
@@ -166,9 +161,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       state = state.load(true);
       http
-          .post(
-              Uri.parse(
-                  '${_ref.read(remoteConfigProvider.notifier).getServerUrl()}/join_class'),
+          .post(Uri.parse('${_ref.read(remoteConfigProvider.notifier).getServerUrl()}/join_class'),
               headers: {'Content-Type': 'application/json'},
               body: json.encode({
                 "idToken": await state.user?.getIdToken(),
@@ -183,11 +176,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
               .mixpanel
               .track('Join Class', properties: {'Class': classCode});
         } else {
-          _showError('無法加入：${res.body}');
+          ErrorHelper.handleError('無法加入：${res.body}');
           state = state.load(false);
         }
-      }).catchError((error) {
-        _showError(error);
+      }).catchError((e) {
+        ErrorHelper.handleError(e);
         state = state.load(false);
       });
     }
@@ -195,17 +188,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 class AuthState {
-  AuthState(
-      {this.user, this.classCode, this.loading = false, this.init = true});
+  AuthState({this.user, this.classCode, this.loading = false, this.init = true});
   final User? user;
   final String? classCode;
   final bool init;
   final bool loading;
   bool get loggedIn => user != null;
-  AuthState initialized() =>
-      AuthState(user: user, classCode: classCode, loading: loading);
-  AuthState load(bool isLoading) =>
-      AuthState(user: user, classCode: classCode, loading: isLoading);
+  AuthState initialized() => AuthState(user: user, classCode: classCode, loading: loading);
+  AuthState load(bool isLoading) => AuthState(user: user, classCode: classCode, loading: isLoading);
   AuthState classJoined(String classCode) =>
       AuthState(user: user, loading: false, classCode: classCode);
 }

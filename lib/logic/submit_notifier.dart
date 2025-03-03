@@ -1,10 +1,9 @@
 import 'dart:async';
 
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:toastification/toastification.dart';
 
 class SubmittedNotifier extends StateNotifier<SubmittedState> {
   late FirebaseFirestore db;
@@ -24,8 +23,7 @@ class SubmittedNotifier extends StateNotifier<SubmittedState> {
     final dataRef = db
         .collection('class/$userClassCode/task')
         .where("date",
-            isGreaterThanOrEqualTo:
-                _ref.read(dateProvider).now.subtract(const Duration(days: 7)))
+            isGreaterThanOrEqualTo: _ref.read(dateProvider).now.subtract(const Duration(days: 7)))
         .where('type', isEqualTo: 4);
     listener?.cancel();
     listener = dataRef.snapshots().listen(
@@ -36,19 +34,7 @@ class SubmittedNotifier extends StateNotifier<SubmittedState> {
         }
         state = SubmittedState(submittedItem);
       },
-      onError: (e) => _showError(e.toString()),
-    );
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
+      onError: (e) => ErrorHelper.handleError(e),
     );
   }
 

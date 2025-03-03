@@ -278,7 +278,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         children: [
                           Expanded(
                             child: SegmentedButton<TaskViewType>(
-                                segments: const <ButtonSegment<TaskViewType>>[
+                                segments: <ButtonSegment<TaskViewType>>[
                                   ButtonSegment<TaskViewType>(
                                       value: TaskViewType.table,
                                       label: Text('課表'),
@@ -288,11 +288,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     label: Text('清單'),
                                     icon: Icon(Icons.list),
                                   ),
-                                  ButtonSegment<TaskViewType>(
-                                    value: TaskViewType.calendar,
-                                    label: Text('個人'),
-                                    icon: Icon(Icons.person),
-                                  ),
+                                  if (ref.watch(betaProvider))
+                                    ButtonSegment<TaskViewType>(
+                                      value: TaskViewType.calendar,
+                                      label: Text('個人'),
+                                      icon: Icon(Icons.person),
+                                    ),
                                 ],
                                 selected: <TaskViewType>{
                                   taskViewTypeState

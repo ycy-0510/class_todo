@@ -1,9 +1,9 @@
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/logic/task_notifier.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:toastification/toastification.dart';
 
 class TaskFormNotifier extends StateNotifier<TaskFormState> {
   final Ref _ref;
@@ -39,8 +39,10 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
     };
     try {
       await db.collection("class/$userClassCode/task").add(data);
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
     }
     editFinish();
   }
@@ -58,8 +60,10 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
     };
     try {
       await db.collection("class/$userClassCode/task").doc(state.taskId).update(data);
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
     }
     editFinish();
   }
@@ -70,22 +74,12 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
 
     try {
       await db.collection("class/$userClassCode/task").doc(state.taskId).delete();
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
     }
     editFinish();
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 }
 

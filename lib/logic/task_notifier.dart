@@ -1,18 +1,16 @@
 import 'dart:async';
 
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:toastification/toastification.dart';
 
 int toClassTime(DateTime dateTime, List<TimeOfDay> classTimes) {
   TimeOfDay time = TimeOfDay.fromDateTime(dateTime);
   for (int i = 0; i < classTimes.length - 1; i++) {
-    if (classTimes[i].hour * 60 + classTimes[i].minute <=
-            time.hour * 60 + time.minute &&
-        classTimes[i + 1].hour * 60 + classTimes[i + 1].minute >
-            time.hour * 60 + time.minute) {
+    if (classTimes[i].hour * 60 + classTimes[i].minute <= time.hour * 60 + time.minute &&
+        classTimes[i + 1].hour * 60 + classTimes[i + 1].minute > time.hour * 60 + time.minute) {
       return i;
     }
   }
@@ -23,8 +21,7 @@ class TaskNotifier extends StateNotifier<TaskState> {
   late FirebaseFirestore db;
   final Ref _ref;
   Map<int, StreamSubscription<QuerySnapshot>> listeners = {};
-  TaskNotifier(this._ref)
-      : super(TaskState({-1: [], 0: [], 1: []}, loading: true)) {
+  TaskNotifier(this._ref) : super(TaskState({-1: [], 0: [], 1: []}, loading: true)) {
     db = FirebaseFirestore.instance;
     getData(0, 0);
     _ref.listen(dateProvider, (previous, next) {
@@ -40,25 +37,21 @@ class TaskNotifier extends StateNotifier<TaskState> {
         final dataRef = db
             .collection("class/$userClassCode/task")
             .where("date",
-                isGreaterThanOrEqualTo:
-                    _ref.read(dateProvider).thisWeek.add(Duration(days: 7 * i)))
+                isGreaterThanOrEqualTo: _ref.read(dateProvider).thisWeek.add(Duration(days: 7 * i)))
             .where("date",
-                isLessThanOrEqualTo: _ref
-                    .read(dateProvider)
-                    .thisWeek
-                    .add(Duration(days: 7 * (i + 1))));
+                isLessThanOrEqualTo:
+                    _ref.read(dateProvider).thisWeek.add(Duration(days: 7 * (i + 1))));
         listeners[i]?.cancel();
         listeners[i] = dataRef.snapshots().listen(
           (data) {
             List<Task> tasks = [];
             for (var docSnapshot in data.docs) {
-              tasks.add(Task.fromFirestore(
-                  docSnapshot, _ref.read(classTableProvider).time));
+              tasks.add(Task.fromFirestore(docSnapshot, _ref.read(classTableProvider).time));
             }
             state.tasksMap[i] = tasks;
             state = state.copy();
           },
-          onError: (e) => _showError(e.toString()),
+          onError: (e) => ErrorHelper.handleError(e),
         );
         if (i == 0) {
           state.loading = false;
@@ -69,69 +62,47 @@ class TaskNotifier extends StateNotifier<TaskState> {
       final dataRef = db
           .collection("class/$userClassCode/task")
           .where("date",
-              isGreaterThanOrEqualTo: _ref
-                  .read(dateProvider)
-                  .thisWeek
-                  .add(Duration(days: 7 * (nextWeek + 1))))
+              isGreaterThanOrEqualTo:
+                  _ref.read(dateProvider).thisWeek.add(Duration(days: 7 * (nextWeek + 1))))
           .where("date",
-              isLessThanOrEqualTo: _ref
-                  .read(dateProvider)
-                  .thisWeek
-                  .add(Duration(days: 7 * (nextWeek + 2))));
+              isLessThanOrEqualTo:
+                  _ref.read(dateProvider).thisWeek.add(Duration(days: 7 * (nextWeek + 2))));
       listeners[nextWeek - 2]?.cancel();
       listeners[nextWeek + 1] = dataRef.snapshots().listen(
         (data) {
           List<Task> tasks = [];
           for (var docSnapshot in data.docs) {
-            tasks.add(Task.fromFirestore(
-                docSnapshot, _ref.read(classTableProvider).time));
+            tasks.add(Task.fromFirestore(docSnapshot, _ref.read(classTableProvider).time));
           }
           state.tasksMap[nextWeek + 1] = tasks;
           state.tasksMap.remove(nextWeek - 2);
           state = state.copy();
         },
-        onError: (e) => _showError(e.toString()),
+        onError: (e) => ErrorHelper.handleError(e),
       );
     } else {
       final dataRef = db
           .collection("class/$userClassCode/task")
           .where("date",
-              isGreaterThanOrEqualTo: _ref
-                  .read(dateProvider)
-                  .thisWeek
-                  .add(Duration(days: 7 * (nextWeek - 1))))
+              isGreaterThanOrEqualTo:
+                  _ref.read(dateProvider).thisWeek.add(Duration(days: 7 * (nextWeek - 1))))
           .where("date",
-              isLessThanOrEqualTo: _ref
-                  .read(dateProvider)
-                  .thisWeek
-                  .add(Duration(days: 7 * (nextWeek))));
+              isLessThanOrEqualTo:
+                  _ref.read(dateProvider).thisWeek.add(Duration(days: 7 * (nextWeek))));
       listeners[nextWeek + 2]?.cancel();
       listeners[nextWeek - 1] = dataRef.snapshots().listen(
         (data) {
           List<Task> tasks = [];
           for (var docSnapshot in data.docs) {
-            tasks.add(Task.fromFirestore(
-                docSnapshot, _ref.read(classTableProvider).time));
+            tasks.add(Task.fromFirestore(docSnapshot, _ref.read(classTableProvider).time));
           }
           state.tasksMap[nextWeek - 1] = tasks;
           state.tasksMap.remove(nextWeek + 2);
           state = state.copy();
         },
-        onError: (e) => _showError(e.toString()),
+        onError: (e) => ErrorHelper.handleError(e),
       );
     }
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 
   void cancelListener() {
@@ -200,9 +171,6 @@ class Task {
   void modifyDate(WidgetRef ref, DateTime newDate) {
     final userClassCode = ref.read(authProvider).classCode;
     FirebaseFirestore db = FirebaseFirestore.instance;
-    db
-        .collection("class/$userClassCode/task")
-        .doc(taskId)
-        .update({'date': newDate});
+    db.collection("class/$userClassCode/task").doc(taskId).update({'date': newDate});
   }
 }

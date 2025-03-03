@@ -1,16 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:toastification/toastification.dart';
 
 class ExamScoreReviewNotifier extends StateNotifier<ExamScoreReviewState> {
   late FirebaseFirestore db;
@@ -36,8 +34,11 @@ class ExamScoreReviewNotifier extends StateNotifier<ExamScoreReviewState> {
         toReview[toReview.length - i].image = await _getImage(toReview[toReview.length - i].userId);
       }
       state = state.copy(toReview: toReview, loading: false);
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
+      state = ExamScoreReviewState(examId: '', toReview: [], reviewed: [], loading: false);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
       state = ExamScoreReviewState(examId: '', toReview: [], reviewed: [], loading: false);
     }
   }
@@ -89,7 +90,7 @@ class ExamScoreReviewNotifier extends StateNotifier<ExamScoreReviewState> {
     var fileBytes = excel.save();
     String dir = (await getApplicationCacheDirectory()).path;
     if (fileBytes == null) {
-      _showError('匯出檔案發生錯誤');
+      ErrorHelper.handleError('匯出檔案發生錯誤');
       return null;
     }
     File xslxFile = File('$dir/exam_score_${state.examId}.xlsx');
@@ -106,25 +107,13 @@ class ExamScoreReviewNotifier extends StateNotifier<ExamScoreReviewState> {
         'done': true,
       });
       state = state.copy(loading: false);
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
+      state = state.copy(loading: false);
     } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
       state = state.copy(loading: false);
     }
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 
   @override

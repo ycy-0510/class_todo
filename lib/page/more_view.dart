@@ -1,3 +1,4 @@
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/logic/notification_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/page/draw_lots.dart';
@@ -299,44 +300,60 @@ class HomeMoreBody extends ConsumerWidget {
                     thickness: 0.5,
                   ),
                   ListTile(
-                      minLeadingWidth: 30,
-                      leading: const Icon(Icons.build),
-                      title: const Text('版本'),
-                      trailing: FutureBuilder(
-                        future: PackageInfo.fromPlatform(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return Text(
-                              '${snapshot.data?.version}',
-                              style: const TextStyle(fontSize: 16),
-                            );
-                          } else {
-                            return const SizedBox();
-                          }
-                        },
-                      )),
+                    minLeadingWidth: 30,
+                    leading: const Icon(Icons.build),
+                    title: const Text('版本'),
+                    trailing: FutureBuilder(
+                      future: PackageInfo.fromPlatform(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Text(
+                            '${snapshot.data?.version}',
+                            style: const TextStyle(fontSize: 16),
+                          );
+                        } else {
+                          return const SizedBox();
+                        }
+                      },
+                    ),
+                    onTap: () {
+                      PackageInfo.fromPlatform().then((data) {
+                        Clipboard.setData(ClipboardData(text: data.version));
+                        ErrorHelper.handleInfo('已複製版本號');
+                      });
+                      ref.read(betaProvider.notifier).increaseCounter(10);
+                    },
+                  ),
                   const Divider(
                     height: 0,
                     indent: 50,
                     thickness: 0.5,
                   ),
                   ListTile(
-                      minLeadingWidth: 30,
-                      leading: const Icon(Icons.build),
-                      title: const Text('Build'),
-                      trailing: FutureBuilder(
-                        future: PackageInfo.fromPlatform(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return Text(
-                              '${snapshot.data?.buildNumber}',
-                              style: const TextStyle(fontSize: 16),
-                            );
-                          } else {
-                            return const SizedBox();
-                          }
-                        },
-                      )),
+                    minLeadingWidth: 30,
+                    leading: const Icon(Icons.build),
+                    title: const Text('Build'),
+                    trailing: FutureBuilder(
+                      future: PackageInfo.fromPlatform(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Text(
+                            '${snapshot.data?.buildNumber}',
+                            style: const TextStyle(fontSize: 16),
+                          );
+                        } else {
+                          return const SizedBox();
+                        }
+                      },
+                    ),
+                    onTap: () {
+                      PackageInfo.fromPlatform().then((data) {
+                        Clipboard.setData(ClipboardData(text: data.buildNumber));
+                        ErrorHelper.handleInfo('已複製Build');
+                      });
+                      ref.read(betaProvider.notifier).increaseCounter(1);
+                    },
+                  ),
                 ],
               )),
         ],

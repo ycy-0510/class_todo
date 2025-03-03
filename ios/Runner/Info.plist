@@ -50,10 +50,6 @@
 		<true />
 		<key>NSCameraUsageDescription</key>
 		<string>我們需要存取您的相機來掃描文件</string>
-		<key>NSPhotoLibraryAddUsageDescription</key>
-		<string>我們需要存取您的相簿來儲存圖片。</string>
-		<key>NSPhotoLibraryUsageDescription</key>
-		<string>我們需要存取您的相簿來檢視和選取圖片。</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true />
 		<key>UIBackgroundModes</key>

@@ -37,15 +37,13 @@ class SettingPageBody extends ConsumerWidget {
         children: [
           Card(
             margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
             child: Padding(
               padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -65,8 +63,7 @@ class SettingPageBody extends ConsumerWidget {
                     ),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -87,17 +84,12 @@ class SettingPageBody extends ConsumerWidget {
                                 ? null
                                 : () {
                                     HapticFeedback.mediumImpact();
-                                    ref
-                                        .read(classTableProvider.notifier)
-                                        .updateClassTable();
+                                    ref.read(classTableProvider.notifier).updateClassTable();
                                   },
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               textStyle: const TextStyle(fontSize: 18),
-                              foregroundColor: Theme.of(context)
-                                  .textTheme
-                                  .displayMedium!
-                                  .color,
+                              foregroundColor: Theme.of(context).textTheme.displayMedium!.color,
                               side: BorderSide(color: Colors.grey.shade600),
                             ),
                             child: Text(ref
@@ -134,8 +126,7 @@ class SettingPageBody extends ConsumerWidget {
                     ),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -166,15 +157,13 @@ class SettingPageBody extends ConsumerWidget {
           ),
           Card(
             margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
             child: Padding(
               padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -188,9 +177,8 @@ class SettingPageBody extends ConsumerWidget {
                           width: 120,
                           child: OutlinedButton(
                             onPressed: () {
-                              DateTime? notificationTime = ref
-                                  .read(notificationProvider)
-                                  .notificationTime;
+                              DateTime? notificationTime =
+                                  ref.read(notificationProvider).notificationTime;
                               showTimePicker(
                                 context: context,
                                 initialTime: notificationTime != null
@@ -198,29 +186,22 @@ class SettingPageBody extends ConsumerWidget {
                                     : const TimeOfDay(hour: 20, minute: 0),
                               ).then((time) {
                                 if (time == null) return;
-                                ref
-                                    .read(notificationProvider.notifier)
-                                    .setNotificationTime(time);
+                                ref.read(notificationProvider.notifier).setNotificationTime(time);
                               });
                             },
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               textStyle: const TextStyle(fontSize: 18),
-                              foregroundColor: Theme.of(context)
-                                  .textTheme
-                                  .displayMedium!
-                                  .color,
+                              foregroundColor: Theme.of(context).textTheme.displayMedium!.color,
                               side: BorderSide(color: Colors.grey.shade600),
                             ),
                             child: Builder(builder: (context) {
-                              DateTime? notificationTime = ref
-                                  .watch(notificationProvider)
-                                  .notificationTime;
+                              DateTime? notificationTime =
+                                  ref.watch(notificationProvider).notificationTime;
                               return Text(
                                 notificationTime == null
                                     ? '尚未設定'
-                                    : DateFormat('HH:mm')
-                                        .format(notificationTime),
+                                    : DateFormat('HH:mm').format(notificationTime),
                               );
                             }),
                           ),
@@ -240,27 +221,29 @@ class SettingPageBody extends ConsumerWidget {
           const SizedBox(
             height: 10,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                if (linkedGoogle) {
-                  ref.read(googleApiProvider.notifier).unlink();
-                } else {
-                  ref.read(googleApiProvider.notifier).linkGoogle();
-                }
-              },
-              icon: Icon(linkedGoogle ? Icons.link_off : Icons.link),
-              label: Text(
-                linkedGoogle ? '取消連接 Google 行事曆' : '連接 Google 行事曆',
-                style: const TextStyle(fontSize: 18),
+          if (ref.watch(betaProvider))
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  if (linkedGoogle) {
+                    ref.read(googleApiProvider.notifier).unlink();
+                  } else {
+                    ref.read(googleApiProvider.notifier).linkGoogle();
+                  }
+                },
+                icon: Icon(linkedGoogle ? Icons.link_off : Icons.link),
+                label: Text(
+                  linkedGoogle ? '取消連接 Google 行事曆' : '連接 Google 行事曆',
+                  style: const TextStyle(fontSize: 18),
+                ),
               ),
             ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 25),
-            child: Text('''注意：目前通知尚未提供個人行事曆提醒功能。'''),
-          ),
+          if (ref.watch(betaProvider))
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 25),
+              child: Text('''注意：目前通知尚未提供個人行事曆提醒功能。'''),
+            ),
           const Divider(
             indent: 30,
             endIndent: 30,
@@ -335,8 +318,7 @@ class SelfNumberField extends ConsumerStatefulWidget {
   const SelfNumberField({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _SelfNumberFieldState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _SelfNumberFieldState();
 }
 
 class _SelfNumberFieldState extends ConsumerState<SelfNumberField> {

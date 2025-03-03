@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -10,12 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 
-enum NotificationAuthorizationStatus {
-  authorized,
-  appDenied,
-  systemDenied,
-  notDetermined
-}
+enum NotificationAuthorizationStatus { authorized, appDenied, systemDenied, notDetermined }
 
 class NotificationNotifier extends StateNotifier<NotificationState> {
   static String notificationKey = 'notification';
@@ -23,20 +19,17 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
   late FirebaseMessaging messaging;
   final Ref _ref;
   NotificationNotifier(this._ref)
-      : super(NotificationState(
-            NotificationAuthorizationStatus.notDetermined, '', false)) {
+      : super(NotificationState(NotificationAuthorizationStatus.notDetermined, '', false)) {
     db = FirebaseFirestore.instance;
     messaging = FirebaseMessaging.instance;
     init();
   }
 
-  SharedPreferences get _sharedPreferences =>
-      _ref.read(sharedPreferencesProvider).requireValue;
+  SharedPreferences get _sharedPreferences => _ref.read(sharedPreferencesProvider).requireValue;
 
   void init() async {
     NotificationSettings settings = await messaging.getNotificationSettings();
-    state = NotificationState(
-        NotificationAuthorizationStatus.notDetermined, '', false);
+    state = NotificationState(NotificationAuthorizationStatus.notDetermined, '', false);
     switch (settings.authorizationStatus) {
       case AuthorizationStatus.authorized:
         String? token = await messaging.getToken();
@@ -75,8 +68,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
   void openBottomSheet() {
     init();
-    if (state.authorizationStatus !=
-        NotificationAuthorizationStatus.systemDenied) {
+    if (state.authorizationStatus != NotificationAuthorizationStatus.systemDenied) {
       state = state.copy(openBottomSheet: true);
     }
   }
@@ -104,13 +96,9 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       switch (settings.authorizationStatus) {
         case AuthorizationStatus.authorized:
           String? token = await messaging.getToken();
-          _ref
-              .read(mixPanelProvider.notifier)
-              .mixpanel
-              .track('Allow Notification', properties: {
+          _ref.read(mixPanelProvider.notifier).mixpanel.track('Allow Notification', properties: {
             'OS': defaultTargetPlatform.name,
-            'Source': state.authorizationStatus ==
-                    NotificationAuthorizationStatus.appDenied
+            'Source': state.authorizationStatus == NotificationAuthorizationStatus.appDenied
                 ? 'Open manually'
                 : 'Open automatically'
           });
@@ -121,10 +109,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
           final user = _ref.read(authProvider).user;
           if (token != null) {
             if (!kDebugMode) {
-              await db
-                  .collection("user/${user!.uid}/private")
-                  .doc('fcm')
-                  .update({
+              await db.collection("user/${user!.uid}/private").doc('fcm').update({
                 "tokens": FieldValue.arrayUnion([token]),
               });
             }
@@ -152,13 +137,15 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
               authorizationStatus: NotificationAuthorizationStatus.systemDenied,
             );
           }
-          _showError('若要接收通知請至「系統設定」開啟。');
+          ErrorHelper.handleInfo('若要接收通知請至「系統設定」開啟。');
           break;
         default:
           break;
       }
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
     }
     _updateLocalStatusData();
   }
@@ -191,8 +178,10 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       await db.collection("user/${user!.uid}/private").doc('fcm').update({
         "tokens": FieldValue.arrayRemove([state.fcmToken]),
       });
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
     }
   }
 
@@ -231,10 +220,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
     final user = _ref.read(authProvider).user;
     state = state.copy(copyNotificationTime: false, notificationTime: dateTime);
     try {
-      await db
-          .collection("user")
-          .doc(user!.uid)
-          .update({"notificationTime": dateTime});
+      await db.collection("user").doc(user!.uid).update({"notificationTime": dateTime});
       toastification.show(
         type: ToastificationType.success,
         style: ToastificationStyle.flatColored,
@@ -244,21 +230,11 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         showProgressBar: false,
         autoCloseDuration: const Duration(milliseconds: 1500),
       );
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
     }
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 }
 
@@ -268,8 +244,7 @@ class NotificationState {
   String fcmToken;
   DateTime? notificationTime;
   bool openBottomSheet;
-  NotificationState(
-      this.authorizationStatus, this.fcmToken, this.openBottomSheet,
+  NotificationState(this.authorizationStatus, this.fcmToken, this.openBottomSheet,
       {this.notificationTime, this.loading = true});
   NotificationState copy({
     NotificationAuthorizationStatus? authorizationStatus,
@@ -279,9 +254,8 @@ class NotificationState {
     bool? openBottomSheet,
     bool? loading,
   }) =>
-      NotificationState(authorizationStatus ?? this.authorizationStatus,
-          fcmToken ?? this.fcmToken, openBottomSheet ?? this.openBottomSheet,
-          notificationTime:
-              copyNotificationTime ? this.notificationTime : notificationTime,
+      NotificationState(authorizationStatus ?? this.authorizationStatus, fcmToken ?? this.fcmToken,
+          openBottomSheet ?? this.openBottomSheet,
+          notificationTime: copyNotificationTime ? this.notificationTime : notificationTime,
           loading: loading ?? true);
 }

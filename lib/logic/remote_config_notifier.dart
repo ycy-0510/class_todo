@@ -1,8 +1,8 @@
+import 'package:class_todo_list/error_handler.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:toastification/toastification.dart';
 
 class RemoteConfigNotifier extends Notifier<bool> {
   late final FirebaseRemoteConfig _remoteConfig;
@@ -26,26 +26,16 @@ class RemoteConfigNotifier extends Notifier<bool> {
       _remoteConfig.onConfigUpdated.listen((event) async {
         await _remoteConfig.activate();
       });
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
     }
   }
 
   String getServerUrl() => _remoteConfig.getString('server_url');
   String getRequiredVersion() => _remoteConfig.getString('version');
   bool getAllowCancelUpdate() => _remoteConfig.getBool('allow_cancel_update');
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
-  }
 
   @override
   bool build() {

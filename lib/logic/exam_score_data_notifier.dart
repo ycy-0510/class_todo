@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -48,8 +48,10 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
           state = state.copy(updateImage: true, imagePath: '${folder.path}/${state.examId}.jpg');
         });
       }
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
       state = ExamScoreDataState(
           examId: examId, ownerUserId: ownerUserId, score: '', readOnly: true, loading: false);
     }
@@ -71,6 +73,7 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
         title: const Text('未填寫成績'),
         description: const Text('請輸入正確成績。'),
         autoCloseDuration: const Duration(seconds: 3),
+        alignment: Alignment.topCenter,
         showProgressBar: false,
       );
       return false;
@@ -82,6 +85,7 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
         title: const Text('成績內容有誤'),
         description: const Text('請輸入正確成績。'),
         autoCloseDuration: const Duration(seconds: 3),
+        alignment: Alignment.topCenter,
         showProgressBar: false,
       );
       return false;
@@ -93,6 +97,7 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
         title: const Text('成績內容有誤'),
         description: const Text('請輸入正確成績。'),
         autoCloseDuration: const Duration(seconds: 3),
+        alignment: Alignment.topCenter,
         showProgressBar: false,
       );
       return false;
@@ -104,6 +109,7 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
         title: const Text('尚未掃描考卷'),
         description: const Text('請先掃描考卷後。'),
         autoCloseDuration: const Duration(seconds: 3),
+        alignment: Alignment.topCenter,
         showProgressBar: false,
       );
       return false;
@@ -136,30 +142,20 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
         title: const Text('提交成功'),
         description: const Text('您的分數已成功送出'),
         autoCloseDuration: const Duration(seconds: 5),
+        alignment: Alignment.topCenter,
         showProgressBar: false,
       );
       state = state.copy(loading: false);
       return true;
+    } on FirebaseException catch (e) {
+      state = state.copy(loading: false);
+      ErrorHelper.handleFirebaseError(e);
+      return false;
     } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
       state = state.copy(loading: false);
       return false;
     }
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 
   @override

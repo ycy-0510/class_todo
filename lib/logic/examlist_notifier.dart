@@ -1,9 +1,8 @@
 import 'dart:async';
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:toastification/toastification.dart';
 
 class ExamlistNotifier extends StateNotifier<ExamlistState> {
   late FirebaseFirestore db;
@@ -42,7 +41,7 @@ class ExamlistNotifier extends StateNotifier<ExamlistState> {
         }
         state = ExamlistState(submittedItem);
       },
-      onError: (e) => _showError(e.toString()),
+      onError: (e) => ErrorHelper.handleError(e),
     );
   }
 
@@ -56,22 +55,13 @@ class ExamlistNotifier extends StateNotifier<ExamlistState> {
         'done': false,
       });
       return docRef.id;
+    } on FirebaseException catch (e) {
+      ErrorHelper.handleFirebaseError(e);
+      return null;
     } catch (e) {
-      _showError(e.toString());
+      ErrorHelper.handleError(e);
       return null;
     }
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 
   @override

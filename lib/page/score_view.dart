@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:class_todo_list/adaptive_action.dart';
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/logic/exam_score_review_notifier.dart';
 import 'package:class_todo_list/logic/examlist_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
@@ -20,7 +21,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -268,30 +268,34 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                   style: TextStyle(fontSize: 20),
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(
-                            fullscreenDialog: true,
-                            builder: (BuildContext context) {
-                              return const ScoreTermsDialog();
-                            }))
-                        .then((result) {
-                      if (result == true) {
-                        setState(() {
-                          _agreeToTerms = true;
-                        });
-                        _sharedPreferences.setBool(_agreeToScoreTermsKey, true);
-                      }
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text(
-                    '檢視條款',
-                    style: TextStyle(fontSize: 18),
+                SizedBox(
+                  width: 300,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(
+                              fullscreenDialog: true,
+                              builder: (BuildContext context) {
+                                return const ScoreTermsDialog();
+                              }))
+                          .then((result) {
+                        if (result == true) {
+                          setState(() {
+                            _agreeToTerms = true;
+                          });
+                          _sharedPreferences.setBool(_agreeToScoreTermsKey, true);
+                        }
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text(
+                      '檢視條款',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
               ],
@@ -699,17 +703,7 @@ class _SubmitScoreBodyState extends ConsumerState<SubmitScoreBody> {
                           await File(path).writeAsBytes(result);
                           ref.read(examScoreDataProvider.notifier).editImage(path);
                         } catch (e) {
-                          toastification.show(
-                            type: ToastificationType.error,
-                            style: ToastificationStyle.flatColored,
-                            title: const Text('發生錯誤'),
-                            description: Text(e.toString()),
-                            autoCloseDuration: const Duration(seconds: 3),
-                            showProgressBar: false,
-                          );
-                          if (kDebugMode) {
-                            print(e);
-                          }
+                          ErrorHelper.handleError(e);
                         }
                       },
                 icon: const Icon(Icons.scanner, size: 25),
@@ -752,7 +746,7 @@ class _SubmitScoreBodyState extends ConsumerState<SubmitScoreBody> {
                               builder: (context) {
                                 return AlertDialog.adaptive(
                                   title: const Text('送出成績'),
-                                  content: const Text('是否要送出成績，送出後不能修改已送出的內容。'),
+                                  content: const Text('是否要送出成績，送出後不能修改已送出的內容。請確認分數正確且圖片清晰。'),
                                   actions: [
                                     AdaptiveAction(
                                       onPressed: () {
@@ -796,7 +790,6 @@ class _SubmitScoreBodyState extends ConsumerState<SubmitScoreBody> {
                       : '送出成績'),
                 ),
               ),
-              const Text('一旦提交分數後，將無法更改。如果提交的分數不正確或圖片不清晰，分數將被拒收。您有責任提交正確的分數。'),
             ],
           ),
         ),

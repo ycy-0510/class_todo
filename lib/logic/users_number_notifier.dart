@@ -1,8 +1,7 @@
+import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:toastification/toastification.dart';
 
 class UsersNumberNotifier extends StateNotifier<Map<String, String>> {
   late FirebaseFirestore db;
@@ -27,38 +26,14 @@ class UsersNumberNotifier extends StateNotifier<Map<String, String>> {
             usersMap.addAll({key: originMap[key].toString()});
           }
         } else {
-          _showError('Students not found');
+          ErrorHelper.handleError('找不到學生資料');
         }
         state = usersMap;
       } on FirebaseException catch (e) {
-        _showFirebaseError(e);
+        ErrorHelper.handleFirebaseError(e);
       } catch (e) {
-        _showError(e.toString());
+        ErrorHelper.handleError(e);
       }
     }
-  }
-
-  void _showFirebaseError(FirebaseException error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: Text("發生錯誤 ${error.code}"),
-      description: Text(error.message ?? ''),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
-  }
-
-  void _showError(String error) {
-    toastification.show(
-      type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
-      title: const Text("發生錯誤"),
-      description: Text(error.toString()),
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      autoCloseDuration: const Duration(milliseconds: 1500),
-    );
   }
 }

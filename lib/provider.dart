@@ -1,4 +1,5 @@
 import 'package:class_todo_list/logic/auth_notifier.dart';
+import 'package:class_todo_list/logic/beta_notifier.dart';
 import 'package:class_todo_list/logic/calendar_task_notifier.dart';
 import 'package:class_todo_list/logic/class_table_notifier.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
@@ -149,3 +150,7 @@ final examScoreReviewProvider =
 final sharedPreferencesProvider = FutureProvider<SharedPreferences>(
   (ref) async => await SharedPreferences.getInstance(),
 );
+
+final betaProvider = StateNotifierProvider<BetaNotifier, bool>((ref) {
+  return BetaNotifier(ref);
+});
