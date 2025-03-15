@@ -122,31 +122,46 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
     final userId = _ref.read(authProvider).user?.uid;
     final userNumber = _ref.read(selfNumberProvider);
     state = state.copy(loading: true);
+    state = state.updateProgress(0);
     try {
-      await db.collection('class/$userClassCode/exam/${state.examId}/submitted').doc(userId).set({
-        'student': userNumber,
-        'score': int.parse(state.score),
-        'timestamp': FieldValue.serverTimestamp(),
-      });
       final storage = FirebaseStorage.instance;
       final ref = storage.ref('class/$userClassCode/${state.examId}/$userId/exampape.jpg');
-      await ref.putFile(
+      final uploadTask = ref.putFile(
           File(state.imagePath!),
           SettableMetadata(
             contentType: "image/jpeg",
             customMetadata: {'reader': state.ownerUserId},
           ));
-      toastification.show(
-        type: ToastificationType.success,
-        style: ToastificationStyle.flatColored,
-        title: const Text('提交成功'),
-        description: const Text('您的分數已成功送出'),
-        autoCloseDuration: const Duration(seconds: 5),
-        alignment: Alignment.topCenter,
-        showProgressBar: false,
-      );
-      state = state.copy(loading: false);
-      return true;
+      uploadTask.snapshotEvents.listen((TaskSnapshot taskSnapshot) async {
+        switch (taskSnapshot.state) {
+          case TaskState.running:
+            state = state.updateProgress(taskSnapshot.bytesTransferred / taskSnapshot.totalBytes);
+            break;
+          default:
+            break;
+        }
+      });
+      if ((await uploadTask).state == TaskState.success) {
+        await db.collection('class/$userClassCode/exam/${state.examId}/submitted').doc(userId).set({
+          'student': userNumber,
+          'score': int.parse(state.score),
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+        toastification.show(
+          type: ToastificationType.success,
+          style: ToastificationStyle.flatColored,
+          title: const Text('提交成功'),
+          description: const Text('您的分數已成功送出'),
+          autoCloseDuration: const Duration(seconds: 5),
+          alignment: Alignment.topCenter,
+          showProgressBar: false,
+        );
+        state = state.copy(loading: false);
+        return true;
+      } else {
+        state = state.copy(loading: false);
+        return false;
+      }
     } on FirebaseException catch (e) {
       state = state.copy(loading: false);
       ErrorHelper.handleFirebaseError(e);
@@ -172,16 +187,19 @@ class ExamScoreDataState {
   String? imagePath;
   bool readOnly;
   bool loading;
+  double? uploadProgress;
   DateTime? submittedTime;
 
-  ExamScoreDataState(
-      {required this.examId,
-      required this.ownerUserId,
-      required this.score,
-      this.imagePath,
-      required this.readOnly,
-      required this.loading,
-      this.submittedTime});
+  ExamScoreDataState({
+    required this.examId,
+    required this.ownerUserId,
+    required this.score,
+    this.imagePath,
+    required this.readOnly,
+    required this.loading,
+    this.submittedTime,
+    this.uploadProgress,
+  });
 
   ExamScoreDataState copy({
     String? examId,
@@ -199,6 +217,18 @@ class ExamScoreDataState {
       imagePath: updateImage ? imagePath : this.imagePath,
       readOnly: readOnly ?? this.readOnly,
       loading: loading ?? this.loading,
+    );
+  }
+
+  ExamScoreDataState updateProgress(double? progress) {
+    return ExamScoreDataState(
+      examId: examId,
+      ownerUserId: ownerUserId,
+      score: score,
+      imagePath: imagePath,
+      readOnly: readOnly,
+      loading: true,
+      uploadProgress: progress,
     );
   }
 }

@@ -8,6 +8,7 @@ import 'package:class_todo_list/page/score_view.dart';
 import 'package:class_todo_list/page/submit_view.dart';
 import 'package:class_todo_list/page/task_view.dart';
 import 'package:class_todo_list/provider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -377,15 +378,19 @@ class LoadingView extends ConsumerWidget {
       if (!loading) {
         return child;
       } else {
-        return const Center(
+        return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator.adaptive(),
+              if (defaultTargetPlatform == TargetPlatform.iOS ||
+                  defaultTargetPlatform == TargetPlatform.macOS)
+                CupertinoActivityIndicator(radius: 15)
+              else
+                CircularProgressIndicator.adaptive(),
               SizedBox(
                 height: 20,
               ),
-              Text('共享聯絡簿 by YCY'),
+              Text('載入中...'),
             ],
           ),
         );

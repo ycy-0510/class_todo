@@ -41,8 +41,7 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
         }
       }
       for (int j = 0; j < group; j++) {
-        result[j]
-            .sort((a, b) => int.parse(a.number).compareTo(int.parse(b.number)));
+        result[j].sort((a, b) => int.parse(a.number).compareTo(int.parse(b.number)));
       }
     });
     toastification.show(
@@ -76,8 +75,7 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
                       Expanded(
                         child: TextFormField(
                           selectionHeightStyle: BoxHeightStyle.strut,
-                          onTapOutside: (event) =>
-                              FocusManager.instance.primaryFocus?.unfocus(),
+                          onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
                           controller: _controllerGroup,
                           textAlign: TextAlign.center,
                           decoration: InputDecoration(
@@ -90,13 +88,10 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
                           ),
                           keyboardType: const TextInputType.numberWithOptions(),
                           inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d{1,3}$')),
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d{1,3}$')),
                           ],
                           validator: (value) {
-                            if (value == null ||
-                                value.isEmpty ||
-                                int.tryParse(value) == null) {
+                            if (value == null || value.isEmpty || int.tryParse(value) == null) {
                               return '請輸入組數';
                             }
                             return null;
@@ -107,8 +102,7 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
                       Expanded(
                         child: TextFormField(
                           selectionHeightStyle: BoxHeightStyle.strut,
-                          onTapOutside: (event) =>
-                              FocusManager.instance.primaryFocus?.unfocus(),
+                          onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
                           controller: _controllerPeople,
                           textAlign: TextAlign.center,
                           decoration: InputDecoration(
@@ -121,13 +115,10 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
                           ),
                           keyboardType: const TextInputType.numberWithOptions(),
                           inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d{1,3}$')),
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d{1,3}$')),
                           ],
                           validator: (value) {
-                            if (value == null ||
-                                value.isEmpty ||
-                                int.tryParse(value) == null) {
+                            if (value == null || value.isEmpty || int.tryParse(value) == null) {
                               return '請輸入人數';
                             }
                             return null;
@@ -141,14 +132,16 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
                   padding: EdgeInsets.symmetric(vertical: 10),
                   child: Text('若只要抽籤，請輸入於組別數，每組人數填1。'),
                 ),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(),
+                ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       drawlots();
                     }
                   },
-                  child: const Text('抽籤/分組'),
+                  child: const Text(
+                    '抽籤/分組',
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               ],
             ),
@@ -158,26 +151,19 @@ class _DrawLotsPageState extends ConsumerState<DrawLotsPage> {
             itemCount: result.length,
             itemBuilder: (context, idx) {
               return Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                 child: Padding(
                   padding: const EdgeInsets.all(10),
                   child: Column(
                     children: [
                       Text(
                         '第${idx + 1}組',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         result[idx].fold(
-                            '',
-                            (prev, curr) =>
-                                prev +
-                                (prev.isNotEmpty ? ' ' : '') +
-                                curr.number),
-                        style: const TextStyle(
-                            fontSize: 16, overflow: TextOverflow.visible),
+                            '', (prev, curr) => prev + (prev.isNotEmpty ? ' ' : '') + curr.number),
+                        style: const TextStyle(fontSize: 16, overflow: TextOverflow.visible),
                       )
                     ],
                   ),

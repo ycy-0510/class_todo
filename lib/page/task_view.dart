@@ -7,6 +7,8 @@ import 'package:class_todo_list/logic/task_notifier.dart';
 import 'package:class_todo_list/page/home_page.dart';
 import 'package:class_todo_list/page/setting_page.dart';
 import 'package:class_todo_list/provider.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -743,15 +745,19 @@ class CalendarTaskListView extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Builder(builder: (context) {
         if (tasks == null) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator.adaptive(),
-                SizedBox(
+                if (defaultTargetPlatform == TargetPlatform.iOS ||
+                    defaultTargetPlatform == TargetPlatform.macOS)
+                  const CupertinoActivityIndicator(radius: 15)
+                else
+                  const CircularProgressIndicator.adaptive(),
+                const SizedBox(
                   height: 20,
                 ),
-                Text('努力讀取中'),
+                const Text('讀取中...'),
               ],
             ),
           );
@@ -1132,10 +1138,9 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                 ),
               ),
               const SizedBox(height: 10),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
                 ),
                 onPressed: () {
                   if (!willRemove) {

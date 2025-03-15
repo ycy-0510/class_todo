@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:class_todo_list/adaptive_action.dart';
 import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/logic/exam_score_review_notifier.dart';
@@ -223,7 +225,7 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                               leading: const Icon(Icons.add),
                               title: const Text('新增考試'),
                               onTap: () {
-                                showDialog<String?>(
+                                showAdaptiveDialog<String?>(
                                   context: context,
                                   builder: (context) => const NewExamForm(),
                                 ).then((String? name) {
@@ -463,55 +465,53 @@ class _NewExamFormState extends ConsumerState<NewExamForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SimpleDialog(
-      contentPadding: const EdgeInsets.all(20),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text('新增考試'),
-          IconButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              icon: const Icon(Icons.close))
-        ],
-      ),
-      children: [
-        SizedBox(
-          width: 300,
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  selectionHeightStyle: BoxHeightStyle.strut,
-                  controller: _controller,
-                  decoration: const InputDecoration(
-                    hintText: '請輸入完整，如：英文U1單字',
+    return AlertDialog.adaptive(
+      // contentPadding: const EdgeInsets.all(20),
+      title: Text('新增考試'),
+      content: SizedBox(
+        // width: 300,
+        // height: 100,
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: SizedBox(
+              // height: ,
+              child: TextFormField(
+                selectionHeightStyle: BoxHeightStyle.strut,
+                controller: _controller,
+                autofocus: true,
+                decoration: const InputDecoration(
+                    hintText: '考試名稱',
                     hintStyle: TextStyle(height: 2),
-                    labelText: '考試名稱',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty || value.length < 2) {
-                      return '請輸入考試名稱';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    _formKey.currentState!.validate();
-                  },
-                ),
-              ],
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
+                validator: (value) {
+                  if (value == null || value.isEmpty || value.length < 2) {
+                    return '請輸入考試名稱';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  _formKey.currentState!.validate();
+                },
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        ElevatedButton(
+      ),
+      actions: [
+        AdaptiveAction(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text(
+            '取消',
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
+        AdaptiveAction(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              HapticFeedback.lightImpact();
               Navigator.of(context).pop(_controller.text);
             } else {
               HapticFeedback.heavyImpact();
@@ -600,11 +600,65 @@ class SubmitScoreBody extends ConsumerStatefulWidget {
 
 class _SubmitScoreBodyState extends ConsumerState<SubmitScoreBody> {
   bool _isAgree = false;
+  bool _showCameraButton = false;
   final TextEditingController _scoreController = TextEditingController();
+  Uint8List _imageByte = Uint8List.fromList([]);
+
+  bool listEquals<E>(List<E> list1, List<E> list2) {
+    if (identical(list1, list2)) {
+      return true;
+    }
+
+    if (list1.length != list2.length) {
+      return false;
+    }
+
+    for (var i = 0; i < list1.length; i += 1) {
+      if (list1[i] != list2[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /// Compares two [Uint8List]s by comparing 8 bytes at a time.
+  bool memEquals(Uint8List bytes1, Uint8List bytes2) {
+    if (identical(bytes1, bytes2)) {
+      return true;
+    }
+
+    if (bytes1.lengthInBytes != bytes2.lengthInBytes) {
+      return false;
+    }
+
+    // Treat the original byte lists as lists of 8-byte words.
+    var numWords = bytes1.lengthInBytes ~/ 8;
+    var words1 = bytes1.buffer.asUint64List(0, numWords);
+    var words2 = bytes2.buffer.asUint64List(0, numWords);
+
+    for (var i = 0; i < words1.length; i += 1) {
+      if (words1[i] != words2[i]) {
+        return false;
+      }
+    }
+
+    // Compare any remaining bytes.
+    for (var i = words1.lengthInBytes; i < bytes1.lengthInBytes; i += 1) {
+      if (bytes1[i] != bytes2[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   @override
   void initState() {
     _scoreController.text = ref.read(examScoreDataProvider).score;
+    if (ref.read(examScoreDataProvider).imagePath != null) {
+      _imageByte = File(ref.read(examScoreDataProvider).imagePath!).readAsBytesSync();
+    }
     super.initState();
   }
 
@@ -614,185 +668,370 @@ class _SubmitScoreBodyState extends ConsumerState<SubmitScoreBody> {
       if (prev?.score != next.score && next.score != _scoreController.text) {
         _scoreController.text = next.score;
       }
+      if (!memEquals(_imageByte, File(next.imagePath!).readAsBytesSync())) {
+        setState(() {
+          _imageByte = File(next.imagePath!).readAsBytesSync();
+        });
+      }
     });
     final state = ref.watch(examScoreDataProvider);
     return LoadingView(
-      loading: state.loading,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 20,
-            children: [
-              TextField(
-                autofocus: false,
-                selectionHeightStyle: BoxHeightStyle.strut,
-                controller: _scoreController,
-                decoration: const InputDecoration(
-                  labelText: '分數',
-                  hintText: '請輸入你的分數 (0~100)',
-                  hintStyle: TextStyle(height: 2),
-                ),
-                keyboardType: TextInputType.number,
-                readOnly: state.readOnly,
-                onChanged: (value) {
-                  ref.read(examScoreDataProvider.notifier).editScore(value);
-                },
-                onTapOutside: (event) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                }, // auto close keyboard
-              ),
-              Builder(builder: (context) {
-                if (state.imagePath != null) {
-                  return InkWell(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.file(
-                          File(state.imagePath!),
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.error_outline,
-                              size: 100,
-                              color: Colors.red,
-                            );
-                          },
-                        ),
+      loading: state.loading && state.uploadProgress == null,
+      child: Builder(builder: (context) {
+        if (state.loading && state.uploadProgress != null) {
+          return UploadingView(state.uploadProgress!);
+        } else {
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 20,
+                  children: [
+                    TextField(
+                      autofocus: false,
+                      selectionHeightStyle: BoxHeightStyle.strut,
+                      controller: _scoreController,
+                      decoration: const InputDecoration(
+                        labelText: '分數',
+                        hintText: '請輸入你的分數 (0~100)',
+                        hintStyle: TextStyle(height: 2),
                       ),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PreviewPhoto(
-                                    imageProvider: FileImage(File(state.imagePath!)))));
-                      });
-                } else {
-                  return const Icon(
-                    Icons.photo,
-                    size: 300,
-                    color: Colors.grey,
-                  );
-                }
-              }),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  textStyle: const TextStyle(fontSize: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: state.readOnly
-                    ? null
-                    : () async {
-                        try {
-                          List<String>? scanData =
-                              await CunningDocumentScanner.getPictures(noOfPages: 1);
-                          if (scanData == null) {
-                            return;
-                          }
-                          var file = File(scanData[0]);
-                          Uint8List result = await FlutterImageCompress.compressWithList(
-                              file.readAsBytesSync(),
-                              format: CompressFormat.jpeg,
-                              minHeight: 960,
-                              minWidth: 540,
-                              quality: 70);
-                          final folder = await getApplicationDocumentsDirectory();
-                          final path = '${folder.path}/${state.examId}.jpg';
-                          await File(path).writeAsBytes(result);
-                          ref.read(examScoreDataProvider.notifier).editImage(path);
-                        } catch (e) {
-                          ErrorHelper.handleError(e);
+                      keyboardType: TextInputType.number,
+                      readOnly: state.readOnly,
+                      onChanged: (value) {
+                        ref.read(examScoreDataProvider.notifier).editScore(value);
+                      },
+                      onTapOutside: (event) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      }, // auto close keyboard
+                    ),
+                    Builder(builder: (context) {
+                      if (state.imagePath != null) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Stack(
+                            alignment: Alignment.topRight,
+                            children: [
+                              Center(
+                                child: Image.memory(
+                                  _imageByte,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.error_outline,
+                                      size: 200,
+                                      color: Colors.red,
+                                    );
+                                  },
+                                ),
+                              ),
+                              IconButton.filled(
+                                  style: ButtonStyle(
+                                      backgroundColor: WidgetStateColor.resolveWith(
+                                          (_) => Colors.grey.withAlpha(100))),
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => PreviewPhoto(
+                                                imageProvider: FileImage(File(state.imagePath!)))));
+                                  },
+                                  icon: Icon(Icons.zoom_in)),
+                            ],
+                          ),
+                        );
+                      } else {
+                        return const Icon(
+                          Icons.photo,
+                          size: 300,
+                          color: Colors.grey,
+                        );
+                      }
+                    }),
+                    GestureDetector(
+                      onHorizontalDragUpdate: (details) {
+                        if (details.delta.dx > 10) {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _showCameraButton = false;
+                          });
+                        } else if (details.delta.dx < -10) {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _showCameraButton = true;
+                          });
                         }
                       },
-                icon: const Icon(Icons.scanner, size: 25),
-                label: const Text('掃描考卷'),
-              ),
-              CheckboxListTile(
-                value: _isAgree || state.readOnly,
-                onChanged: (v) {
-                  if (v == null) {
-                    return;
-                  }
-                  setState(() {
-                    _isAgree = v;
-                  });
-                },
-                title: const Text('我已確認考卷圖片清晰且內容無誤，若考卷無法辨識，後果自負。'),
-              ),
-              SizedBox(
-                height: 50,
-                child: ElevatedButton.icon(
-                  onPressed: state.readOnly
-                      ? null
-                      : () {
-                          if (!ref.read(examScoreDataProvider.notifier).precheck()) {
-                            return;
-                          }
-                          if (!_isAgree) {
-                            toastification.show(
-                              type: ToastificationType.info,
-                              style: ToastificationStyle.flatColored,
-                              title: const Text('請確認考卷'),
-                              description: const Text('請在確認考卷後勾選。'),
-                              autoCloseDuration: const Duration(seconds: 3),
-                              showProgressBar: false,
-                            );
-                            return;
-                          }
-                          showAdaptiveDialog<bool>(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog.adaptive(
-                                  title: const Text('送出成績'),
-                                  content: const Text('是否要送出成績，送出後不能修改已送出的內容。請確認分數正確且圖片清晰。'),
-                                  actions: [
-                                    AdaptiveAction(
-                                      onPressed: () {
-                                        Navigator.of(context).pop(false);
-                                      },
-                                      child: const Text('取消'),
-                                    ),
-                                    AdaptiveAction(
-                                      onPressed: () async {
-                                        Navigator.of(context).pop(true);
-                                      },
-                                      child: const Text('送出成績'),
-                                    ),
-                                  ],
-                                );
-                              }).then((confirm) async {
-                            if (confirm == true) {
-                              final result =
-                                  await ref.read(examScoreDataProvider.notifier).submitScore();
-                              if (result && context.mounted) {
-                                Navigator.pop(context);
-                              }
-                            }
-                          });
-                        },
-                  style: ElevatedButton.styleFrom(
-                      textStyle: const TextStyle(fontSize: 20),
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                  iconAlignment: IconAlignment.end,
-                  icon: const Icon(
-                    Icons.send,
-                    size: 25,
-                    color: Colors.white,
-                  ),
-                  label: Text(state.readOnly
-                      ? state.score.isEmpty
-                          ? '成績逾期未送出'
-                          : '成績已於${DateFormat('MM/dd HH:mm:ss', 'zh-TW').format(state.submittedTime ?? DateTime.now())}送出'
-                      : '送出成績'),
+                      child: Row(
+                        spacing: 10,
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                textStyle: const TextStyle(fontSize: 20),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: state.readOnly
+                                  ? null
+                                  : () async {
+                                      try {
+                                        List<String>? scanData =
+                                            await CunningDocumentScanner.getPictures(noOfPages: 1);
+                                        if (scanData == null) {
+                                          return;
+                                        }
+                                        var file = File(scanData[0]);
+                                        Uint8List result =
+                                            await FlutterImageCompress.compressWithList(
+                                                file.readAsBytesSync(),
+                                                format: CompressFormat.jpeg,
+                                                minHeight: 960,
+                                                minWidth: 540,
+                                                quality: 70);
+                                        final folder = await getApplicationDocumentsDirectory();
+                                        final path = '${folder.path}/${state.examId}.jpg';
+                                        await File(path).writeAsBytes(result);
+                                        ref.read(examScoreDataProvider.notifier).editImage(path);
+                                        imageCache.clear();
+                                        imageCache.clearLiveImages();
+                                      } catch (e) {
+                                        ErrorHelper.handleError(e);
+                                      }
+                                    },
+                              icon: const Icon(Icons.scanner, size: 25),
+                              label: const Text('掃描考卷'),
+                            ),
+                          ),
+                          if (_showCameraButton)
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                textStyle: const TextStyle(fontSize: 20),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: state.readOnly
+                                  ? null
+                                  : () async {
+                                      try {
+                                        MediaCapture? scanData =
+                                            await Navigator.of(context).push(MaterialPageRoute(
+                                          builder: (context) => Camera(),
+                                        ));
+                                        if (scanData == null) {
+                                          return;
+                                        }
+                                        var file = File(scanData.captureRequest.path!);
+                                        Uint8List result =
+                                            await FlutterImageCompress.compressWithList(
+                                                file.readAsBytesSync(),
+                                                format: CompressFormat.jpeg,
+                                                minHeight: 960,
+                                                minWidth: 540,
+                                                quality: 70);
+                                        final folder = await getApplicationDocumentsDirectory();
+                                        final path = '${folder.path}/${state.examId}.jpg';
+                                        await File(path).writeAsBytes(result);
+                                        ref.read(examScoreDataProvider.notifier).editImage(path);
+                                        setState(() {});
+                                      } catch (e) {
+                                        ErrorHelper.handleError(e);
+                                      }
+                                    },
+                              child: const Icon(Icons.camera_alt, size: 25),
+                            ),
+                        ],
+                      ),
+                    ),
+                    CheckboxListTile(
+                      value: _isAgree || state.readOnly,
+                      onChanged: (v) {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _isAgree = v ?? false;
+                        });
+                      },
+                      title: const Text('我已確認考卷圖片清晰且內容無誤。'),
+                    ),
+                    SizedBox(
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: state.readOnly
+                            ? null
+                            : () {
+                                if (!ref.read(examScoreDataProvider.notifier).precheck()) {
+                                  HapticFeedback.mediumImpact();
+                                  return;
+                                }
+                                if (!_isAgree) {
+                                  toastification.show(
+                                    type: ToastificationType.info,
+                                    style: ToastificationStyle.flatColored,
+                                    title: const Text('請確認考卷'),
+                                    description: const Text('請在確認考卷後勾選。'),
+                                    autoCloseDuration: const Duration(seconds: 3),
+                                    showProgressBar: false,
+                                  );
+                                  HapticFeedback.mediumImpact();
+                                  return;
+                                }
+                                HapticFeedback.lightImpact();
+                                showAdaptiveDialog<bool>(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog.adaptive(
+                                        title: const Text('送出成績'),
+                                        content: const Text('是否要送出成績，送出後不能修改已送出的內容。請確認分數正確且圖片清晰。'),
+                                        actions: [
+                                          AdaptiveAction(
+                                            onPressed: () {
+                                              Navigator.of(context).pop(false);
+                                            },
+                                            child: const Text('取消'),
+                                          ),
+                                          AdaptiveAction(
+                                            onPressed: () async {
+                                              Navigator.of(context).pop(true);
+                                            },
+                                            child: const Text('送出成績'),
+                                          ),
+                                        ],
+                                      );
+                                    }).then((confirm) async {
+                                  if (confirm == true) {
+                                    final result = await ref
+                                        .read(examScoreDataProvider.notifier)
+                                        .submitScore();
+                                    if (result && context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                  }
+                                });
+                              },
+                        style: ElevatedButton.styleFrom(
+                            textStyle: const TextStyle(fontSize: 20),
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                        iconAlignment: IconAlignment.end,
+                        icon: const Icon(
+                          Icons.send,
+                          size: 25,
+                          color: Colors.white,
+                        ),
+                        label: Text(state.readOnly
+                            ? state.score.isEmpty
+                                ? '成績逾期未送出'
+                                : '成績已於${DateFormat('MM/dd HH:mm:ss', 'zh-TW').format(state.submittedTime ?? DateTime.now())}送出'
+                            : '送出成績'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          );
+        }
+      }),
+    );
+  }
+}
+
+class Camera extends ConsumerWidget {
+  const Camera({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: CameraAwesomeBuilder.awesome(
+        enablePhysicalButton: true,
+        sensorConfig: SensorConfig.single(
+          sensor: Sensor.position(SensorPosition.back),
+          aspectRatio: CameraAspectRatios.ratio_16_9,
         ),
+        saveConfig: SaveConfig.photo(exifPreferences: ExifPreferences(saveGPSLocation: false)),
+        onMediaCaptureEvent: (mediaCapture) {
+          if (mediaCapture.status == MediaCaptureStatus.success) {
+            Navigator.of(context).pop(mediaCapture);
+          }
+        },
+        topActionsBuilder: (state) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Builder(builder: (context) {
+                  final theme = AwesomeThemeProvider.of(context).theme;
+                  return theme.buttonTheme.buttonBuilder(
+                    AwesomeCircleWidget.icon(
+                      icon: Icons.arrow_back,
+                      theme: theme,
+                    ),
+                    () => Navigator.of(context).pop(),
+                  );
+                }),
+                AwesomeFlashButton(state: state),
+              ],
+            ),
+          );
+        },
+        middleContentBuilder: (state) => SizedBox.shrink(),
+        bottomActionsBuilder: (state) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Center(
+              child: AwesomeCaptureButton(
+                state: state,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class UploadingView extends ConsumerWidget {
+  const UploadingView(this.value, {super.key});
+  final double value;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        spacing: 10,
+        children: [
+          Expanded(
+            flex: 1,
+            child: SizedBox.shrink(),
+          ),
+          Icon(
+            Icons.cloud_upload_rounded,
+            size: 200,
+            color: Colors.blue,
+          ),
+          LinearProgressIndicator(
+            color: Colors.blue,
+            value: value,
+            minHeight: 20,
+            stopIndicatorRadius: 25,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          Text(
+            '已上傳${(value * 100).toStringAsFixed(1)}%，請耐心等待',
+            style: TextStyle(fontSize: 20),
+          ),
+          Expanded(
+            flex: 2,
+            child: SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }

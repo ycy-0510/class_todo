@@ -57,9 +57,10 @@ final lightTheme = ThemeData(
     padding: const EdgeInsets.all(10),
     foregroundColor: Colors.blue,
     iconColor: Colors.blue,
-    side: const BorderSide(
-      color: Colors.blue,
+    side: BorderSide(
+      color: Colors.grey.shade300,
     ),
+    backgroundColor: Colors.grey.shade300,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
   )),
   textButtonTheme: TextButtonThemeData(
@@ -135,9 +136,11 @@ final darkTheme = ThemeData(
       style: OutlinedButton.styleFrom(
     padding: const EdgeInsets.all(10),
     foregroundColor: Colors.blue,
-    side: const BorderSide(
-      color: Colors.blue,
+    iconColor: Colors.blue,
+    side: BorderSide(
+      color: Colors.grey.shade900,
     ),
+    backgroundColor: Colors.grey.shade900,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
   )),
   textButtonTheme: TextButtonThemeData(

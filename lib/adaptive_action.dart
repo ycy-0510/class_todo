@@ -4,10 +4,7 @@ import 'package:flutter/services.dart';
 
 class AdaptiveAction extends StatelessWidget {
   const AdaptiveAction(
-      {super.key,
-      required this.onPressed,
-      required this.child,
-      this.danger = false});
+      {super.key, required this.onPressed, required this.child, this.danger = false});
   final VoidCallback onPressed;
   final Widget child;
   final bool danger;
@@ -25,8 +22,7 @@ class AdaptiveAction extends StatelessWidget {
               HapticFeedback.lightImpact();
               onPressed();
             },
-            style: TextButton.styleFrom(
-                foregroundColor: danger ? Colors.red : null),
+            style: TextButton.styleFrom(foregroundColor: danger ? Colors.red : null),
             child: child);
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
@@ -36,10 +32,8 @@ class AdaptiveAction extends StatelessWidget {
               onPressed();
             },
             isDestructiveAction: danger,
-            textStyle: TextStyle(
-                color: danger
-                    ? CupertinoColors.systemRed
-                    : CupertinoColors.systemBlue),
+            textStyle:
+                TextStyle(color: danger ? CupertinoColors.systemRed : CupertinoColors.systemBlue),
             child: child);
     }
   }

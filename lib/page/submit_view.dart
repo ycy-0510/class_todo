@@ -186,9 +186,6 @@ class SubmittedDone extends ConsumerWidget {
                                 }
                               });
                             },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.blue,
-                            ),
                             child: const Text('分享'),
                           );
                         }),

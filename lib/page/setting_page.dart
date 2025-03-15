@@ -90,7 +90,9 @@ class SettingPageBody extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               textStyle: const TextStyle(fontSize: 18),
                               foregroundColor: Theme.of(context).textTheme.displayMedium!.color,
-                              side: BorderSide(color: Colors.grey.shade600),
+                              backgroundColor: Theme.of(context).brightness == Brightness.light
+                                  ? Colors.grey.shade300
+                                  : Colors.grey.shade700,
                             ),
                             child: Text(ref
                                     .watch(classTableProvider)
@@ -193,7 +195,9 @@ class SettingPageBody extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               textStyle: const TextStyle(fontSize: 18),
                               foregroundColor: Theme.of(context).textTheme.displayMedium!.color,
-                              side: BorderSide(color: Colors.grey.shade600),
+                              backgroundColor: Theme.of(context).brightness == Brightness.light
+                                  ? Colors.grey.shade300
+                                  : Colors.grey.shade700,
                             ),
                             child: Builder(builder: (context) {
                               DateTime? notificationTime =
@@ -250,7 +254,7 @@ class SettingPageBody extends ConsumerWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            child: OutlinedButton.icon(
+            child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.of(context).pop();
                 ref.read(authProvider.notifier).logout();
@@ -262,9 +266,19 @@ class SettingPageBody extends ConsumerWidget {
               ),
             ),
           ),
+          SizedBox(
+            height: 30,
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            child: OutlinedButton.icon(
+            child: Text(
+              '危險區域',
+              style: TextStyle(fontSize: 25, color: Colors.red),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            child: ElevatedButton.icon(
               onPressed: () {
                 showAdaptiveDialog<bool>(
                   context: context,
@@ -294,10 +308,7 @@ class SettingPageBody extends ConsumerWidget {
                   }
                 });
               },
-              style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  iconColor: Colors.red,
-                  side: const BorderSide(color: Colors.red)),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               icon: const Icon(Icons.delete_forever),
               label: const Text(
                 '刪除帳號',
@@ -340,6 +351,16 @@ class _SelfNumberFieldState extends ConsumerState<SelfNumberField> {
       controller: _controller,
       selectionHeightStyle: BoxHeightStyle.strut,
       textAlign: TextAlign.center,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+            borderSide: BorderSide(width: 0, style: BorderStyle.none),
+            borderRadius: BorderRadius.circular(15)),
+        focusedBorder: InputBorder.none,
+        fillColor: Theme.of(context).brightness == Brightness.light
+            ? Colors.grey.shade300
+            : Colors.grey.shade700,
+        filled: true,
+      ),
       onEditingComplete: () {
         FocusManager.instance.primaryFocus?.unfocus();
         HapticFeedback.mediumImpact();

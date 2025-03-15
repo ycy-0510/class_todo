@@ -64,6 +64,16 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         break;
     }
     _updateLocalStatusData();
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+      if (!kDebugMode) {
+        final user = _ref.read(authProvider).user;
+        await db.collection("user/${user!.uid}/private").doc('fcm').update({
+          "tokens": FieldValue.arrayUnion([token]),
+        });
+      }
+    }).onError((err) {
+      ErrorHelper.handleError(err);
+    });
   }
 
   void openBottomSheet() {
