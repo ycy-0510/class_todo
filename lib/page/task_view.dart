@@ -259,7 +259,7 @@ class TaskTableView extends ConsumerWidget {
         padding: const EdgeInsets.all(8),
         child: Table(
             border: TableBorder.all(
-                color: Colors.grey, width: 2, borderRadius: BorderRadius.circular(20)),
+                color: Colors.grey, width: 1, borderRadius: BorderRadius.circular(15)),
             children: [
               TableRow(children: [
                 for (int d = 0; d < 6; d++)
@@ -285,13 +285,13 @@ class TaskTableView extends ConsumerWidget {
                               : d == 6 - 1
                                   ? const BorderRadius.only(topRight: Radius.circular(25))
                                   : null),
-                      height: 50,
+                      height: 40,
                       alignment: Alignment.center,
                       child: Text(
                         '$month/$day\n($weekday)',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           color: isToday ? Colors.blue : null,
                           fontWeight: isToday ? FontWeight.bold : null,
                         ),
@@ -305,7 +305,7 @@ class TaskTableView extends ConsumerWidget {
                         ? const BoxDecoration(
                             border: Border(
                             bottom: BorderSide(
-                                width: 5,
+                                width: 3,
                                 color: Colors.grey,
                                 strokeAlign: BorderSide.strokeAlignInside),
                           ))
@@ -379,9 +379,9 @@ class TaskTableView extends ConsumerWidget {
                                                 : null
                                         : null),
                                 margin: l == 0 || l == 4 || l == 7
-                                    ? const EdgeInsets.only(bottom: 5)
+                                    ? const EdgeInsets.only(bottom: 3)
                                     : null,
-                                height: 64,
+                                height: 65,
                                 alignment: Alignment.center,
                                 child: Builder(builder: (context) {
                                   final int weekDay = d + 1;
@@ -393,7 +393,7 @@ class TaskTableView extends ConsumerWidget {
                                     return Text(
                                       lesson[d * 9 + l],
                                       style: TextStyle(
-                                          fontSize: subTasks.isNotEmpty ? 25 : 18,
+                                          fontSize: 18,
                                           fontWeight: subTasks.isNotEmpty ? FontWeight.w900 : null,
                                           color: Theme.of(context).colorScheme.primary),
                                     );

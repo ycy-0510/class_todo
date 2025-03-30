@@ -27,11 +27,11 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
   Future<void> create() async {
     final userClassCode = _ref.read(authProvider).classCode;
     FirebaseFirestore db = FirebaseFirestore.instance;
-
+    DateTime now = DateTime.now();
     final data = {
       "name": state.name,
       "type": state.type,
-      "date": state.date,
+      "date": state.date.subtract(Duration(hours: 8)).add(now.timeZoneOffset),
       "userId": _ref.read(authProvider).user?.uid,
       "top": false,
       "submitted": [],
@@ -50,13 +50,14 @@ class TaskFormNotifier extends StateNotifier<TaskFormState> {
   Future<void> update() async {
     final userClassCode = _ref.read(authProvider).classCode;
     FirebaseFirestore db = FirebaseFirestore.instance;
-
+    DateTime now = DateTime.now();
     final data = {
       "name": state.name,
       "type": state.type,
-      "date": state.date,
+      "date": state.date.subtract(Duration(hours: 8)).add(now.timeZoneOffset),
       if (state.type != 4) 'submitted': [],
       "lastUpdate": FieldValue.serverTimestamp(),
+      "lastUpdateUserId": _ref.read(authProvider).user?.uid,
     };
     try {
       await db.collection("class/$userClassCode/task").doc(state.taskId).update(data);

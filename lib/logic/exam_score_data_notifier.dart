@@ -43,7 +43,7 @@ class ExamScoreDataNotifier extends StateNotifier<ExamScoreDataState> {
             score: dataSnap.data()?['score']?.toString() ?? '',
             readOnly: true,
             loading: false,
-            submittedTime: dataSnap.data()?['timestamp'].toDate());
+            submittedTime: dataSnap.data()?['timestamp'].toDate() as DateTime);
         Future.delayed(Duration(milliseconds: 100)).then((_) {
           state = state.copy(updateImage: true, imagePath: '${folder.path}/${state.examId}.jpg');
         });
@@ -217,6 +217,8 @@ class ExamScoreDataState {
       imagePath: updateImage ? imagePath : this.imagePath,
       readOnly: readOnly ?? this.readOnly,
       loading: loading ?? this.loading,
+      submittedTime: submittedTime,
+      uploadProgress: (loading ?? this.loading) ? uploadProgress : null,
     );
   }
 

@@ -84,6 +84,7 @@ enum ExamStatus { ongoing, processing, done, archived }
 class ExamData {
   String name;
   DateTime startTime;
+  late DateTime endTime;
   String userId;
   String examId;
   late ExamStatus examStatus;
@@ -100,7 +101,27 @@ class ExamData {
   }
 
   void updateStatus() {
-    if (DateTime.now().isBefore(startTime.add(const Duration(hours: 3)))) {
+    bool isOngoing;
+    DateTime now = DateTime.now();
+    DateTime startTimeLim = startTime.subtract(Duration(
+            hours: startTime.hour - 8 + (8 - now.timeZoneOffset.inHours),
+            minutes: startTime.minute,
+            seconds: startTime.second,
+            milliseconds: startTime.millisecond)),
+        endTimeLat = startTime.subtract(Duration(
+            hours: startTime.hour - 16 + (8 - now.timeZoneOffset.inHours),
+            minutes: startTime.minute,
+            seconds: startTime.second,
+            milliseconds: startTime.millisecond)),
+        endTimeDur = startTime.add(const Duration(hours: 3));
+    if (endTimeLat.isBefore(endTimeDur) || startTime.isBefore(startTimeLim)) {
+      isOngoing = DateTime.now().isBefore(endTimeDur);
+      endTime = endTimeDur;
+    } else {
+      isOngoing = DateTime.now().isBefore(endTimeLat);
+      endTime = endTimeLat;
+    }
+    if (isOngoing) {
       examStatus = ExamStatus.ongoing;
     } else if (DateTime.now().isBefore(startTime.add(const Duration(hours: 24))) && !done) {
       examStatus = ExamStatus.processing;

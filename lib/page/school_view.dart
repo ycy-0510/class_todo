@@ -16,15 +16,13 @@ class HomeSchoolBody extends ConsumerWidget {
     final state = ref.watch(schoolAnnouncementProvider);
     final readState = ref.watch(rssReadProvider);
     final showAnnouncements = state.announcements
-        .where((item) =>
-            !ref.watch(rssReadFilterProvider) || !readState.contains(item.guid))
+        .where((item) => !ref.watch(rssReadFilterProvider) || !readState.contains(item.guid))
         .toList();
 
     return LoadingView(
         loading: state.loading,
         child: RefreshIndicator(
-          onRefresh: () async =>
-              ref.read(schoolAnnouncementProvider.notifier).getData(),
+          onRefresh: () async => ref.read(schoolAnnouncementProvider.notifier).getData(),
           child: AnnouncesListView(showAnnouncements),
         ));
   }
@@ -59,15 +57,12 @@ class AnnouncesListView extends ConsumerWidget {
               : idx == 0
                   ? const RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(25),
-                          topRight: Radius.circular(25)))
+                          topLeft: Radius.circular(25), topRight: Radius.circular(25)))
                   : idx == announces.length - 1
                       ? const RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(25),
-                              bottomRight: Radius.circular(25)))
-                      : const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero),
+                              bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25)))
+                      : const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: Dismissible(
             key: ValueKey(guid),
             background: Container(
@@ -105,8 +100,7 @@ class AnnouncesListView extends ConsumerWidget {
               return false;
             },
             child: ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               minLeadingWidth: 15,
               leading: readState.contains(guid)
                   ? const SizedBox.shrink()
@@ -117,22 +111,16 @@ class AnnouncesListView extends ConsumerWidget {
                     ),
               title: Text(
                 announces[idx].title ?? '無標題',
-                style: TextStyle(
-                    fontWeight:
-                        readState.contains(guid) ? null : FontWeight.bold),
+                style: TextStyle(fontWeight: readState.contains(guid) ? null : FontWeight.bold),
               ),
               subtitle: publish != null
-                  ? Text(
-                      '發布於${DateFormat('yyyy/MM/dd HH:mm', 'zh-TW').format(publish)}')
+                  ? Text('發布於${DateFormat('yyyy/MM/dd HH:mm', 'zh-TW').format(publish)}')
                   : null,
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) {
-                    return RssPreview(
-                        announces[idx].title,
-                        announces[idx].description,
-                        announces[idx].content?.value,
-                        announces[idx].link);
+                    return RssPreview(announces[idx].title, announces[idx].description,
+                        announces[idx].content?.value, announces[idx].link);
                   },
                 ));
                 ref.read(rssReadProvider.notifier).markRead(guid!);
@@ -183,9 +171,7 @@ class AnnounceSearchDelegate extends SearchDelegate {
       final String description = item.description?.toLowerCase() ?? '';
       final String content = item.content?.value.toLowerCase() ?? '';
       final String input = query.toLowerCase();
-      return title.contains(input) ||
-          description.contains(input) ||
-          content.contains(input);
+      return title.contains(input) || description.contains(input) || content.contains(input);
     }).toList();
     return results.isEmpty
         ? const Center(
@@ -196,8 +182,7 @@ class AnnounceSearchDelegate extends SearchDelegate {
 }
 
 class RssPreview extends ConsumerWidget {
-  const RssPreview(this.title, this.description, this.content, this.link,
-      {super.key});
+  const RssPreview(this.title, this.description, this.content, this.link, {super.key});
   final String? title;
   final String? description;
   final String? content;
@@ -210,9 +195,7 @@ class RssPreview extends ConsumerWidget {
         title: Text(title ?? '預覽頁面'),
         actions: [
           IconButton(
-              tooltip: '開啟頁面',
-              onPressed: () => openUrl(link!),
-              icon: const Icon(Icons.open_in_new))
+              tooltip: '開啟頁面', onPressed: () => openUrl(link!), icon: const Icon(Icons.open_in_new))
         ],
       ),
       body: SingleChildScrollView(

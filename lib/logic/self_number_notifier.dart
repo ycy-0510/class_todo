@@ -4,13 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SelfNumberNotifier extends StateNotifier<String> {
   static String key = 'selfNumber';
-  Ref _ref;
+  final Ref _ref;
   SelfNumberNotifier(this._ref) : super('') {
     getNumber();
   }
 
-  SharedPreferences get _sharedPreferences =>
-      _ref.read(sharedPreferencesProvider).requireValue;
+  SharedPreferences get _sharedPreferences => _ref.read(sharedPreferencesProvider).requireValue;
 
   Future<void> getNumber() async {
     state = _sharedPreferences.getString(key) ?? '';

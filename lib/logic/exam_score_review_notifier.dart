@@ -31,7 +31,7 @@ class ExamScoreReviewNotifier extends StateNotifier<ExamScoreReviewState> {
         toReview.add(ScoreDataReview(doc.id, data['student'], data['score'], false));
       }
       for (int i = 1; i <= min(toReview.length, 2); i++) {
-        toReview[toReview.length - i].image = await _getImage(toReview[toReview.length - i].userId);
+        toReview[toReview.length - i].image = _getImage(toReview[toReview.length - i].userId);
       }
       state = state.copy(toReview: toReview, loading: false);
     } on FirebaseException catch (e) {
@@ -48,7 +48,7 @@ class ExamScoreReviewNotifier extends StateNotifier<ExamScoreReviewState> {
     final storage = FirebaseStorage.instance;
     final ref = storage.ref('class/$userClassCode/${state.examId}/$userId/exampape.jpg');
     final url = await ref.getDownloadURL();
-    return await DefaultCacheManager().getSingleFile(url);
+    return DefaultCacheManager().getSingleFile(url);
   }
 
   void review(bool accept) {
@@ -59,10 +59,8 @@ class ExamScoreReviewNotifier extends StateNotifier<ExamScoreReviewState> {
     reviewed.add(scoreData);
     state = state.copy(toReview: toReview, reviewed: reviewed);
     if (toReview.length >= 2) {
-      _getImage(toReview[toReview.length - 2].userId).then((File file) {
-        toReview[toReview.length - 2].image = file;
-        state = state.copy(toReview: toReview);
-      });
+      toReview[toReview.length - 2].image = _getImage(toReview[toReview.length - 2].userId);
+      state = state.copy(toReview: toReview);
     }
   }
 
@@ -154,7 +152,7 @@ class ScoreDataReview {
   String userId;
   String student;
   int score;
-  File? image;
+  Future<File?>? image;
   bool accept;
   ScoreDataReview(this.userId, this.student, this.score, this.accept, {this.image});
 }

@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:class_todo_list/adaptive_action.dart';
 import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/logic/exam_score_review_notifier.dart';
 import 'package:class_todo_list/logic/examlist_notifier.dart';
@@ -13,6 +13,8 @@ import 'package:class_todo_list/page/photo_preview_page.dart';
 import 'package:class_todo_list/page/setting_page.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,7 +37,7 @@ class HomeScoreBody extends ConsumerStatefulWidget {
 
 class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProviderStateMixin {
   bool _agreeToTerms = false;
-  final String _agreeToScoreTermsKey = 'agreeToScoreTermsV1.1';
+  final String _agreeToScoreTermsKey = 'agreeToScoreTermsV1.2';
 
   @override
   void initState() {
@@ -61,7 +63,6 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
         return LoadingView(
             loading: examlistState.loading,
             child: Builder(builder: (context) {
-              final box = context.findRenderObject() as RenderBox?;
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Column(
@@ -127,14 +128,14 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                                 children: [
                                   Text(usersData[examData.userId] ?? '未知使用者'),
                                   Text(
-                                      '上傳截止時間：${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(examData.startTime.add(const Duration(hours: 3)))}'),
+                                      '上傳截止時間：${DateFormat('yyyy/MM/dd EE HH:mm', 'zh-TW').format(examData.endTime)}'),
                                 ],
                               ),
                               onLongPress: examData.examStatus == ExamStatus.ongoing
                                   ? () {
                                       final box = context.findRenderObject() as RenderBox?;
                                       Share.share(
-                                        '請在${DateFormat('MM/dd HH:mm', 'zh-TW').format(examData.startTime.add(const Duration(hours: 3)))}前提交${examData.name}成績：\nhttps://app.classtodo.ycydev.org/exam/${examData.examId}',
+                                        '請在${DateFormat('MM/dd HH:mm', 'zh-TW').format(examData.endTime)}前提交${examData.name}成績：\nhttps://app.classtodo.ycydev.org/exam/${examData.examId}',
                                         sharePositionOrigin:
                                             box!.localToGlobal(Offset.zero) & box.size,
                                       );
@@ -159,26 +160,13 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                                           int.tryParse(ref.read(selfNumberProvider)) == null ||
                                           int.parse(ref.read(selfNumberProvider)) < 1) {
                                         if (context.mounted) {
-                                          bool? result = await showAdaptiveDialog<bool>(
-                                            context: context,
-                                            builder: (context) {
-                                              return AlertDialog.adaptive(
-                                                title: Text('請先設定座號'),
-                                                content: Text('您的座號無效 '),
-                                                actions: [
-                                                  AdaptiveAction(
-                                                      onPressed: () =>
-                                                          Navigator.of(context).pop(false),
-                                                      child: Text('取消')),
-                                                  AdaptiveAction(
-                                                      onPressed: () =>
-                                                          Navigator.of(context).pop(true),
-                                                      child: Text('前往設定')),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                          if (result == true) {
+                                          OkCancelResult? result = await showOkCancelAlertDialog(
+                                              context: context,
+                                              title: '請先設定座號',
+                                              message: '你尚未設定座號或設定的座號無效',
+                                              okLabel: '前往設定',
+                                              useActionSheetForIOS: true);
+                                          if (result == OkCancelResult.ok) {
                                             if (context.mounted) {
                                               await Navigator.of(context).push(MaterialPageRoute(
                                                 builder: (context) => SettingPage(),
@@ -225,11 +213,23 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                               leading: const Icon(Icons.add),
                               title: const Text('新增考試'),
                               onTap: () {
-                                showAdaptiveDialog<String?>(
-                                  context: context,
-                                  builder: (context) => const NewExamForm(),
-                                ).then((String? name) {
-                                  if (name is String) {
+                                showTextInputDialog(
+                                    context: context,
+                                    title: '新增考試',
+                                    message: '這個考試分數上傳區將會立即開啟，並在3小時(或16:00前)後停止提交，請在24小時內完成登記。',
+                                    okLabel: '新增',
+                                    textFields: [
+                                      DialogTextField(
+                                        hintText: '考試名稱',
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty || value.length < 2) {
+                                            return '請輸入考試名稱';
+                                          }
+                                          return null;
+                                        },
+                                      )
+                                    ]).then((value) {
+                                  if (value?.first is String) {
                                     toastification.show(
                                       type: ToastificationType.info,
                                       style: ToastificationStyle.flatColored,
@@ -238,14 +238,7 @@ class _HomeScoreBodyState extends ConsumerState<HomeScoreBody> with TickerProvid
                                       showProgressBar: false,
                                       autoCloseDuration: const Duration(milliseconds: 1500),
                                     );
-                                    ref.read(examlistProvider.notifier).newExam(name).then((id) {
-                                      if (id != null) {
-                                        Share.share(
-                                            '請在3個小時內提交$name成績：\nhttps://app.classtodo.ycydev.org/exam/$id',
-                                            sharePositionOrigin: Rect.fromLTRB(
-                                                box!.size.width - 100, 0, box.size.width, 50));
-                                      }
-                                    });
+                                    ref.read(examlistProvider.notifier).newExam(value!.first);
                                   }
                                 });
                               },
@@ -358,7 +351,7 @@ class _ScoreTermsDialogState extends ConsumerState<ScoreTermsDialog> {
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
     Future.delayed(Duration.zero).then((_) {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.95) {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
         setState(() {
           _isButtonEnabled = true;
         });
@@ -367,7 +360,7 @@ class _ScoreTermsDialogState extends ConsumerState<ScoreTermsDialog> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.95) {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
       setState(() {
         _isButtonEnabled = true;
       });
@@ -398,17 +391,25 @@ class _ScoreTermsDialogState extends ConsumerState<ScoreTermsDialog> {
                 padding: EdgeInsets.all(15),
                 child: Text(
                   '''
+定義：
+此處時間皆以UTC+8台北標準時間為主
+登記人 指開啟考試登記功能的人
+開啟 指開啟考試登記功能
+個人識別資料 指考試中用來確認考生身份的相關資料，包括但不限於姓名、座號等
+成績 指考卷的總成績
+
 1. 分數不可修改
 考試分數經確認後上傳，不得要求進行任何修改。
 
 2. 登記時間限制
-請於登記人開啟登記功能後 3 小時內完成分數登記，逾時將無法使用此功能進行登記。補登記的相關事宜，請聯繫登記人。
+請於16:00前(若開啟後3小時已超過16:00或早於8:00，則於開啟後3小時內)完成分數登記，逾時將無法使用此功能進行登記。補登記的相關事宜，請聯繫登記人。
 
 3. 分數檢視與確認
-登記人可於登記功能開放後的 3 小時至 24 小時內檢視登記內容並確認成績。在確認期間，每份考卷可檢視無限次。然而，由於手動操作或其他因素導致應用程式關閉，將無法再次檢視，包括但不限於切換至其他應用程式或重新啟動裝置。
+登記人可於登記時間結束後，在開啟 24 小時內檢視登記內容並確認成績。在確認期間，每份考卷可檢視無限次。然而，由於手動操作或其他因素導致應用程式關閉，將無法再次檢視，包括但不限於切換至其他應用程式或重新啟動裝置。
 
 4. 考卷上傳規範
 考卷上傳時，系統將自動縮小文件以利傳輸。請確保上傳的掃描檔案清楚呈現「個人識別資料」與「成績」，且考卷邊框完整、無修改痕跡。此外，請確保上傳分數與手動輸入分數一致（四捨五入至整數）。
+＊勿裁切考卷、只保留分數
 
 5. 分數檢查責任
 登記人可檢查考卷內容與手動填寫的「個人識別資料」和「成績」是否一致。若有差異，登記人需自行判斷是否進行後補登記。本系統不負責處理非系統明顯錯誤的分數問題。
@@ -448,81 +449,6 @@ class _ScoreTermsDialogState extends ConsumerState<ScoreTermsDialog> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class NewExamForm extends ConsumerStatefulWidget {
-  const NewExamForm({super.key});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _NewExamFormState();
-}
-
-class _NewExamFormState extends ConsumerState<NewExamForm> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog.adaptive(
-      // contentPadding: const EdgeInsets.all(20),
-      title: Text('新增考試'),
-      content: SizedBox(
-        // width: 300,
-        // height: 100,
-        child: Form(
-          key: _formKey,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5),
-            child: SizedBox(
-              // height: ,
-              child: TextFormField(
-                selectionHeightStyle: BoxHeightStyle.strut,
-                controller: _controller,
-                autofocus: true,
-                decoration: const InputDecoration(
-                    hintText: '考試名稱',
-                    hintStyle: TextStyle(height: 2),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
-                validator: (value) {
-                  if (value == null || value.isEmpty || value.length < 2) {
-                    return '請輸入考試名稱';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  _formKey.currentState!.validate();
-                },
-              ),
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        AdaptiveAction(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text(
-            '取消',
-            style: TextStyle(fontSize: 18),
-          ),
-        ),
-        AdaptiveAction(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              Navigator.of(context).pop(_controller.text);
-            } else {
-              HapticFeedback.heavyImpact();
-            }
-          },
-          child: const Text(
-            '新增',
-            style: TextStyle(fontSize: 18),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -627,22 +553,18 @@ class _SubmitScoreBodyState extends ConsumerState<SubmitScoreBody> {
     if (identical(bytes1, bytes2)) {
       return true;
     }
-
     if (bytes1.lengthInBytes != bytes2.lengthInBytes) {
       return false;
     }
-
     // Treat the original byte lists as lists of 8-byte words.
     var numWords = bytes1.lengthInBytes ~/ 8;
     var words1 = bytes1.buffer.asUint64List(0, numWords);
     var words2 = bytes2.buffer.asUint64List(0, numWords);
-
     for (var i = 0; i < words1.length; i += 1) {
       if (words1[i] != words2[i]) {
         return false;
       }
     }
-
     // Compare any remaining bytes.
     for (var i = words1.lengthInBytes; i < bytes1.lengthInBytes; i += 1) {
       if (bytes1[i] != bytes2[i]) {
@@ -880,29 +802,15 @@ class _SubmitScoreBodyState extends ConsumerState<SubmitScoreBody> {
                                   return;
                                 }
                                 HapticFeedback.lightImpact();
-                                showAdaptiveDialog<bool>(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog.adaptive(
-                                        title: const Text('送出成績'),
-                                        content: const Text('是否要送出成績，送出後不能修改已送出的內容。請確認分數正確且圖片清晰。'),
-                                        actions: [
-                                          AdaptiveAction(
-                                            onPressed: () {
-                                              Navigator.of(context).pop(false);
-                                            },
-                                            child: const Text('取消'),
-                                          ),
-                                          AdaptiveAction(
-                                            onPressed: () async {
-                                              Navigator.of(context).pop(true);
-                                            },
-                                            child: const Text('送出成績'),
-                                          ),
-                                        ],
-                                      );
-                                    }).then((confirm) async {
-                                  if (confirm == true) {
+                                showOkCancelAlertDialog(
+                                        context: context,
+                                        title: '送出成績',
+                                        message: '是否要送出成績，送出後不能修改已送出的內容。請確認分數正確且圖片清晰。',
+                                        okLabel: '送出成績',
+                                        isDestructiveAction: true,
+                                        useActionSheetForIOS: true)
+                                    .then((result) async {
+                                  if (result == OkCancelResult.ok) {
                                     final result = await ref
                                         .read(examScoreDataProvider.notifier)
                                         .submitScore();
@@ -1077,30 +985,15 @@ class _ScoreCheckBodyState extends ConsumerState<ScoreCheckBody> {
         if (didPop) {
           return;
         }
-        showDialog<bool>(
-            context: context,
-            builder: (context) {
-              return AlertDialog.adaptive(
-                title: const Text('放棄檢查'),
-                content: const Text('你確定要放棄檢查成績嗎?'),
-                actions: [
-                  AdaptiveAction(
-                    onPressed: () {
-                      Navigator.of(context).pop(true);
-                    },
-                    danger: true,
-                    child: const Text('返回'),
-                  ),
-                  AdaptiveAction(
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                    child: const Text('繼續審查'),
-                  )
-                ],
-              );
-            }).then((close) {
-          if (close == true && context.mounted) {
+        showOkCancelAlertDialog(
+          context: context,
+          title: '放棄檢查',
+          message: '你確定要放棄檢查成績嗎?',
+          okLabel: '確定',
+          cancelLabel: '繼續審查',
+          isDestructiveAction: true,
+        ).then((result) {
+          if (result == OkCancelResult.ok && context.mounted) {
             Navigator.of(context).pop();
           }
         });
@@ -1245,102 +1138,134 @@ class _ScoreCheckBodyState extends ConsumerState<ScoreCheckBody> {
                 );
               }
               ScoreDataReview scoreDataReview = state.toReview.last;
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 10,
+              return Stack(
+                alignment: Alignment.bottomCenter,
                 children: [
-                  Expanded(child: SizedBox.shrink()),
-                  Row(
-                    spacing: 15,
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 10,
                     children: [
-                      Text(scoreDataReview.student, style: TextStyle(fontSize: 25)),
-                      Icon(Icons.arrow_forward),
-                      Text('${scoreDataReview.score}分', style: TextStyle(fontSize: 30)),
+                      Expanded(flex: 1, child: SizedBox.shrink()),
+                      Row(
+                        spacing: 15,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(scoreDataReview.student, style: TextStyle(fontSize: 25)),
+                          Icon(Icons.arrow_forward),
+                          Text('${scoreDataReview.score}分', style: TextStyle(fontSize: 30)),
+                        ],
+                      ),
+                      FutureBuilder(
+                          key: Key(scoreDataReview.student),
+                          future: scoreDataReview.image,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return Icon(
+                                Icons.photo,
+                                size: 200,
+                                color: Colors.grey,
+                              );
+                            } else if (!snapshot.hasData) {
+                              if (defaultTargetPlatform == TargetPlatform.iOS ||
+                                  defaultTargetPlatform == TargetPlatform.macOS) {
+                                return CupertinoActivityIndicator(radius: 15);
+                              } else {
+                                return CircularProgressIndicator.adaptive();
+                              }
+                            } else {
+                              return InkWell(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Builder(builder: (context) {
+                                      return SingleChildScrollView(
+                                        child: Image.file(
+                                          snapshot.data!,
+                                          height: 600,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => PreviewPhoto(
+                                                imageProvider: FileImage(snapshot.data!))));
+                                  });
+                            }
+                          }),
+                      Expanded(flex: 3, child: SizedBox.shrink()),
                     ],
                   ),
-                  Builder(builder: (context) {
-                    if (scoreDataReview.image == null) {
-                      return Icon(
-                        Icons.photo,
-                        size: 200,
-                        color: Colors.grey,
-                      );
-                    }
-                    return InkWell(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(scoreDataReview.image!),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PreviewPhoto(
-                                      imageProvider: FileImage(scoreDataReview.image!))));
-                        });
-                  }),
-                  Expanded(child: SizedBox.shrink()),
-                  Row(
-                    spacing: 10,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 150,
-                        height: 45,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            HapticFeedback.mediumImpact();
-                            ref.read(examScoreReviewProvider.notifier).review(false);
-                            if (ref.read(examScoreReviewProvider).toReview.isEmpty) {
-                              ref.read(examScoreReviewProvider.notifier).getResult().then((file) {
-                                setState(() {
-                                  result = file;
+                  Container(
+                    padding: EdgeInsets.all(15),
+                    margin: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: Colors.grey.withAlpha(150),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all()),
+                    child: Row(
+                      spacing: 10,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          height: 45,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              HapticFeedback.mediumImpact();
+                              ref.read(examScoreReviewProvider.notifier).review(false);
+                              if (ref.read(examScoreReviewProvider).toReview.isEmpty) {
+                                ref.read(examScoreReviewProvider.notifier).getResult().then((file) {
+                                  setState(() {
+                                    result = file;
+                                  });
                                 });
-                              });
-                            }
-                          },
-                          icon: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                          ), //cross
-                          label: Text('拒絕'),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              shape:
-                                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                              }
+                            },
+                            icon: Icon(
+                              Icons.close,
+                              color: Colors.white,
+                            ), //cross
+                            label: Text('拒絕'),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10))),
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        width: 150,
-                        height: 45,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            HapticFeedback.lightImpact();
-                            ref.read(examScoreReviewProvider.notifier).review(true);
-                            if (ref.read(examScoreReviewProvider).toReview.isEmpty) {
-                              ref.read(examScoreReviewProvider.notifier).getResult().then((file) {
-                                setState(() {
-                                  result = file;
+                        SizedBox(
+                          width: 150,
+                          height: 45,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              HapticFeedback.lightImpact();
+                              ref.read(examScoreReviewProvider.notifier).review(true);
+                              if (ref.read(examScoreReviewProvider).toReview.isEmpty) {
+                                ref.read(examScoreReviewProvider.notifier).getResult().then((file) {
+                                  setState(() {
+                                    result = file;
+                                  });
                                 });
-                              });
-                            }
-                          },
-                          icon: Icon(
-                            Icons.check,
-                            color: Colors.white,
-                          ), //check
-                          label: Text('接受'),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              shape:
-                                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                              }
+                            },
+                            icon: Icon(
+                              Icons.check,
+                              color: Colors.white,
+                            ), //check
+                            label: Text('接受'),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10))),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               );

@@ -1,4 +1,5 @@
 import 'package:feedback/feedback.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 final lightTheme = ThemeData(
@@ -80,6 +81,10 @@ final lightTheme = ThemeData(
     floatingLabelStyle: const TextStyle(color: Colors.blue),
   ),
   splashFactory: NoSplash.splashFactory,
+  cupertinoOverrideTheme: CupertinoThemeData(
+      textTheme: CupertinoTextThemeData(),
+      primaryColor: CupertinoColors.systemBlue,
+      brightness: Brightness.light),
 );
 
 final darkTheme = ThemeData(
@@ -159,6 +164,10 @@ final darkTheme = ThemeData(
     floatingLabelStyle: const TextStyle(color: Colors.blue),
   ),
   splashFactory: NoSplash.splashFactory,
+  cupertinoOverrideTheme: CupertinoThemeData(
+      textTheme: CupertinoTextThemeData(),
+      primaryColor: CupertinoColors.systemBlue,
+      brightness: Brightness.dark),
 );
 
 final feedBackLightTheme = FeedbackThemeData(

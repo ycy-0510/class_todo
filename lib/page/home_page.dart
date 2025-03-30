@@ -1,4 +1,4 @@
-import 'package:class_todo_list/adaptive_action.dart';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/rss_url_notifier.dart';
 import 'package:class_todo_list/page/intro_page.dart';
@@ -15,7 +15,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:toastification/toastification.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -197,37 +196,13 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           if (ref.watch(bottomTabProvider) == 3) ...[
             IconButton(
-              onPressed: () => showAdaptiveDialog(
+              onPressed: () => showOkCancelAlertDialog(
                 context: context,
-                builder: (context) => AlertDialog.adaptive(
-                  title: const Text('是否全部已讀'),
-                  content: const Text('此操作將無法復原！'),
-                  actions: [
-                    AdaptiveAction(
-                      onPressed: () {
-                        Navigator.of(context).pop(true);
-                        toastification.show(
-                          type: ToastificationType.info,
-                          style: ToastificationStyle.flatColored,
-                          title: const Text("已全部標示已讀"),
-                          alignment: Alignment.topCenter,
-                          showProgressBar: false,
-                          autoCloseDuration: const Duration(milliseconds: 1500),
-                        );
-                      },
-                      danger: true,
-                      child: const Text('已讀'),
-                    ),
-                    AdaptiveAction(
-                      onPressed: () {
-                        Navigator.of(context).pop(false);
-                      },
-                      child: const Text('取消'),
-                    )
-                  ],
-                ),
+                title: '是否全部已讀',
+                useActionSheetForIOS: true,
+                isDestructiveAction: true,
               ).then((value) {
-                if (value == true) {
+                if (value == OkCancelResult.ok) {
                   ref.read(rssReadProvider.notifier).readAll();
                 }
               }),
@@ -274,7 +249,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 : PreferredSize(
                     preferredSize: const Size.fromHeight(60),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Row(
                         children: [
                           Expanded(
@@ -408,7 +383,7 @@ class LoadingView extends ConsumerWidget {
             SizedBox(
               height: 20,
             ),
-            Text('共享聯絡簿 by YCY'),
+            Text('共享聯絡簿'),
           ],
         ),
       );

@@ -8,6 +8,7 @@ import 'package:class_todo_list/theme.dart';
 import 'package:feedback/feedback.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:class_todo_list/logic/auth_notifier.dart';
@@ -67,8 +68,8 @@ Future<void> main() async {
       options.sampleRate = 0.5;
       options.debug = false; //kDebugMode;
       options.profilesSampleRate = 0.5;
-      options.experimental.replay.sessionSampleRate = 1.0;
-      options.experimental.replay.onErrorSampleRate = 1.0;
+      options.experimental.replay.sessionSampleRate = 0.6;
+      options.experimental.replay.onErrorSampleRate = 0.6;
     },
     appRunner: () => runApp(
       const ProviderScope(
@@ -127,53 +128,56 @@ class MainApp extends ConsumerWidget {
             builder: (context, child) {
               return MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-                child: ForceUpdateWidget(
-                  navigatorKey: _rootNavigatorKey,
-                  forceUpdateClient: ForceUpdateClient(
-                    fetchRequiredVersion: () =>
-                        Future.value(ref.read(remoteConfigProvider.notifier).getRequiredVersion()),
-                    iosAppStoreId: '6670305489',
-                  ),
-                  allowCancel: ref.read(remoteConfigProvider.notifier).getAllowCancelUpdate(),
-                  showForceUpdateAlert: (context, allowCancel) => showAdaptiveDialog<bool>(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) => AlertDialog.adaptive(
-                      title: const Text('需要更新軟體'),
-                      content: const Text('請更新到最新版以繼續使用'),
-                      actions: <Widget>[
-                        if (allowCancel)
-                          AdaptiveAction(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('稍後更新'),
-                          ),
-                        AdaptiveAction(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('立即更新'),
-                        ),
-                      ],
+                child: CupertinoTheme(
+                  data: CupertinoThemeData(),
+                  child: ForceUpdateWidget(
+                    navigatorKey: _rootNavigatorKey,
+                    forceUpdateClient: ForceUpdateClient(
+                      fetchRequiredVersion: () => Future.value(
+                          ref.read(remoteConfigProvider.notifier).getRequiredVersion()),
+                      iosAppStoreId: '6670305489',
                     ),
-                  ),
-                  showStoreListing: (storeUrl) async {
-                    if (await canLaunchUrl(storeUrl)) {
-                      await launchUrl(
-                        storeUrl,
-                        mode: LaunchMode.externalApplication,
+                    allowCancel: ref.read(remoteConfigProvider.notifier).getAllowCancelUpdate(),
+                    showForceUpdateAlert: (context, allowCancel) => showAdaptiveDialog<bool>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) => AlertDialog.adaptive(
+                        title: const Text('需要更新軟體'),
+                        content: const Text('請更新到最新版以繼續使用'),
+                        actions: <Widget>[
+                          if (allowCancel)
+                            AdaptiveAction(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('稍後更新'),
+                            ),
+                          AdaptiveAction(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('立即更新'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    showStoreListing: (storeUrl) async {
+                      if (await canLaunchUrl(storeUrl)) {
+                        await launchUrl(
+                          storeUrl,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      }
+                    },
+                    onException: (error, st) {
+                      toastification.show(
+                        type: ToastificationType.error,
+                        style: ToastificationStyle.flatColored,
+                        title: const Text("發生錯誤"),
+                        description: Text(error.toString()),
+                        alignment: Alignment.topCenter,
+                        showProgressBar: false,
+                        autoCloseDuration: const Duration(milliseconds: 1500),
                       );
-                    }
-                  },
-                  onException: (error, st) {
-                    toastification.show(
-                      type: ToastificationType.error,
-                      style: ToastificationStyle.flatColored,
-                      title: const Text("發生錯誤"),
-                      description: Text(error.toString()),
-                      alignment: Alignment.topCenter,
-                      showProgressBar: false,
-                      autoCloseDuration: const Duration(milliseconds: 1500),
-                    );
-                  },
-                  child: child!,
+                    },
+                    child: child!,
+                  ),
                 ),
               );
             },

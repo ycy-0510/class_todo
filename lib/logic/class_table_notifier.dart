@@ -124,8 +124,10 @@ class ClassTableNotifier extends StateNotifier<ClassTableState> {
         ErrorHelper.handleError(e);
         return;
       }
-
       state = state.copy(loading: false);
+      if (DateTime.now().isAfter(state.lastUpdate.add(Duration(days: 30)))) {
+        updateClassTable();
+      }
     }
   }
 }

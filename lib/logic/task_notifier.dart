@@ -149,11 +149,15 @@ class Task {
     SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
+    DateTime now = DateTime.now();
     return Task(
       name: data?['name'],
       type: data?['type'],
-      date: data?['date'].toDate(),
-      classTime: toClassTime(data?['date'].toDate(), classTime),
+      date:
+          (data?['date'].toDate() as DateTime).add(Duration(hours: 8)).subtract(now.timeZoneOffset),
+      classTime: toClassTime(
+          (data?['date'].toDate() as DateTime).add(Duration(hours: 8)).subtract(now.timeZoneOffset),
+          classTime),
       top: data?['top'],
       userId: data?['userId'],
       taskId: snapshot.id,
@@ -171,6 +175,9 @@ class Task {
   void modifyDate(WidgetRef ref, DateTime newDate) {
     final userClassCode = ref.read(authProvider).classCode;
     FirebaseFirestore db = FirebaseFirestore.instance;
-    db.collection("class/$userClassCode/task").doc(taskId).update({'date': newDate});
+    DateTime now = DateTime.now();
+    db.collection("class/$userClassCode/task").doc(taskId).update({
+      'date': newDate.subtract(Duration(hours: 8)).add(now.timeZoneOffset),
+    });
   }
 }

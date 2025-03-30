@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:class_todo_list/adaptive_action.dart';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:class_todo_list/logic/auth_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/provider.dart';
@@ -47,8 +47,7 @@ class ClassesPage extends ConsumerWidget {
                     child: JoinClassForm(),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                     child: RichText(
                       textAlign: TextAlign.start,
                       text: TextSpan(
@@ -59,8 +58,8 @@ class ClassesPage extends ConsumerWidget {
                               text: '前往官網',
                               style: const TextStyle(color: Colors.blue),
                               recognizer: TapGestureRecognizer()
-                                ..onTap = () => openUrl(
-                                    'https://classtodo.ycydev.org/home#h.lnjtm8ihgxy1')),
+                                ..onTap = () =>
+                                    openUrl('https://classtodo.ycydev.org/home#h.lnjtm8ihgxy1')),
                           const TextSpan(text: '申請加入吧！'),
                         ],
                       ),
@@ -75,9 +74,7 @@ class ClassesPage extends ConsumerWidget {
                         style: TextStyle(fontSize: 18),
                       ),
                       TextButton(
-                        onPressed: loading
-                            ? null
-                            : () => ref.read(authProvider.notifier).logout(),
+                        onPressed: loading ? null : () => ref.read(authProvider.notifier).logout(),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.all(0),
                         ),
@@ -128,26 +125,13 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
         _serialCodecontroller.text = serialCode!;
         _formKey.currentState?.validate();
         if (classCode.length >= 5 && serialCode.length >= 10) {
-          showAdaptiveDialog<bool>(
+          showOkCancelAlertDialog(
             context: context,
-            builder: (context) => AlertDialog.adaptive(
-              title: const Text('加入班級'),
-              content: Text('是否加入$classCode?'),
-              actions: [
-                AdaptiveAction(
-                    onPressed: () {
-                      Navigator.of(context).pop(true);
-                    },
-                    child: const Text('加入')),
-                AdaptiveAction(
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                    child: const Text('取消'))
-              ],
-            ),
+            title: '加入班級',
+            message: '是否加入$classCode?',
+            okLabel: '加入',
           ).then((confirm) {
-            if (confirm == true) {
+            if (confirm == OkCancelResult.ok) {
               ref.read(authProvider.notifier).joinClass(classCode, serialCode);
               _serialCodecontroller.clear();
             }
@@ -161,8 +145,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
   void initState() {
     Uri? uri = ref.read(deepLinkProvider);
     if (uri != null) {
-      Future.delayed(const Duration(milliseconds: 1000))
-          .then((_) => handleDeepLink(uri));
+      Future.delayed(const Duration(milliseconds: 1000)).then((_) => handleDeepLink(uri));
     }
     super.initState();
   }
@@ -193,9 +176,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                       },
                       controller: _classCodecontroller,
                       validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            value.length < 5) {
+                        if (value == null || value.isEmpty || value.length < 5) {
                           return '請輸入正確班級代碼';
                         }
                         return null;
@@ -207,8 +188,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                       decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.class_outlined),
                           labelText: '請輸入班級代碼',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15))),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15))),
                     ),
                   ),
                   Padding(
@@ -220,9 +200,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                       },
                       controller: _serialCodecontroller,
                       validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            value.length < 10) {
+                        if (value == null || value.isEmpty || value.length < 10) {
                           return '請輸入正確班級序號';
                         }
                         return null;
@@ -234,8 +212,7 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
                       decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.password),
                           labelText: '請輸入班級序號',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15))),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15))),
                     ),
                   ),
                 ])),
@@ -245,8 +222,9 @@ class _JoinClassFormState extends ConsumerState<JoinClassForm> {
               : () {
                   if (_formKey.currentState!.validate()) {
                     FocusManager.instance.primaryFocus?.unfocus();
-                    ref.read(authProvider.notifier).joinClass(
-                        _classCodecontroller.text, _serialCodecontroller.text);
+                    ref
+                        .read(authProvider.notifier)
+                        .joinClass(_classCodecontroller.text, _serialCodecontroller.text);
                     _serialCodecontroller.clear();
                   }
                 },

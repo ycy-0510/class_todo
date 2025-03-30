@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:class_todo_list/adaptive_action.dart';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:class_todo_list/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -280,29 +280,14 @@ class SettingPageBody extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
             child: ElevatedButton.icon(
               onPressed: () {
-                showAdaptiveDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog.adaptive(
-                    title: const Text('刪除帳號'),
-                    content: const Text('請注意：刪除帳號後將無法復原，是否要刪除帳號？'),
-                    actions: [
-                      AdaptiveAction(
-                        onPressed: () {
-                          Navigator.of(context).pop(true);
-                        },
-                        danger: true,
-                        child: const Text('刪除'),
-                      ),
-                      AdaptiveAction(
-                        onPressed: () {
-                          Navigator.of(context).pop(false);
-                        },
-                        child: const Text('取消'),
-                      )
-                    ],
-                  ),
-                ).then((value) {
-                  if (value == true && context.mounted) {
+                showOkCancelAlertDialog(
+                        context: context,
+                        title: '刪除帳號',
+                        message: '請注意：刪除帳號後將無法復原，是否要刪除帳號？',
+                        okLabel: '刪除',
+                        isDestructiveAction: true)
+                    .then((value) {
+                  if (value == OkCancelResult.ok && context.mounted) {
                     Navigator.of(context).pop();
                     ref.read(authProvider.notifier).deleteAccount();
                   }
@@ -355,7 +340,9 @@ class _SelfNumberFieldState extends ConsumerState<SelfNumberField> {
         border: OutlineInputBorder(
             borderSide: BorderSide(width: 0, style: BorderStyle.none),
             borderRadius: BorderRadius.circular(15)),
-        focusedBorder: InputBorder.none,
+        focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(width: 0, style: BorderStyle.none),
+            borderRadius: BorderRadius.circular(15)),
         fillColor: Theme.of(context).brightness == Brightness.light
             ? Colors.grey.shade300
             : Colors.grey.shade700,
@@ -365,16 +352,18 @@ class _SelfNumberFieldState extends ConsumerState<SelfNumberField> {
         FocusManager.instance.primaryFocus?.unfocus();
         HapticFeedback.mediumImpact();
         ref.read(selfNumberProvider.notifier).setNumber(_controller.text);
-        toastification.show(
-          context: context,
-          type: ToastificationType.success,
-          style: ToastificationStyle.flatColored,
-          title: const Text("設定座號成功！"),
-          description: Text("已設定為${_controller.text}號"),
-          alignment: Alignment.topCenter,
-          showProgressBar: false,
-          autoCloseDuration: const Duration(milliseconds: 1500),
-        );
+        if (_controller.text.isNotEmpty) {
+          toastification.show(
+            context: context,
+            type: ToastificationType.success,
+            style: ToastificationStyle.flatColored,
+            title: const Text("設定座號成功！"),
+            description: Text("已設定為${_controller.text}號"),
+            alignment: Alignment.topCenter,
+            showProgressBar: false,
+            autoCloseDuration: const Duration(milliseconds: 1500),
+          );
+        }
       },
     );
   }

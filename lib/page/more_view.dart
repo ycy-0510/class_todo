@@ -21,6 +21,7 @@ class HomeMoreBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     String? classCode = ref.watch(authProvider).classCode;
+    DateTime now = DateTime.now();
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
@@ -81,7 +82,9 @@ class HomeMoreBody extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                    ),
                     const SizedBox(
                       width: 15,
                     ),
@@ -299,6 +302,21 @@ class HomeMoreBody extends ConsumerWidget {
                     indent: 50,
                     thickness: 0.5,
                   ),
+                  if (now.timeZoneOffset.inHours != 8)
+                    ListTile(
+                        minLeadingWidth: 30,
+                        leading: const Icon(Icons.timer_sharp),
+                        title: const Text('時區'),
+                        trailing: Text(
+                          'UTC${now.timeZoneOffset.inHours >= 0 ? '+' : ''}${now.timeZoneOffset.inHours}',
+                          style: const TextStyle(fontSize: 16),
+                        )),
+                  if (now.timeZoneOffset.inHours != 8)
+                    const Divider(
+                      height: 0,
+                      indent: 50,
+                      thickness: 0.5,
+                    ),
                   ListTile(
                     minLeadingWidth: 30,
                     leading: const Icon(Icons.build),
