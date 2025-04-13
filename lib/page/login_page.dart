@@ -40,6 +40,7 @@ class LoginPage extends ConsumerWidget {
                   const Icon(
                     Icons.login,
                     size: 100,
+                    color: Colors.blue,
                   ),
                   Container(
                       margin: const EdgeInsets.symmetric(vertical: 5),
@@ -47,10 +48,8 @@ class LoginPage extends ConsumerWidget {
                       height: 45,
                       child: ElevatedButton.icon(
                         onLongPress: loading ? null : () {},
-                        onPressed: loading
-                            ? null
-                            : () =>
-                                ref.read(authProvider.notifier).googleLogin(),
+                        onPressed:
+                            loading ? null : () => ref.read(authProvider.notifier).googleLogin(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
@@ -70,9 +69,8 @@ class LoginPage extends ConsumerWidget {
                     height: 45,
                     child: ElevatedButton.icon(
                       onLongPress: loading ? null : () {},
-                      onPressed: loading
-                          ? null
-                          : () => ref.read(authProvider.notifier).appleLogin(),
+                      onPressed:
+                          loading ? null : () => ref.read(authProvider.notifier).appleLogin(),
                       style: Theme.of(context).brightness == Brightness.light
                           ? ElevatedButton.styleFrom(
                               backgroundColor: Colors.black,
@@ -93,8 +91,7 @@ class LoginPage extends ConsumerWidget {
                   ),
                   const Expanded(child: SizedBox()),
                   Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                       child: RichText(
                         textAlign: TextAlign.start,
                         text: TextSpan(
@@ -105,8 +102,8 @@ class LoginPage extends ConsumerWidget {
                                 text: '隱私政策',
                                 style: const TextStyle(color: Colors.blue),
                                 recognizer: TapGestureRecognizer()
-                                  ..onTap = () => openUrl(
-                                      'https://classtodo.ycydev.org/privacypolicy')),
+                                  ..onTap =
+                                      () => openUrl('https://classtodo.ycydev.org/privacypolicy')),
                             const TextSpan(text: '。'),
                           ],
                         ),

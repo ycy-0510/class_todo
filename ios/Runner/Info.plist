@@ -37,6 +37,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>GIDClientID</key>
 	<string>65396233679-31se8450oaah8viiqqtob4h9omb0durk.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>65396233679-lk81s3r3e7sek4uori1qvmgjni6fcek6.apps.googleusercontent.com</string>
 	<key>FlutterDeepLinkingEnabled</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>

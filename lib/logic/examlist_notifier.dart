@@ -103,22 +103,32 @@ class ExamData {
   void updateStatus() {
     bool isOngoing;
     DateTime now = DateTime.now();
-    DateTime startTimeLim = startTime.subtract(Duration(
-            hours: startTime.hour - 8 + (8 - now.timeZoneOffset.inHours),
-            minutes: startTime.minute,
-            seconds: startTime.second,
-            milliseconds: startTime.millisecond)),
-        endTimeLat = startTime.subtract(Duration(
-            hours: startTime.hour - 16 + (8 - now.timeZoneOffset.inHours),
-            minutes: startTime.minute,
-            seconds: startTime.second,
-            milliseconds: startTime.millisecond)),
-        endTimeDur = startTime.add(const Duration(hours: 3));
+    DateTime startTimeStd =
+        startTime.add(Duration(hours: 8 - now.timeZoneOffset.inHours)); //Taipei Standard Time
+    DateTime startTimeLimStd = startTimeStd
+            .subtract(Duration(
+                hours: startTimeStd.hour,
+                minutes: startTimeStd.minute,
+                seconds: startTimeStd.second,
+                milliseconds: startTimeStd.millisecond))
+            .add(Duration(hours: 8)), //Start time limit (08:00)
+        endTimeLatStd = startTimeStd
+            .subtract(Duration(
+                hours: startTimeStd.hour,
+                minutes: startTimeStd.minute,
+                seconds: startTimeStd.second,
+                milliseconds: startTimeStd.millisecond))
+            .add(Duration(hours: 16)), //End Time at 16:00
+        endTimeDurStd = startTimeStd.add(const Duration(hours: 3));
+    DateTime startTimeLim =
+            startTimeLimStd.subtract(Duration(hours: 8 - now.timeZoneOffset.inHours)),
+        endTimeLat = endTimeLatStd.subtract(Duration(hours: 8 - now.timeZoneOffset.inHours)),
+        endTimeDur = endTimeDurStd.subtract(Duration(hours: 8 - now.timeZoneOffset.inHours));
     if (endTimeLat.isBefore(endTimeDur) || startTime.isBefore(startTimeLim)) {
-      isOngoing = DateTime.now().isBefore(endTimeDur);
+      isOngoing = now.isBefore(endTimeDur);
       endTime = endTimeDur;
     } else {
-      isOngoing = DateTime.now().isBefore(endTimeLat);
+      isOngoing = now.isBefore(endTimeLat);
       endTime = endTimeLat;
     }
     if (isOngoing) {
