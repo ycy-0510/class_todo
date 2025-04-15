@@ -98,6 +98,9 @@ final pastSwitchProvider = StateProvider.autoDispose<bool>((ref) => false);
 final nowTimeProvider =
     StateNotifierProvider<NowTimeNotifier, DateTime>((ref) => NowTimeNotifier());
 
+final timeZoneProvider =
+    StateNotifierProvider<TimeZoneNotifier, TimeZoneInfo>((ref) => TimeZoneNotifier());
+
 final todoProvider = StateNotifierProvider<TodoNotifier, List<String>>((ref) => TodoNotifier(ref));
 
 final selfNumberProvider =

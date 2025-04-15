@@ -1,6 +1,7 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:class_todo_list/logic/connectivety_notifier.dart';
 import 'package:class_todo_list/logic/rss_url_notifier.dart';
+import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/page/intro_page.dart';
 import 'package:class_todo_list/page/more_view.dart';
 import 'package:class_todo_list/page/school_view.dart';
@@ -66,6 +67,21 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(timeZoneProvider, (prev, next) {
+      if (prev != null && prev.tz != next.tz) {
+        showOkCancelAlertDialog(
+                context: context,
+                title: '時區已變更',
+                message: '我們已偵測到您的時區變更，可能會造成相關問題。',
+                okLabel: '詳細資訊',
+                cancelLabel: '我了解')
+            .then((result) {
+          if (result == OkCancelResult.ok) {
+            openUrl('https://blog.classtodo.ycydev.org/2025/04/timezone.html');
+          }
+        });
+      }
+    });
     ref.listen(deepLinkProvider, (prev, next) {
       if (next != null) {
         handleDeepLink(next);

@@ -1,5 +1,6 @@
 import 'package:class_todo_list/error_handler.dart';
 import 'package:class_todo_list/logic/notification_notifier.dart';
+import 'package:class_todo_list/logic/nowtime_notifier.dart';
 import 'package:class_todo_list/open_url.dart';
 import 'package:class_todo_list/page/draw_lots.dart';
 import 'package:class_todo_list/page/intro_page.dart';
@@ -21,7 +22,7 @@ class HomeMoreBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     String? classCode = ref.watch(authProvider).classCode;
-    DateTime now = DateTime.now();
+    TimeZoneInfo timeZoneInfo = ref.watch(timeZoneProvider);
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
@@ -302,16 +303,16 @@ class HomeMoreBody extends ConsumerWidget {
                     indent: 50,
                     thickness: 0.5,
                   ),
-                  if (now.timeZoneOffset.inHours != 8)
+                  if (timeZoneInfo.tz != 8)
                     ListTile(
                         minLeadingWidth: 30,
                         leading: const Icon(Icons.timer_sharp),
                         title: const Text('時區'),
                         trailing: Text(
-                          'UTC${now.timeZoneOffset.inHours >= 0 ? '+' : ''}${now.timeZoneOffset.inHours}',
+                          timeZoneInfo.name,
                           style: const TextStyle(fontSize: 16),
                         )),
-                  if (now.timeZoneOffset.inHours != 8)
+                  if (timeZoneInfo.tz != 8)
                     const Divider(
                       height: 0,
                       indent: 50,
