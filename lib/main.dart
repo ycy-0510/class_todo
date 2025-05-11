@@ -21,6 +21,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:force_update_helper/force_update_helper.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:timeago_flutter/timeago_flutter.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'firebase_options.dart';
@@ -51,6 +52,7 @@ Future<void> main() async {
   });
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  setLocaleMessages('zh', ZhTWMessages());
   FlutterNativeSplash.remove();
   await SentryFlutter.init(
     (options) {
@@ -68,6 +70,41 @@ Future<void> main() async {
       ),
     ),
   );
+}
+
+class ZhTWMessages implements LookupMessages {
+  @override
+  String prefixAgo() => '';
+  @override
+  String prefixFromNow() => '';
+  @override
+  String suffixAgo() => '前';
+  @override
+  String suffixFromNow() => '後';
+  @override
+  String lessThanOneMinute(int seconds) => '現在';
+  @override
+  String aboutAMinute(int minutes) => '$minutes分鐘';
+  @override
+  String minutes(int minutes) => '$minutes分鐘';
+  @override
+  String aboutAnHour(int minutes) => '約1小時';
+  @override
+  String hours(int hours) => '$hours小時';
+  @override
+  String aDay(int hours) => '約1天';
+  @override
+  String days(int days) => '$days天';
+  @override
+  String aboutAMonth(int days) => '$days天';
+  @override
+  String months(int months) => '$months個月';
+  @override
+  String aboutAYear(int year) => '$year年';
+  @override
+  String years(int years) => '$years年';
+  @override
+  String wordSeparator() => '';
 }
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();

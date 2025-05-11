@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:intl/intl.dart';
+import 'package:timeago_flutter/timeago_flutter.dart';
 
 class HomeSchoolBody extends ConsumerWidget {
   const HomeSchoolBody({super.key});
@@ -114,7 +115,8 @@ class AnnouncesListView extends ConsumerWidget {
                 style: TextStyle(fontWeight: readState.contains(guid) ? null : FontWeight.bold),
               ),
               subtitle: publish != null
-                  ? Text('發布於${DateFormat('yyyy/MM/dd HH:mm', 'zh-TW').format(publish)}')
+                  ? TimeAgoOrDateRefreshForAnnounce(publish)
+                  // Text('發布於${DateFormat('yyyy/MM/dd HH:mm', 'zh-TW').format(publish)}')
                   : null,
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
@@ -135,6 +137,25 @@ class AnnouncesListView extends ConsumerWidget {
         endIndent: 20,
       ),
     );
+  }
+}
+
+class TimeAgoOrDateRefreshForAnnounce extends TimerRefreshWidget {
+  final DateTime dateTime;
+  const TimeAgoOrDateRefreshForAnnounce(this.dateTime, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    if (DateTime.now().subtract(Duration(days: 3)).isBefore(dateTime)) {
+      return Timeago(
+          locale: 'zh',
+          builder: (context, value) {
+            return Text('$value發布');
+          },
+          date: dateTime);
+    } else {
+      return Text('${DateFormat('yyyy/MM/dd', 'zh-TW').format(dateTime)}發布');
+    }
   }
 }
 
